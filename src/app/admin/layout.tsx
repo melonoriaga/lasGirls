@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { PropsWithChildren } from "react";
 
+export const dynamic = "force-dynamic";
+
 const links = [
   { href: "/admin", label: "Dashboard" },
   { href: "/admin/leads", label: "Leads" },

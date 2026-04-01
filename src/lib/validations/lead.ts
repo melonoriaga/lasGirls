@@ -11,12 +11,12 @@ export const leadStatusSchema = z.enum([
 
 export const leadSchema = z.object({
   fullName: z
-    .string({ required_error: "Necesitamos tu nombre para dirigirnos bien." })
+    .string()
     .min(2, "Contanos tu nombre completo."),
   email: z
-    .string({ required_error: "Tu email es necesario para responderte." })
+    .string()
     .email("Revisá el email, parece incompleto."),
-  phone: z.string({ required_error: "Sumá un teléfono o WhatsApp para agilizar." }).min(6),
+  phone: z.string().min(6, "Sumá un teléfono o WhatsApp para agilizar."),
   company: z.string().optional().or(z.literal("")),
   inquiryType: z.enum([
     "consulta_general",
@@ -29,7 +29,7 @@ export const leadSchema = z.object({
     "marketing_seo",
     "otro",
   ]),
-  serviceInterest: z.array(z.string()).default([]),
+  serviceInterest: z.array(z.string()).optional(),
   budgetRange: z.string().optional().or(z.literal("")),
   projectStage: z.enum([
     "solo_idea",
@@ -39,7 +39,7 @@ export const leadSchema = z.object({
     "acompanamiento_integral",
   ]),
   message: z
-    .string({ required_error: "Tu mensaje nos ayuda a entender el contexto." })
+    .string()
     .min(15, "Contanos un poco más para orientarte mejor."),
   source: z.string().min(2),
   preferredContactMethod: z.enum(["email", "whatsapp", "telefono"]),

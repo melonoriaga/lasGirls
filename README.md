@@ -1,36 +1,118 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Las Girls+ Web Platform
 
-## Getting Started
+Base de producción para:
 
-First, run the development server:
+- Sitio público (home one-page + páginas auxiliares)
+- Admin privado con Firebase Auth (sin registro abierto)
+- CRM interno de leads/clientes/notas
+- Blog con markdown + likes
+- Media manager con Firebase Storage (1MB máx)
+- Stats públicas e internas preparadas para datos reales
+
+## Stack
+
+- Next.js (App Router)
+- TypeScript
+- Tailwind CSS
+- GSAP + ScrollTrigger
+- Firebase Auth / Firestore / Storage
+- React Hook Form + Zod
+
+## Estructura principal
+
+- `src/app/(public)`: home + about + team + blog + stats + contact
+- `src/app/admin`: panel privado (dashboard, leads, clients, blog, media, users, invitations, stats)
+- `src/app/invite/[token]`: aceptación de invitación admin
+- `src/app/api`: endpoints de contacto, likes, invitaciones, auth session y operaciones admin
+- `src/content`: copy editable y semillas de contenido
+- `src/services`: lógica de negocio desacoplada
+- `src/lib/firebase`: clientes Firebase client/admin
+- `src/lib/validations`: esquemas Zod
+- `src/types`: tipos de dominio
+
+## Variables de entorno
+
+Copiar `.env.example` a `.env.local` y completar:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+NEXT_PUBLIC_FIREBASE_API_KEY=
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
+NEXT_PUBLIC_FIREBASE_APP_ID=
+
+FIREBASE_CLIENT_EMAIL=
+FIREBASE_PRIVATE_KEY=
+FIREBASE_ADMIN_PROJECT_ID=
+
+APP_URL=http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Correr local
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm install
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Firebase setup
 
-## Learn More
+1. Crear proyecto Firebase.
+2. Activar Auth (Email/Password).
+3. Crear Firestore y Storage.
+4. Cargar `firestore.rules`, `firestore.indexes.json`, `storage.rules`.
+5. Crear cuenta de servicio y completar variables `FIREBASE_*`.
 
-To learn more about Next.js, take a look at the following resources:
+## Flujo de usuarios admin (sin signup público)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Superadmin/admin crea invitación en `/admin/invitations`.
+2. Se genera token y link `/invite/[token]`.
+3. Invitado completa nombre, email y password.
+4. Se crea registro en `/users` y se marca invitación como `accepted`.
+5. Luego login normal en `/admin/login`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Colecciones Firestore
 
-## Deploy on Vercel
+- `users`: usuarios del panel y permisos granulares.
+- `invitations`: invitaciones con token, rol, estado y expiración.
+- `leads`: contactos entrantes desde formulario público.
+- `leads/{leadId}/notes`: notas internas por lead.
+- `clients`: clientes convertidos o creados internamente.
+- `clients/{clientId}/notes`: notas internas por cliente.
+- `clients/{clientId}/services`: servicios vendidos/entregables.
+- `blogPosts`: posts del CMS.
+- `blogLikes`: likes por sesión para anti-abuso básico.
+- `siteSettings`: configuración editable de marca/sitio.
+- `analyticsSnapshots`: snapshots para stats y series históricas.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Despliegue
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Se puede desplegar en Vercel o Firebase App Hosting.
+
+### Checklist previo
+
+- Variables de entorno productivas cargadas.
+- Reglas Firestore/Storage aplicadas.
+- Crear al menos un usuario `superadmin`.
+- Probar flujo real de invitación + login.
+
+## Estado de esta base
+
+Implementado en esta etapa:
+
+- Arquitectura modular de proyecto
+- Home completa con copy real de marca
+- Páginas públicas base
+- Formulario de contacto conectado a Firestore
+- Blog público con markdown + likes
+- Admin base funcional (login, dashboard, leads, clients, blog, media, users, invitations, stats)
+- Conversión lead -> client por endpoint admin
+
+Pendiente para próximas iteraciones:
+
+- CRUD completo con edición avanzada en todos los módulos
+- Notas internas (UI completa) para leads/clientes
+- Gráficas avanzadas en stats con agregaciones reales
+- Sistema de permisos aplicado por pantalla y acción en UI
+- Tests automatizados (unitarios + integración)
