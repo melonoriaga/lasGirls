@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
-import { Anton, Caveat, Sora } from "next/font/google";
+import { Anton, Pacifico, Sora, Geist } from "next/font/google";
 import "@/app/globals.css";
 import { buildMetadata } from "@/lib/seo/metadata";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const display = Anton({
   weight: "400",
@@ -14,7 +17,8 @@ const body = Sora({
   variable: "--font-body",
 });
 
-const accent = Caveat({
+const accent = Pacifico({
+  weight: "400",
   subsets: ["latin"],
   variable: "--font-accent",
 });
@@ -32,7 +36,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={`${display.variable} ${body.variable} ${accent.variable}`}>
+    <html lang="es" className={cn(display.variable, body.variable, accent.variable, "font-sans", geist.variable)}>
       <body>{children}</body>
     </html>
   );
