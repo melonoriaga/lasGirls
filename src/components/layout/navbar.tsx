@@ -2,27 +2,60 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { NAV_LINKS } from "@/lib/constants/site";
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
+  const [heroVisible, setHeroVisible] = useState(true);
+  const pathname = usePathname();
+  const isHome = pathname === "/";
+
+  useEffect(() => {
+    if (!isHome) {
+      return;
+    }
+
+    const updateHeroVisibility = () => {
+      const hero = document.getElementById("hero");
+      if (!hero) {
+        setHeroVisible(false);
+        return;
+      }
+
+      const rect = hero.getBoundingClientRect();
+      setHeroVisible(rect.bottom > window.innerHeight * 0.28);
+    };
+
+    updateHeroVisibility();
+    window.addEventListener("scroll", updateHeroVisibility, { passive: true });
+    window.addEventListener("resize", updateHeroVisibility);
+
+    return () => {
+      window.removeEventListener("scroll", updateHeroVisibility);
+      window.removeEventListener("resize", updateHeroVisibility);
+    };
+  }, [isHome]);
 
   return (
     <>
-      <header className="absolute left-0 right-0 top-0 z-50 border-b border-black/20 bg-[#f4ede6]/40 backdrop-blur">
-        <nav className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-3 md:px-8">
-        <Link href="/" className="flex items-center gap-3">
-          <Image
-            src="/brand/logos/logo-color-1.png"
-            alt="Las Girls+"
-            width={124}
-            height={34}
-            priority
-            className="h-8 w-auto object-contain"
-          />
-          <span className="sr-only">Las Girls+</span>
-        </Link>
+      <Link
+        href="/"
+        className={`floating-brand ${isHome && heroVisible ? "is-hero" : "is-scrolled"}`}
+        aria-label="Ir al inicio"
+      >
+        <Image
+          src={isHome && heroVisible ? "/brand/logos/las-girls-vertical-negro.png" : "/brand/logos/las-girls-vertical-rosa.png"}
+          alt="Las Girls+"
+          width={230}
+          height={230}
+          priority
+          className="floating-brand__logo"
+        />
+      </Link>
+
+      <div className="menu-fab">
         <button
           aria-label={open ? "Cerrar menu" : "Abrir menu"}
           aria-expanded={open}
@@ -33,8 +66,7 @@ export function Navbar() {
           <span />
           <span />
         </button>
-        </nav>
-      </header>
+      </div>
 
       <div className={`mobile-menu ${open ? "is-open" : ""}`}>
         <div className="mobile-menu__panel">
@@ -51,9 +83,6 @@ export function Navbar() {
                   {item.label}
                 </Link>
               ))}
-              <Link href="/admin/login" className="mobile-menu__link text-[#ff2f9d]" onClick={() => setOpen(false)}>
-                Admin
-              </Link>
             </div>
           </div>
         </div>

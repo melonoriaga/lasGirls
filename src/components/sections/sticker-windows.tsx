@@ -20,6 +20,7 @@ type StickerItem = {
 
 type Props = {
   items: StickerItem[];
+  containerClassName?: string;
 };
 
 type Pos = {
@@ -28,7 +29,7 @@ type Pos = {
   rotate: number;
 };
 
-export function StickerWindows({ items }: Props) {
+export function StickerWindows({ items, containerClassName = "" }: Props) {
   const initial = useMemo(
     () =>
       items.reduce<Record<string, Pos>>((acc, item) => {
@@ -47,19 +48,34 @@ export function StickerWindows({ items }: Props) {
     const windows = gsap.utils.toArray<HTMLElement>(".sticker-window");
     windows.forEach((node) => {
       const delay = Number(node.dataset.delay || 0);
+      const isMega = node.classList.contains("sticker-window--mega");
       gsap.fromTo(
         node,
-        { autoAlpha: 0, y: 80, scale: 0.8 },
+        { autoAlpha: 0, y: isMega ? 120 : 80, scale: isMega ? 0.72 : 0.8 },
         {
           autoAlpha: 1,
           y: 0,
           scale: 1,
-          duration: 0.8,
+          duration: isMega ? 1.15 : 0.8,
           delay,
           ease: "power3.out",
           scrollTrigger: { trigger: node, start: "top 90%" },
         },
       );
+
+      if (isMega) {
+        gsap.to(node, {
+          yPercent: -12,
+          rotate: `+=${node.dataset.rotateDrift ?? "0"}`,
+          ease: "none",
+          scrollTrigger: {
+            trigger: node.closest("section") ?? node,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: 0.9,
+          },
+        });
+      }
     });
     return () => {
       ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
@@ -114,14 +130,17 @@ export function StickerWindows({ items }: Props) {
   };
 
   return (
-    <div className="pointer-events-none absolute inset-0 z-[6] hidden md:block">
+    <div className={`pointer-events-none absolute inset-0 z-[6] hidden md:block ${containerClassName}`}>
       {items.map((item) => {
         const pos = positions[item.id];
         return (
           <div
             key={item.id}
             data-delay={item.delay ?? 0}
-            className="sticker-window pointer-events-auto absolute cursor-grab active:cursor-grabbing"
+            data-rotate-drift={item.w > 520 ? (item.rotate ?? 0) * 1.2 : 0}
+            className={`sticker-window pointer-events-auto absolute cursor-grab active:cursor-grabbing ${
+              item.w > 520 ? "sticker-window--mega" : ""
+            }`}
             onPointerDown={(event) => onPointerDown(item.id, event)}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}

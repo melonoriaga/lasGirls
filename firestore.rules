@@ -1,86 +1,9 @@
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    function role() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
-    }
-
-    function canReadAdmin() {
-      return isSignedIn() && role() in ['superadmin', 'admin', 'editor', 'viewer'];
-    }
-
-    function canWriteLeads() {
-      return isSignedIn() && role() in ['superadmin', 'admin', 'editor'];
-    }
-
-    function canWriteClients() {
-      return isSignedIn() && role() in ['superadmin', 'admin', 'editor'];
-    }
-
-    function canManageUsers() {
-      return isSignedIn() && role() in ['superadmin', 'admin'];
-    }
-
-    match /siteSettings/{docId} {
-      allow read: if true;
-      allow write: if canManageUsers();
-    }
-
-    match /blogPosts/{postId} {
-      allow read: if resource.data.status == 'published' || canReadAdmin();
-      allow create, update, delete: if canWriteLeads();
-    }
-
-    match /blogLikes/{likeId} {
-      allow read: if canReadAdmin();
-      allow create: if true;
-      allow update, delete: if false;
-    }
-
-    match /leads/{leadId} {
-      allow create: if true;
-      allow read: if canReadAdmin();
-      allow update, delete: if canWriteLeads();
-
-      match /notes/{noteId} {
-        allow read: if canReadAdmin();
-        allow create, update, delete: if canWriteLeads();
-      }
-    }
-
-    match /clients/{clientId} {
-      allow read: if canReadAdmin();
-      allow create, update, delete: if canWriteClients();
-
-      match /notes/{noteId} {
-        allow read: if canReadAdmin();
-        allow create, update, delete: if canWriteClients();
-      }
-
-      match /services/{serviceId} {
-        allow read: if canReadAdmin();
-        allow create, update, delete: if canWriteClients();
-      }
-    }
-
-    match /users/{uid} {
-      allow read: if canManageUsers() || request.auth.uid == uid;
-      allow create, update, delete: if canManageUsers();
-    }
-
-    match /invitations/{inviteId} {
-      allow read: if canManageUsers();
-      allow create, update, delete: if canManageUsers();
-    }
-
-    match /analyticsSnapshots/{snapshotId} {
-      allow read: if canReadAdmin();
-      allow create, update: if canWriteLeads();
-      allow delete: if canManageUsers();
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

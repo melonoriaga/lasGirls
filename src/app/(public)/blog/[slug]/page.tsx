@@ -33,12 +33,12 @@ export default async function BlogPostPage({ params }: Props) {
   if (!post) notFound();
 
   return (
-    <section className="section-shell">
-      <article className="mx-auto max-w-3xl">
-        <p className="text-xs uppercase tracking-widest text-zinc-600">{post.category}</p>
-        <h1 className="mt-2 font-display text-5xl uppercase md:text-7xl">{post.title}</h1>
-        <p className="mt-4 text-zinc-700">{post.excerpt}</p>
-        <div className="prose prose-zinc mt-8 max-w-none">
+    <section className="brutal-section relative overflow-hidden border-y-2 border-black bg-[#f4ede6] px-4 py-20 md:px-10">
+      <article className="mx-auto max-w-4xl border-2 border-black bg-white/75 p-6 md:p-10">
+        <p className="text-xs uppercase tracking-widest text-black/60">{post.category}</p>
+        <h1 className="mt-2 font-display text-[12vw] uppercase leading-[0.84] text-black md:text-[6rem]">{post.title}</h1>
+        <p className="mt-4 text-black/75">{post.excerpt}</p>
+        <div className="prose prose-zinc mt-8 max-w-none prose-headings:font-display prose-headings:uppercase prose-a:text-[#ff2f9d]">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.contentMarkdown}</ReactMarkdown>
         </div>
         <div className="mt-8">

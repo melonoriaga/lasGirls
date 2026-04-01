@@ -15,6 +15,11 @@ export const buildMetadata = ({ title, description, path, image }: SeoArgs): Met
   return {
     title,
     description,
+    icons: {
+      icon: "/brand/stickers/sticker-6.png",
+      shortcut: "/brand/stickers/sticker-6.png",
+      apple: "/brand/stickers/sticker-6.png",
+    },
     alternates: { canonical: url },
     openGraph: {
       title,

@@ -6,7 +6,7 @@ export function Footer() {
     <footer className="relative overflow-hidden border-t-4 border-black bg-[#0d0d0d] text-[#fff8f0]">
       <div className="relative mx-auto min-h-[86vh] max-w-[1600px]">
         <div className="absolute inset-x-0 bottom-0 z-[1] flex justify-center">
-          <h2 className="font-display text-[16vw] uppercase leading-[0.8] text-[#fff8f0] md:text-[13vw]">
+          <h2 className="font-accent text-[16vw] leading-[0.82] text-[#ff5faf] md:text-[13vw]">
             Las Girls+
           </h2>
         </div>
@@ -24,7 +24,6 @@ export function Footer() {
             <Link href="/#equipo" className="footer-link">EQUIPO</Link>
             <Link href="/#contacto" className="footer-link">CONTACTO</Link>
             <Link href="/blog" className="footer-link">BLOG</Link>
-            <Link href="/stats" className="footer-link">VISITAS</Link>
           </nav>
         </div>
 

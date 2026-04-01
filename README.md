@@ -7,7 +7,7 @@ Base de producción para:
 - CRM interno de leads/clientes/notas
 - Blog con markdown + likes
 - Media manager con Firebase Storage (1MB máx)
-- Stats públicas e internas preparadas para datos reales
+- Stats internas preparadas para datos reales
 
 ## Stack
 
@@ -20,7 +20,7 @@ Base de producción para:
 
 ## Estructura principal
 
-- `src/app/(public)`: home + about + team + blog + stats + contact
+- `src/app/(public)`: home + about + team + blog + contact
 - `src/app/admin`: panel privado (dashboard, leads, clients, blog, media, users, invitations, stats)
 - `src/app/invite/[token]`: aceptación de invitación admin
 - `src/app/api`: endpoints de contacto, likes, invitaciones, auth session y operaciones admin
@@ -72,6 +72,21 @@ npm run dev
 4. Se crea registro en `/users` y se marca invitación como `accepted`.
 5. Luego login normal en `/admin/login`.
 
+## Accesos públicos y privados
+
+- Público: `/`, `/about`, `/team`, `/team/[slug]`, `/blog`, `/blog/[slug]`, `/contact`.
+- Privado: `/admin/*` (requiere sesión admin).
+- No público: `/stats` queda deshabilitado en frontend público y no se indexa.
+
+Links útiles:
+
+- Home: `http://localhost:3000/`
+- Team Jean: `http://localhost:3000/team/jean`
+- Team Mel: `http://localhost:3000/team/mel`
+- Blog: `http://localhost:3000/blog`
+- Contacto: `http://localhost:3000/contact`
+- Admin Login (interno): `http://localhost:3000/admin/login`
+
 ## Colecciones Firestore
 
 - `users`: usuarios del panel y permisos granulares.
@@ -89,6 +104,33 @@ npm run dev
 ## Despliegue
 
 Se puede desplegar en Vercel o Firebase App Hosting.
+
+### Scripts de build + deploy (Firebase)
+
+El proyecto ya incluye scripts listos para build y deploy:
+
+```bash
+# Build del sitio
+npm run firebase:build:site
+
+# Deploy solo backend (reglas e índices)
+npm run firebase:deploy:backend
+
+# Deploy solo hosting (App Hosting)
+npm run firebase:deploy:hosting
+
+# Deploy backend + hosting
+npm run firebase:deploy:all
+
+# Build + deploy completo
+npm run firebase:release
+```
+
+También podés usar el script bash:
+
+```bash
+./scripts/firebase-release.sh
+```
 
 ### Checklist previo
 

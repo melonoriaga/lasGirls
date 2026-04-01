@@ -11,6 +11,5 @@ export const NAV_LINKS = [
   { label: "Servicios", href: "/#servicios" },
   { label: "Team", href: "/team" },
   { label: "Blog", href: "/blog" },
-  { label: "Stats", href: "/stats" },
   { label: "Contacto", href: "/contact" },
 ];

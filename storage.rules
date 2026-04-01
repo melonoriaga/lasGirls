@@ -1,31 +1,12 @@
 rules_version = '2';
+
+// Craft rules based on data in your Firestore database
+// allow write: if firestore.get(
+//    /databases/(default)/documents/users/$(request.auth.uid)).data.isAdmin;
 service firebase.storage {
   match /b/{bucket}/o {
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    function isAdminLike() {
-      return isSignedIn();
-    }
-
-    function isImage() {
-      return request.resource != null
-        && request.resource.contentType.matches('image/.*');
-    }
-
-    function under1MB() {
-      return request.resource != null && request.resource.size < 1 * 1024 * 1024;
-    }
-
-    match /blog/{allPaths=**} {
-      allow read: if true;
-      allow write: if isAdminLike() && isImage() && under1MB();
-    }
-
-    match /media/{allPaths=**} {
-      allow read: if isAdminLike();
-      allow write: if isAdminLike() && isImage() && under1MB();
+    match /{allPaths=**} {
+      allow read, write: if false;
     }
   }
 }
