@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@plugin "flowbite/plugin";
+@source "../../node_modules/flowbite";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -43,10 +45,6 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-}
-
-* {
-  border-color: var(--line);
 }
 
 html,
@@ -92,6 +90,81 @@ a {
 .field:focus {
   outline: 2px solid var(--pink);
   outline-offset: 1px;
+}
+
+.blog-markdown {
+  color: #3f3f46;
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.blog-markdown > * + * {
+  margin-top: 1rem;
+}
+
+.blog-markdown h1,
+.blog-markdown h2,
+.blog-markdown h3 {
+  color: #18181b;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.blog-markdown h1 {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+}
+
+.blog-markdown h2 {
+  margin-top: 2.4rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid #e4e4e7;
+  font-size: clamp(1.4rem, 3vw, 2rem);
+}
+
+.blog-markdown h3 {
+  margin-top: 1.8rem;
+  font-size: clamp(1.15rem, 2vw, 1.45rem);
+}
+
+.blog-markdown p {
+  color: #3f3f46;
+}
+
+.blog-markdown a {
+  color: #db2777;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 600;
+}
+
+.blog-markdown hr {
+  border: 0;
+  border-top: 1px solid #e4e4e7;
+  margin: 2.2rem 0;
+}
+
+.blog-markdown ul,
+.blog-markdown ol {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  padding-left: 1.25rem;
+}
+
+.blog-markdown ul {
+  list-style: disc;
+}
+
+.blog-markdown ol {
+  list-style: decimal;
+}
+
+.blog-markdown li {
+  margin: 0.2rem 0;
+}
+
+.blog-markdown li::marker {
+  color: #db2777;
 }
 
 .liquid-ether {

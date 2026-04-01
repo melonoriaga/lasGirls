@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { logAdminActivity } from "@/lib/activity/log";
 import { adminDb } from "@/lib/firebase/admin";
 import { leadStatusSchema } from "@/lib/validations/lead";
 
@@ -12,6 +13,13 @@ export async function POST(request: Request, context: Context) {
     await adminDb.collection("leads").doc(id).update({
       status,
       updatedAt: new Date().toISOString(),
+    });
+    await logAdminActivity({
+      request,
+      action: "lead_status_updated",
+      targetType: "lead",
+      targetId: id,
+      metadata: { status },
     });
     return NextResponse.json({ ok: true });
   } catch (error) {

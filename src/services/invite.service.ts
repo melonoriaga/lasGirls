@@ -6,7 +6,7 @@ import type { AdminRole } from "@/types/auth";
 export const createInvitation = async (email: string, role: AdminRole, invitedBy: string) => {
   const token = crypto.randomBytes(24).toString("hex");
   const now = new Date();
-  const expiresAt = new Date(now.getTime() + 1000 * 60 * 60 * 24 * 7);
+  const expiresAt = new Date(now.getTime() + 1000 * 60 * 60 * 24);
 
   const payload = {
     email,

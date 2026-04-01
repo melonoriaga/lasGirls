@@ -8,14 +8,55 @@ runConfig:
   # memoryMiB: 512
 
 # Environment variables and secrets.
-# env:
+env:
+  - variable: APP_URL
+    value: https://las-girls--las-girls.us-central1.hosted.app
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    value: "AIzaSyDkmU13ApD4yeci8QKul88NrxIrtnRMB9w"
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: "las-girls.firebaseapp.com"
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: "las-girls"
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: "las-girls.firebasestorage.app"
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    value: "498761024675"
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    value: "1:498761024675:web:4cfc7bfea7409141c7eb16"
+    availability:
+      - BUILD
+      - RUNTIME
   # Configure environment variables.
   # See https://firebase.google.com/docs/app-hosting/configure#user-defined-environment
-  # - variable: MESSAGE
-  #   value: Hello world!
-  #   availability:
-  #     - BUILD
-  #     - RUNTIME
+  - variable: MESSAGE
+    value: Hello world!
+    availability:
+      - BUILD
+      - RUNTIME
 
   # Grant access to secrets in Cloud Secret Manager.
   # You can create secrets with the CLI command `firebase apphosting:secrets:set <secretName>`.

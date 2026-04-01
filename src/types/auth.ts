@@ -18,6 +18,12 @@ export type AdminUser = {
   uid: string;
   email: string;
   fullName: string;
+  username?: string;
+  photoURL?: string;
+  contactPhone?: string;
+  workingHours?: string;
+  usefulLinks?: string;
+  internalNotes?: string;
   role: AdminRole;
   permissions: AdminPermissions;
   invitedBy?: string;

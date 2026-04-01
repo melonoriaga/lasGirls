@@ -11,7 +11,7 @@ import DecryptedText from "@/components/DecryptedText";
 import RotatingText from "@/components/RotatingText";
 import LiquidEther from "@/components/LiquidEther";
 import TextType from "@/components/TextType";
-import { ContactForm } from "@/components/forms/contact-form";
+import { ContactSection } from "@/components/sections/contact-section";
 import { StickerWindows } from "@/components/sections/sticker-windows";
 import { homeContent, serviceCards } from "@/content/site/home";
 
@@ -23,10 +23,6 @@ const heroStickers = [
 
 const teamStickers = [
   { id: "t1", src: "/brand/stickers/STICKER7.png", x: 15, y: 68, w: 400, rotate: 7, delay: 0.18 },
-];
-
-const contactStickers = [
-  { id: "c1", src: "/brand/stickers/STICKER10.png", x: 84, y: 66, w: 420, rotate: -5, delay: 0.2 },
 ];
 
 const heroRotatingWords = [
@@ -261,10 +257,10 @@ export default function HomePage() {
             <span>◆</span>
           </p>
 
-          <h1 className="hero-main-line mt-8 w-full font-display text-[16vw] uppercase leading-[0.84] text-black md:text-[10.5rem]">
+          <h1 className="hero-main-line mt-8 w-full font-display text-[16vw] uppercase leading-[0.84] text-black md:text-[8.6rem] lg:text-[10.5rem]">
             SOLUCIONES
           </h1>
-          <h1 className="hero-main-line w-full font-display text-[16vw] uppercase leading-[0.84] text-black md:text-[10.5rem]">
+          <h1 className="hero-main-line w-full font-display text-[16vw] uppercase leading-[0.84] text-black md:text-[8.6rem] lg:text-[10.5rem]">
             DIGITALES QUE
           </h1>
           <div className="hero-rotating-reveal mt-1 flex w-full items-center justify-center bg-black py-1">
@@ -285,10 +281,10 @@ export default function HomePage() {
               />
             </div>
           </div>
-          <p className="hero-soft-line mt-3 font-accent text-5xl text-black md:text-7xl">no que decoran</p>
+          <p className="hero-soft-line mt-3 font-accent text-5xl text-black lg:text-7xl">no que decoran</p>
 
           <div className="hero-soft-line mt-8 h-[2px] w-full max-w-[520px] bg-black" />
-          <p className="hero-soft-line mt-5 max-w-[620px] text-sm leading-relaxed text-black/80 md:text-base">
+          <p className="hero-soft-line mt-5 max-w-[620px] text-sm leading-relaxed text-black/80 lg:text-base">
             No necesitás tener todo claro. Si tenés una idea -aunque esté en cero- te ayudamos a bajarla, ordenarla y
             convertirla en algo que funcione de verdad.
           </p>
@@ -308,7 +304,7 @@ export default function HomePage() {
             <span>Te ayudamos a entender qué necesitás antes de venderte algo</span>
           </div>
         </div>
-        <div className="absolute right-5 top-20 z-[12] hidden md:block">
+        <div className="absolute right-5 top-20 z-[12] hidden lg:block">
           <CircularText
             text="LAS GIRLS+ ✦ BRANDING ✦ WEB ✦ APPS ✦ "
             spinDuration={18}
@@ -318,11 +314,11 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="impact-poster" className="brutal-section relative isolate h-screen min-h-0 overflow-hidden border-t-2 border-black bg-[#f4ede6] px-4 md:px-10">
-        <div className="impact-side-text left-2 hidden md:block">LAS GIRLS+ · BRUTAL BRANDING · WEB · APPS</div>
-        <div className="impact-side-text right right-2 hidden md:block">ESTRATEGIA · CONTENIDO · CRECIMIENTO REAL</div>
+      <section id="impact-poster" className="brutal-section relative isolate min-h-[820px] overflow-hidden border-t-2 border-black bg-[#f4ede6] px-4 lg:h-screen lg:min-h-0 lg:px-10">
+        <div className="impact-side-text left-2 hidden lg:block">LAS GIRLS+ · BRUTAL BRANDING · WEB · APPS</div>
+        <div className="impact-side-text right right-2 hidden lg:block">ESTRATEGIA · CONTENIDO · CRECIMIENTO REAL</div>
 
-        <div className="pointer-events-none absolute inset-x-0 top-1/2 z-[2] hidden -translate-y-1/2 md:block">
+        <div className="pointer-events-none absolute inset-x-0 top-1/2 z-[2] hidden -translate-y-1/2 lg:block">
           <CurvedLoop
             marqueeText="✦ en menos de un dia · en menos de un dia · en menos de un dia · "
             speed={1.35}
@@ -335,16 +331,16 @@ export default function HomePage() {
 
         <div className="relative z-[4] mx-auto h-full w-full max-w-[1280px]">
           <div className="impact-badge impact-fade">✦ ENTREGA EN TIEMPO REAL</div>
-          <div className="impact-stamp impact-fade hidden md:flex">
+          <div className="impact-stamp impact-fade hidden lg:flex">
             <span className="impact-stamp__num">24</span>
             <span className="impact-stamp__sub">HS</span>
           </div>
 
           <div className="absolute inset-x-0 top-[8%] z-[6] text-center">
-            <h2 className="impact-line impact-line--top font-display text-[19vw] uppercase leading-[0.8] tracking-[-0.02em] text-black md:text-[12rem]">
+            <h2 className="impact-line impact-line--top font-display text-[19vw] uppercase leading-[0.8] tracking-[-0.02em] text-black md:text-[9rem] lg:text-[12rem]">
               TU IDEA
             </h2>
-            <h2 className="impact-line impact-line--bottom -mt-2 font-display text-[19vw] uppercase leading-[0.8] tracking-[-0.02em] text-[#ff5faf] md:text-[12rem]">
+            <h2 className="impact-line impact-line--bottom -mt-2 font-display text-[19vw] uppercase leading-[0.8] tracking-[-0.02em] text-[#ff5faf] md:text-[9rem] lg:text-[12rem]">
               LISTA HOY.
             </h2>
           </div>
@@ -359,20 +355,20 @@ export default function HomePage() {
             <Image src="/brand/stickers/STICKER2.png" alt="Sticker Las Girls+" fill className="object-contain object-bottom" priority={false} />
           </div>
 
-          <div className="impact-card impact-card--left impact-fade hidden md:block">
+          <div className="impact-card impact-card--left impact-fade hidden lg:block">
             <p className="impact-card__kicker">✦ SIN VUELTAS</p>
             <h4 className="impact-card__title">NO NECESITAS</h4>
             <p className="impact-card__script">seis meses de reuniones.</p>
             <p className="impact-card__copy">Si ya tenes marca, textos e imagenes, lo bajamos a tierra rapido y con criterio.</p>
           </div>
 
-          <div className="impact-card impact-card--right impact-fade hidden md:block">
+          <div className="impact-card impact-card--right impact-fade hidden lg:block">
             <p className="impact-card__kicker">✦ INCLUYE TODO</p>
             <p className="impact-card__copy">Con formulario, dominio conectado y estructura lista para recibir consultas reales.</p>
             <p className="impact-card__pill">✦ BRANDING + WEB + LIVE</p>
           </div>
 
-          <div className="impact-fade absolute inset-x-0 bottom-[8%] z-[10] px-3 md:hidden">
+          <div className="impact-fade absolute inset-x-0 bottom-[8%] z-[10] px-3 lg:hidden">
             <div className="mx-auto max-w-md space-y-3">
               <div className="border-2 border-black bg-[#ffd7ea]/92 px-3 py-2">
                 <p className="text-[0.58rem] font-semibold uppercase tracking-[0.14em] text-black">✦ SIN VUELTAS</p>
@@ -396,7 +392,7 @@ export default function HomePage() {
 
           <div className="impact-script-wrap impact-fade absolute inset-x-0 bottom-[6%] z-[9] mx-auto max-w-4xl text-center">
             <p className="impact-script font-accent text-4xl text-[#ff5faf] md:text-6xl">sin vueltas, con estrategia.</p>
-            <p className="mt-3 text-sm uppercase tracking-[0.14em] text-black/80 md:text-base">
+            <p className="mt-3 text-sm uppercase tracking-[0.14em] text-black/80 lg:text-base">
               branding + web + contenido + direccion creativa para que tu marca se vea, se entienda y convierta.
             </p>
           </div>
@@ -405,21 +401,21 @@ export default function HomePage() {
 
       <section
         id="metodologia"
-        className="vh-section relative overflow-hidden border-t-2 border-black bg-[#ff6faf] px-5 py-20 md:px-10"
+        className="vh-section relative overflow-hidden border-t-2 border-black bg-[#ff6faf] px-5 py-20 lg:px-10"
       >
         <div className="mx-auto w-full max-w-[1200px]">
           <div className="meth-header relative z-[4] mb-14">
-            <h2 className="font-display text-6xl uppercase leading-[0.95] text-black md:text-[5.5rem]">
+            <h2 className="font-display text-6xl uppercase leading-[0.95] text-black lg:text-[5.5rem]">
               TRABAJAR CON NOSOTRAS
             </h2>
-            <p className="font-accent text-5xl text-black md:text-[3.2rem]">es asi de simple.</p>
+            <p className="font-accent text-5xl text-black lg:text-[3.2rem]">es asi de simple.</p>
           </div>
 
-          <div className="process-grid-rows relative z-[4] grid border-t-2 border-black md:grid-cols-3">
+          <div className="process-grid-rows relative z-[4] grid border-t-2 border-black lg:grid-cols-3">
             {homeContent.methodology.blocks.slice(0, 3).map((block, index) => (
               <article
                 key={block.title}
-                className="meth-col process-col relative overflow-hidden border-l-0 border-black px-6 py-10 md:border-l-2 md:first:border-l-0"
+                className="meth-col process-col relative overflow-hidden border-l-0 border-black px-6 py-10 lg:border-l-2 lg:first:border-l-0"
               >
                 <span className="meth-index pointer-events-none absolute left-2 top-0 font-display text-[clamp(9rem,30vw,24rem)] leading-[0.7] text-[#ffb8d9] opacity-60">
                   {index + 1}
@@ -450,7 +446,7 @@ export default function HomePage() {
       <section id="servicios" className="vh-section relative overflow-hidden border-t-2 border-black bg-[#f4ede6]">
         <div className="w-full max-w-none">
           <div className="brutal-reveal relative z-[4] flex min-h-screen flex-col justify-center px-5 py-14 md:px-12">
-            <h2 className="relative z-[2] max-w-[14ch] font-display text-[13vw] uppercase leading-[0.84] text-black md:text-[8.5rem]">
+            <h2 className="relative z-[2] max-w-[14ch] font-display text-[13vw] uppercase leading-[0.84] text-black md:text-[6.5rem] lg:text-[8.5rem]">
               LO QUE PODEMOS{" "}
               <TextType
                 as="span"
@@ -465,7 +461,7 @@ export default function HomePage() {
                 startOnVisible
               />
             </h2>
-            <p className="relative z-[2] mt-6 max-w-4xl text-sm leading-relaxed text-black/85 md:text-xl">
+            <p className="relative z-[2] mt-6 max-w-4xl text-sm leading-relaxed text-black/85 lg:text-xl">
               <TextType
                 as="span"
                 text={[
@@ -491,7 +487,7 @@ export default function HomePage() {
                 style={{ background: SERVICE_ROW_COLORS[index % SERVICE_ROW_COLORS.length] }}
               >
                 <div className="flex items-start justify-between gap-4 px-0 pb-3 pt-7">
-                  <h3 className="font-display text-[10vw] uppercase leading-[0.86] tracking-[-0.03em] text-black md:text-[6.6rem]">
+                  <h3 className="font-display text-[10vw] uppercase leading-[0.86] tracking-[-0.03em] text-black md:text-[5.2rem] lg:text-[6.6rem]">
                     <span className="mr-[0.18em]">{String(index + 1).padStart(2, "0")}.</span>
                     {service.title}
                   </h3>
@@ -500,7 +496,7 @@ export default function HomePage() {
                 <div className="grid transition-[grid-template-rows] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] grid-rows-[0fr] group-hover:grid-rows-[1fr] group-focus-within:grid-rows-[1fr]">
                   <div className="min-h-0 overflow-hidden border-t border-black">
                     <div className="flex items-start justify-between gap-5 px-0 py-5">
-                      <p className="text-sm uppercase leading-[1.65] tracking-[0.08em] text-black/90 md:text-lg">
+                      <p className="text-sm uppercase leading-[1.65] tracking-[0.08em] text-black/90 lg:text-lg">
                         {service.description}
                       </p>
                       <span className="mt-1 inline-block h-3 w-3 shrink-0 rounded-full bg-black" />
@@ -519,7 +515,7 @@ export default function HomePage() {
           <p className="brutal-reveal inline-flex bg-[#ff5faf] px-3 py-1 text-[10px] uppercase tracking-[0.16em] text-black">
             equipo estratégico
           </p>
-          <h2 className="brutal-reveal mt-4 font-display text-6xl uppercase leading-[0.86] text-[#f4ede6] md:text-8xl">
+          <h2 className="brutal-reveal mt-4 font-display text-6xl uppercase leading-[0.86] text-[#f4ede6] lg:text-8xl">
             <DecryptedText
               text="no hacemos todo solas."
               speed={26}
@@ -606,15 +602,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section
-        id="contacto"
-        className="vh-section section-shell relative isolate overflow-hidden border-y-2 border-black !px-0 !pb-0 !pt-0"
-      >
-        <StickerWindows items={contactStickers} containerClassName="z-[1]" />
-        <div className="relative z-[5]">
-          <ContactForm />
-        </div>
-      </section>
+      <ContactSection id="contacto" />
     </>
   );
 }

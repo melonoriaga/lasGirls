@@ -16,9 +16,9 @@ export const buildMetadata = ({ title, description, path, image }: SeoArgs): Met
     title,
     description,
     icons: {
-      icon: "/brand/stickers/sticker-6.png",
-      shortcut: "/brand/stickers/sticker-6.png",
-      apple: "/brand/stickers/sticker-6.png",
+      icon: [{ url: "/favicon.ico?v=lg7", type: "image/x-icon" }],
+      shortcut: [{ url: "/favicon.ico?v=lg7", type: "image/x-icon" }],
+      apple: [{ url: "/brand/stickers/sticker-6.png?v=lg7", type: "image/png" }],
     },
     alternates: { canonical: url },
     openGraph: {

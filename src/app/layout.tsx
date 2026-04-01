@@ -38,9 +38,10 @@ export default function RootLayout({
   return (
     <html lang="es" className={cn(display.variable, body.variable, accent.variable, "font-sans", geist.variable)}>
       <head>
-        <link rel="icon" href="/brand/stickers/sticker-6.png?v=lg6" sizes="32x32" type="image/png" />
-        <link rel="shortcut icon" href="/brand/stickers/sticker-6.png?v=lg6" type="image/png" />
-        <link rel="apple-touch-icon" href="/brand/stickers/sticker-6.png?v=lg6" />
+        <link rel="icon" href="/favicon.ico?v=lg7" sizes="any" />
+        <link rel="shortcut icon" href="/favicon.ico?v=lg7" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/brand/stickers/sticker-6.png?v=lg7" />
+        <link rel="mask-icon" href="/brand/stickers/sticker-6.png?v=lg7" color="#ff5faf" />
       </head>
       <body>{children}</body>
     </html>

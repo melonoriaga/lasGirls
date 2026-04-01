@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
+import { logAdminActivity } from "@/lib/activity/log";
 import { adminDb } from "@/lib/firebase/admin";
 
 type Context = { params: Promise<{ id: string }> };
 
-export async function POST(_: Request, context: Context) {
+export async function POST(request: Request, context: Context) {
   try {
     const { id } = await context.params;
     const leadRef = adminDb.collection("leads").doc(id);
@@ -37,6 +38,13 @@ export async function POST(_: Request, context: Context) {
       status: "converted",
       convertedToClientId: clientRef.id,
       updatedAt: now,
+    });
+    await logAdminActivity({
+      request,
+      action: "lead_converted",
+      targetType: "lead",
+      targetId: id,
+      metadata: { clientId: clientRef.id },
     });
 
     return NextResponse.json({ ok: true, clientId: clientRef.id });

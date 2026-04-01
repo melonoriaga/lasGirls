@@ -31,24 +31,26 @@ export default function AdminMediaPage() {
   };
 
   return (
-    <section className="grid gap-4">
-      <h1 className="font-display text-5xl uppercase">Media Manager</h1>
-      <p className="text-sm text-zinc-700">
+    <section>
+      <h1 className="text-3xl font-semibold tracking-tight text-zinc-900">Media Manager</h1>
+      <p className="mt-2 text-sm text-zinc-600">
         Subí imágenes para blog o recursos internos. Máximo permitido: 1MB por archivo.
       </p>
-      <input type="file" accept="image/*" onChange={(e) => void upload(e.target.files?.[0])} />
-      <Button type="button" disabled={loading}>
-        {loading ? "Subiendo..." : "Listo para subir"}
-      </Button>
-      {error && <p className="text-sm text-red-700">{error}</p>}
-      {url && (
-        <div className="grid gap-2">
-          <p className="text-sm text-emerald-700">Imagen subida correctamente.</p>
-          <a className="text-sm underline" href={url} target="_blank" rel="noreferrer">
-            Ver URL
-          </a>
-        </div>
-      )}
+      <div className="mt-6 grid gap-4 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
+        <input type="file" accept="image/*" onChange={(e) => void upload(e.target.files?.[0])} />
+        <Button type="button" disabled={loading}>
+          {loading ? "Subiendo..." : "Listo para subir"}
+        </Button>
+        {error && <p className="text-sm text-red-700">{error}</p>}
+        {url && (
+          <div className="grid gap-2 rounded-lg bg-zinc-50 p-3">
+            <p className="text-sm text-emerald-700">Imagen subida correctamente.</p>
+            <a className="text-sm font-medium text-[#db2777] underline" href={url} target="_blank" rel="noreferrer">
+              Ver URL
+            </a>
+          </div>
+        )}
+      </div>
     </section>
   );
 }

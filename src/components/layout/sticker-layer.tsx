@@ -8,7 +8,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(ScrollTrigger);
 
 const stickers = [
-  { src: "/brand/stickers/STICKER1.png", cls: "top-[15vh] left-[2vw] w-16 md:w-24", speed: 80 },
+  { src: "/brand/stickers/sticker-1.png", cls: "top-[15vh] left-[2vw] w-16 md:w-24", speed: 80 },
   { src: "/brand/stickers/STICKER2.png", cls: "top-[35vh] right-[3vw] w-20 md:w-28", speed: -90 },
   { src: "/brand/stickers/STICKER4.png", cls: "top-[72vh] left-[5vw] w-16 md:w-24", speed: 70 },
   { src: "/brand/stickers/STICKER5.png", cls: "top-[58vh] right-[6vw] w-20 md:w-30", speed: -75 },
