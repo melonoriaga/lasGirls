@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #fef8fb;
+  --surface: #fff2f8;
+  --text: #111111;
+  --muted: #5b5b5b;
+  --line: #111111;
+  --pink: #ff3ea5;
+  --pink-soft: #ffd2ec;
+}
+
+* {
+  border-color: var(--line);
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body), sans-serif;
+}
+
+.font-display {
+  font-family: var(--font-display), sans-serif;
+}
+
+.font-accent {
+  font-family: var(--font-accent), cursive;
+}
+
+.section-shell {
+  border-top: 1px solid var(--line);
+  padding: 5rem 1rem;
+}
+
+.field {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: white;
+  padding: 0.75rem 0.8rem;
+  font-size: 0.95rem;
+}
+
+.field:focus {
+  outline: 2px solid var(--pink);
+  outline-offset: 1px;
+}
