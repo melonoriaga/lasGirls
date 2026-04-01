@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 const SESSION_COOKIE_NAME = "lg_admin_session";
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isAdminRoute = pathname.startsWith("/admin");
   const isLoginRoute = pathname.startsWith("/admin/login");
