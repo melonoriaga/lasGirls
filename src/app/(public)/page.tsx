@@ -250,13 +250,13 @@ export default function HomePage() {
           {/* Figura: slot exactamente 100vh (altura de viewport). Copy: 60vw. */}
           <div className="hero-split__stage mx-auto w-full max-w-[100%] md:max-w-[min(1600px,100%)]">
             <div className="grid grid-cols-1 items-stretch gap-y-10 md:grid-cols-[minmax(12rem,1fr)_60vw] md:gap-x-6 lg:gap-x-8 xl:gap-x-10">
-              <div className="hero-split__figure-area flex w-full min-h-[100dvh] min-w-0 flex-col items-center justify-end overflow-visible md:min-h-[100dvh] md:w-full md:shrink-0 md:items-end md:justify-end">
-                <div className="relative mx-auto w-full min-w-0 overflow-visible md:mx-0 md:max-w-none">
+              <div className="hero-split__figure-area relative z-0 flex w-full min-h-[100dvh] min-w-0 flex-col items-center justify-end md:min-h-[100dvh] md:w-full md:shrink-0 md:items-end md:justify-end">
+                <div className="relative z-0 mx-auto w-full min-w-0 md:mx-0 md:max-w-none">
                   <HeroStickerMotion />
                 </div>
               </div>
 
-              <div className="hero-split__copy-area mx-auto flex w-full max-w-[60vw] min-w-0 flex-col items-start justify-center self-center pt-[max(4.25rem,env(safe-area-inset-top,0px)+3.25rem)] text-left md:mx-0 md:w-[60vw] md:max-w-[60vw] md:shrink-0 md:self-center md:pt-24 md:pl-1 lg:pl-2">
+              <div className="hero-split__copy-area relative z-30 mx-auto flex w-full max-w-[60vw] min-w-0 flex-col items-start justify-center self-center pt-[max(4.25rem,env(safe-area-inset-top,0px)+3.25rem)] text-left md:mx-0 md:w-[60vw] md:max-w-[60vw] md:shrink-0 md:self-center md:pt-24 md:pl-1 lg:pl-2">
                 <HeroBrandMarquee />
 
                 <h1 className="hero-main-line mt-6 w-full font-display font-black uppercase leading-[1] tracking-[-0.015em] text-black md:mt-8
@@ -267,7 +267,7 @@ export default function HomePage() {
                 </h1>
 
                 <div className="hero-rotating-reveal mt-1 flex w-full min-w-0 max-w-full items-stretch justify-start bg-black py-1.5 pl-0 pr-2 md:py-2">
-                  <div className="hero-rotating-shell flex min-h-[0.9em] w-full min-w-0 items-center justify-start overflow-hidden">
+                  <div className="hero-rotating-shell flex min-h-[0.9em] w-full min-w-0 items-center justify-start">
                     <RotatingText
                       texts={heroRotatingWords}
                       rotationInterval={1850}
@@ -288,7 +288,7 @@ export default function HomePage() {
                 <p className="hero-soft-line mt-4 font-accent font-medium leading-[1.05] text-black
                   text-[clamp(2.7rem,6.2vw,3.9rem)]
                   sm:text-[clamp(2.8rem,5.8vw,4.2rem)]
-                  md:text-[clamp(2rem,5vw 3rem)]
+                  md:text-[clamp(2rem,5vw,3rem)]
                   lg:text-[clamp(3rem,3vw,4rem)]">
                   no para mostrar — para que pase algo
                 </p>
