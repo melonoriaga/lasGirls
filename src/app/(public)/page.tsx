@@ -25,13 +25,12 @@ const teamStickers = [
 
 const heroRotatingWords = [
   "FUNCIONAN",
-  "CONVIERTEN",
   "VENDEN",
+  "CRECEN",
   "ESCALAN",
+  "SE USAN",
+  "CONECTAN",
   "TIENEN SENTIDO",
-  "SE PUEDEN USAR",
-  "NO SON HUMO",
-  "ESTAN BIEN PENSADAS",
 ];
 
 const SERVICE_ROW_COLORS = ["#ff6faf", "#ff9fcf", "#f8d4de", "#ffd6e8", "#fff0f8"];
@@ -250,9 +249,9 @@ export default function HomePage() {
         <div className="hero-split relative z-10 flex min-h-0 flex-1 flex-col items-center justify-center px-4 pb-10 pt-0 md:px-6 md:pb-12 lg:px-10">
           {/* Figura: slot exactamente 100vh (altura de viewport). Copy: 60vw. */}
           <div className="hero-split__stage mx-auto w-full max-w-[100%] md:max-w-[min(1600px,100%)]">
-            <div className="grid grid-cols-1 items-center gap-y-10 md:grid-cols-[minmax(12rem,1fr)_60vw] md:items-stretch md:gap-x-6 lg:gap-x-8 xl:gap-x-10">
-              <div className="hero-split__figure-area flex w-full min-w-0 flex-col items-center justify-end md:min-h-[100vh] md:w-full md:shrink-0 md:items-end md:justify-end">
-                <div className="relative mx-auto h-[min(88dvh,52rem)] w-full max-w-[min(22rem,88vw)] md:mx-0 md:h-[100vh] md:min-h-[100vh] md:max-w-none md:w-full">
+            <div className="grid grid-cols-1 items-stretch gap-y-10 md:grid-cols-[minmax(12rem,1fr)_60vw] md:gap-x-6 lg:gap-x-8 xl:gap-x-10">
+              <div className="hero-split__figure-area flex w-full min-h-[100dvh] min-w-0 flex-col items-center justify-end md:min-h-[100dvh] md:w-full md:shrink-0 md:items-end md:justify-end">
+                <div className="relative mx-auto h-[100dvh] min-h-[100dvh] w-full max-w-[min(40rem,100%)] md:mx-0 md:h-[100dvh] md:min-h-[100dvh] md:max-w-none">
                   <HeroStickerMotion />
                 </div>
               </div>
@@ -260,18 +259,11 @@ export default function HomePage() {
               <div className="hero-split__copy-area mx-auto flex w-full max-w-[60vw] min-w-0 flex-col items-start justify-center self-center pt-[max(4.25rem,env(safe-area-inset-top,0px)+3.25rem)] text-left md:mx-0 md:w-[60vw] md:max-w-[60vw] md:shrink-0 md:self-center md:pt-24 md:pl-1 lg:pl-2">
                 <HeroBrandMarquee />
 
-                <h1 className="hero-main-line mt-6 w-full font-display font-black uppercase leading-[0.82] tracking-[-0.015em] text-black md:mt-8 
-                  text-[clamp(4.3rem,12.3vw,6rem)] 
-                  md:max-w-none md:text-[clamp(4.9rem,10.5vw,7rem)] 
+                <h1 className="hero-main-line mt-6 w-full font-display font-black uppercase leading-[1] tracking-[-0.015em] text-black md:mt-8
+                  text-[clamp(4.3rem,12.3vw,6rem)]
+                  md:max-w-none md:text-[clamp(4.9rem,10.5vw,7rem)]
                   lg:text-[clamp(5.4rem,10.8vw,7.9rem)]">
-                  SOLUCIONES
-                </h1>
-
-                <h1 className="hero-main-line w-full font-display font-black uppercase leading-[0.82] tracking-[-0.015em] text-black 
-                  text-[clamp(4.3rem,12.3vw,6rem)] 
-                  md:max-w-none md:text-[clamp(4.9rem,10.5vw,7rem)] 
-                  lg:text-[clamp(5.4rem,10.8vw,7.9rem)]">
-                  DIGITALES QUE
+                  SOLUCIONES <br /> DIGITALES QUE
                 </h1>
 
                 <div className="hero-rotating-reveal mt-1 flex w-full min-w-0 max-w-full items-stretch justify-start bg-black py-1.5 pl-0 pr-2 md:py-2">
@@ -292,34 +284,41 @@ export default function HomePage() {
                     />
                   </div>
                 </div>
-                
+
                 <p className="hero-soft-line mt-4 font-accent font-medium leading-[1.05] text-black
-                  text-[clamp(2.7rem,6.2vw,3.9rem)] 
-                  sm:text-[clamp(2.8rem,5.8vw,4.2rem)] 
-                  md:text-[clamp(2.8rem,5.6vw,6rem)] 
-                  lg:text-[clamp(4rem,5vw,6rem)]">
-                  no que decoran
+                  text-[clamp(2.7rem,6.2vw,3.9rem)]
+                  sm:text-[clamp(2.8rem,5.8vw,4.2rem)]
+                  md:text-[clamp(2rem,5vw 3rem)]
+                  lg:text-[clamp(3rem,3vw,4rem)]">
+                  no para mostrar — para que pase algo
                 </p>
 
                 <div className="hero-soft-line mt-8 h-[3px] w-full max-w-full bg-black md:max-w-[52ch]" />
-                <p className="hero-soft-line mt-5 w-full max-w-full text-base font-medium uppercase leading-snug tracking-wide text-black/85 md:max-w-[52ch] lg:text-lg">
-                  No necesitás tener todo claro. Si tenés una idea -aunque esté en cero- te ayudamos a bajarla, ordenarla y
-                  convertirla en algo que funcione de verdad.
-                </p>
+                <div className="hero-soft-line mt-5 w-full max-w-full space-y-4 text-base font-medium normal-case leading-snug tracking-wide text-black/85 md:max-w-[52ch] lg:text-lg">
+                  <p>
+                    No necesitás tener todo claro. Si tenés una idea —aunque esté en cero— nos metemos con vos en el proceso
+                    para bajarla, ordenarla y convertirla en un producto digital real.
+                  </p>
+                  <p>
+                    Diseñamos, desarrollamos y acompañamos cada etapa para que funcione, conecte y crezca.
+                  </p>
+                </div>
 
                 <div className="hero-soft-line relative z-20 mt-7 flex flex-wrap items-center justify-start gap-3">
                   <Link href="#contacto" className="hero-cta hero-cta--dark">
-                    EMPEZAR AHORA
+                    BAJAR MI IDEA
                   </Link>
                   <Link href="#servicios" className="hero-cta hero-cta--light">
-                    VER SERVICIOS
+                    CÓMO TRABAJAMOS
                   </Link>
                 </div>
 
-                <div className="hero-soft-line relative z-20 mt-7 flex w-full max-w-full flex-wrap items-start gap-x-2 gap-y-1 text-sm text-black/72 md:max-w-[52ch]">
-                  <span>Primera consulta sin costo</span>
-                  <span className="hidden sm:inline">·</span>
-                  <span>Te ayudamos a entender qué necesitás antes de venderte algo</span>
+                <div className="hero-soft-line relative z-20 mt-7 flex w-full max-w-full flex-col gap-1 text-sm text-black/72 sm:flex-row sm:flex-wrap sm:items-baseline sm:gap-x-2 sm:gap-y-1 md:max-w-[52ch]">
+                  <span className="font-medium text-black/80">Primera consulta sin costo</span>
+                  <span className="hidden sm:inline" aria-hidden>
+                    ·
+                  </span>
+                  <span>Primero entendemos tu idea. Después vemos qué necesitás.</span>
                 </div>
               </div>
             </div>

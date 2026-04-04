@@ -36,7 +36,7 @@ export function HeroStickerMotion({ className = "" }: Props) {
           alt=""
           width={1800}
           height={2000}
-          sizes="(max-width: 767px) 90vw, 38vw"
+          sizes="(max-width: 767px) 100vw, 42vw"
           priority
           className="h-full max-h-full w-auto max-w-full object-contain object-bottom object-center drop-shadow-[8px_18px_0_rgba(17,17,17,0.09)] md:object-left"
         />
