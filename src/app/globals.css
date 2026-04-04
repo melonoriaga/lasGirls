@@ -748,6 +748,27 @@ a {
   color: #ff5faf;
 }
 
+/* Hero split: figura izquierda + panel de copy derecha (sin overlay) */
+.hero-split .hero-rotating-shell {
+  width: 100%;
+  max-width: none;
+}
+
+.hero-split .hero-rotating-main,
+.hero-split .hero-rotating-word {
+  justify-content: flex-start;
+}
+
+.hero-split .hero-rotating-char {
+  font-size: clamp(2.35rem, 10.5vw, 4.5rem);
+}
+
+@media (min-width: 768px) {
+  .hero-split .hero-rotating-char {
+    font-size: clamp(2.5rem, 4.15vw, 5.65rem);
+  }
+}
+
 .psychedelic-card {
   background:
     linear-gradient(135deg, rgba(255, 79, 169, 0.14), transparent 35%),

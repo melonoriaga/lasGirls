@@ -12,14 +12,11 @@ import RotatingText from "@/components/RotatingText";
 import LiquidEther from "@/components/LiquidEther";
 import TextType from "@/components/TextType";
 import { ContactSection } from "@/components/sections/contact-section";
+import { HeroStickerMotion } from "@/components/sections/hero-sticker-motion";
 import { StickerWindows } from "@/components/sections/sticker-windows";
 import { homeContent, serviceCards } from "@/content/site/home";
 
 gsap.registerPlugin(ScrollTrigger);
-
-const heroStickers = [
-  { id: "h1", src: "/brand/stickers/sticker-1.png", x: 84, y: 74, w: 380, rotate: -9, delay: 0.18 },
-];
 
 const teamStickers = [
   { id: "t1", src: "/brand/stickers/STICKER7.png", x: 15, y: 68, w: 400, rotate: 7, delay: 0.18 },
@@ -226,7 +223,7 @@ export default function HomePage() {
       <section
         id="hero"
         ref={heroScopeRef}
-        className="vh-section relative isolate min-h-screen overflow-hidden border-y-2 border-black bg-[#f4ede6]"
+        className="relative isolate flex min-h-[100dvh] flex-col overflow-hidden border-y-2 border-black bg-[#f4ede6]"
       >
         <div className="absolute inset-0 z-0">
           <LiquidEther
@@ -248,60 +245,76 @@ export default function HomePage() {
           />
         </div>
         <div className="absolute inset-0 z-[1] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-15 mix-blend-multiply" />
-        <StickerWindows items={heroStickers} />
 
-        <div className="relative z-10 mx-auto flex min-h-screen max-w-[1080px] flex-col items-center justify-center px-4 pb-14 pt-24 text-center md:pt-28">
-          <p className="hero-soft-line inline-flex rotate-[-1.4deg] items-center gap-2 rounded-full bg-black px-4 py-1 text-[10px] uppercase tracking-[0.2em] text-[#f4ede6]">
-            <span>◆</span>
-            LAS GIRLS+ · BRANDING · TECH · ESTRATEGIA
-            <span>◆</span>
-          </p>
+        <div className="hero-split relative z-10 flex min-h-0 flex-1 flex-col items-center justify-center px-4 pb-10 pt-[max(4.25rem,env(safe-area-inset-top,0px)+3.25rem)] md:px-6 md:pb-12 md:pt-24 lg:px-10">
+          {/* Stage: conjunto centrado en viewport. Grid = dos masas (izq figura / der copy), sin overlay. */}
+          <div className="hero-split__stage mx-auto w-full max-w-[min(1240px,calc(100vw-1.25rem))]">
+            <div className="grid grid-cols-1 items-center gap-y-10 md:grid-cols-[minmax(0,42fr)_minmax(0,50fr)] md:items-center md:gap-x-8 lg:gap-x-11 xl:gap-x-14">
+              <div className="hero-split__figure-area flex w-full min-w-0 flex-col items-center justify-end md:items-stretch">
+                <div className="relative w-full max-w-[min(22rem,88vw)] md:max-w-none">
+                  <div className="relative mx-auto h-[min(76dvh,50rem)] w-full md:mx-0 md:h-[min(95dvh,calc(100dvh-5rem))] md:max-h-[min(98dvh,1000px)]">
+                    <HeroStickerMotion />
+                  </div>
+                </div>
+              </div>
 
-          <h1 className="hero-main-line mt-8 w-full font-display text-[16vw] uppercase leading-[0.84] text-black md:text-[8.6rem] lg:text-[10.5rem]">
-            SOLUCIONES
-          </h1>
-          <h1 className="hero-main-line w-full font-display text-[16vw] uppercase leading-[0.84] text-black md:text-[8.6rem] lg:text-[10.5rem]">
-            DIGITALES QUE
-          </h1>
-          <div className="hero-rotating-reveal mt-1 flex w-full items-center justify-center bg-black py-1">
-            <div className="hero-rotating-shell flex min-h-[0.9em] items-center justify-center overflow-hidden">
-              <RotatingText
-                texts={heroRotatingWords}
-                rotationInterval={1850}
-                auto
-                loop
-                splitBy="words"
-                transition={{ type: "spring", damping: 24, stiffness: 310 }}
-                initial={{ y: "100%", opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: "-120%", opacity: 0 }}
-                mainClassName="hero-rotating-main"
-                splitLevelClassName="hero-rotating-word"
-                elementLevelClassName="hero-rotating-char"
-              />
+              <div className="hero-split__copy-area flex min-w-0 flex-col items-start justify-center text-left">
+                <p className="hero-soft-line inline-flex rotate-[-1.4deg] items-center gap-2 rounded-full bg-black px-4 py-1.5 text-[11px] uppercase tracking-[0.2em] text-[#f4ede6] md:text-xs">
+                  <span>◆</span>
+                  LAS GIRLS+ · BRANDING · TECH · ESTRATEGIA
+                  <span>◆</span>
+                </p>
+
+                <h1 className="hero-main-line mt-6 w-full font-display text-[13vw] uppercase leading-[0.84] text-black sm:text-[10vw] md:mt-8 md:max-w-[20ch] md:text-[clamp(3rem,4.6vw,6.6rem)] lg:text-[clamp(3.35rem,4.35vw,7.25rem)]">
+                  SOLUCIONES
+                </h1>
+                <h1 className="hero-main-line w-full font-display text-[13vw] uppercase leading-[0.84] text-black sm:text-[10vw] md:max-w-[20ch] md:text-[clamp(3rem,4.6vw,6.6rem)] lg:text-[clamp(3.35rem,4.35vw,7.25rem)]">
+                  DIGITALES QUE
+                </h1>
+                <div className="hero-rotating-reveal mt-1 flex w-full min-w-0 max-w-full items-stretch justify-start bg-black py-1 pl-0 pr-2">
+                  <div className="hero-rotating-shell flex min-h-[0.9em] w-full min-w-0 items-center justify-start overflow-hidden">
+                    <RotatingText
+                      texts={heroRotatingWords}
+                      rotationInterval={1850}
+                      auto
+                      loop
+                      splitBy="words"
+                      transition={{ type: "spring", damping: 24, stiffness: 310 }}
+                      initial={{ y: "100%", opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      exit={{ y: "-120%", opacity: 0 }}
+                      mainClassName="hero-rotating-main"
+                      splitLevelClassName="hero-rotating-word"
+                      elementLevelClassName="hero-rotating-char"
+                    />
+                  </div>
+                </div>
+                <p className="hero-soft-line mt-3 font-accent text-5xl text-black sm:text-6xl lg:text-7xl xl:text-8xl">
+                  no que decoran
+                </p>
+
+                <div className="hero-soft-line mt-8 h-[2px] w-full max-w-[520px] bg-black" />
+                <p className="hero-soft-line mt-5 w-full max-w-[36rem] text-base leading-relaxed text-black/80 lg:text-lg">
+                  No necesitás tener todo claro. Si tenés una idea -aunque esté en cero- te ayudamos a bajarla, ordenarla y
+                  convertirla en algo que funcione de verdad.
+                </p>
+
+                <div className="hero-soft-line relative z-20 mt-7 flex flex-wrap items-center justify-start gap-3">
+                  <Link href="#contacto" className="hero-cta hero-cta--dark">
+                    EMPEZAR AHORA
+                  </Link>
+                  <Link href="#servicios" className="hero-cta hero-cta--light">
+                    VER SERVICIOS
+                  </Link>
+                </div>
+
+                <div className="hero-soft-line relative z-20 mt-7 flex w-full max-w-[36rem] flex-wrap items-start gap-x-2 gap-y-1 text-sm text-black/72">
+                  <span>Primera consulta sin costo</span>
+                  <span className="hidden sm:inline">·</span>
+                  <span>Te ayudamos a entender qué necesitás antes de venderte algo</span>
+                </div>
+              </div>
             </div>
-          </div>
-          <p className="hero-soft-line mt-3 font-accent text-5xl text-black lg:text-7xl">no que decoran</p>
-
-          <div className="hero-soft-line mt-8 h-[2px] w-full max-w-[520px] bg-black" />
-          <p className="hero-soft-line mt-5 max-w-[620px] text-sm leading-relaxed text-black/80 lg:text-base">
-            No necesitás tener todo claro. Si tenés una idea -aunque esté en cero- te ayudamos a bajarla, ordenarla y
-            convertirla en algo que funcione de verdad.
-          </p>
-
-          <div className="hero-soft-line mt-7 flex flex-wrap items-center justify-center gap-3">
-            <Link href="/contact" className="hero-cta hero-cta--dark">
-              EMPEZAR AHORA
-            </Link>
-            <Link href="#servicios" className="hero-cta hero-cta--light">
-              VER SERVICIOS
-            </Link>
-          </div>
-
-          <div className="hero-soft-line mt-7 inline-flex flex-wrap items-center justify-center gap-2 text-xs text-black/72">
-            <span>Primera consulta sin costo</span>
-            <span>·</span>
-            <span>Te ayudamos a entender qué necesitás antes de venderte algo</span>
           </div>
         </div>
         <div className="absolute right-5 top-20 z-[12] hidden lg:block">
