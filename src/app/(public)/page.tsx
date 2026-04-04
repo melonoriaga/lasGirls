@@ -250,8 +250,8 @@ export default function HomePage() {
           {/* Figura: slot exactamente 100vh (altura de viewport). Copy: 60vw. */}
           <div className="hero-split__stage mx-auto w-full max-w-[100%] md:max-w-[min(1600px,100%)]">
             <div className="grid grid-cols-1 items-stretch gap-y-10 md:grid-cols-[minmax(12rem,1fr)_60vw] md:gap-x-6 lg:gap-x-8 xl:gap-x-10">
-              <div className="hero-split__figure-area flex w-full min-h-[100dvh] min-w-0 flex-col items-center justify-end md:min-h-[100dvh] md:w-full md:shrink-0 md:items-end md:justify-end">
-                <div className="relative mx-auto h-[100dvh] min-h-[100dvh] w-full max-w-[min(40rem,100%)] md:mx-0 md:h-[100dvh] md:min-h-[100dvh] md:max-w-none">
+              <div className="hero-split__figure-area flex w-full min-h-[100dvh] min-w-0 flex-col items-center justify-end overflow-visible md:min-h-[100dvh] md:w-full md:shrink-0 md:items-end md:justify-end">
+                <div className="relative mx-auto w-full min-w-0 overflow-visible md:mx-0 md:max-w-none">
                   <HeroStickerMotion />
                 </div>
               </div>

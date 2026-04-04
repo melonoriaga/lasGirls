@@ -8,10 +8,6 @@ const FRAMES = ["/LASGIRLSS/STIKER-004.png", "/LASGIRLSS/STIKER-001.png"];
 const TICK_MS = 1350;
 
 type Props = {
-  /**
-   * Contenedor con altura definida. Misma caja para todos los frames → misma escala y ancla;
-   * solo cambia el PNG (sin transform extra) para que el layout no “salte” entre slides.
-   */
   className?: string;
 };
 
@@ -27,20 +23,18 @@ export function HeroStickerMotion({ className = "" }: Props) {
 
   return (
     <div
-      className={`hero-sticker-motion pointer-events-none relative z-[11] flex h-full min-h-full w-full items-end justify-center md:justify-start ${className}`}
+      className={`hero-sticker-motion pointer-events-none relative z-[11] flex min-h-[100dvh] w-full items-end justify-center overflow-visible md:justify-start ${className}`}
       aria-hidden
     >
-      <div className="relative box-border flex h-full min-h-full w-auto max-w-full items-end">
-        <Image
-          src={FRAMES[i]}
-          alt=""
-          width={1800}
-          height={2000}
-          sizes="(max-width: 767px) 100vw, 42vw"
-          priority
-          className="h-full max-h-full w-auto max-w-full object-contain object-bottom object-center drop-shadow-[8px_18px_0_rgba(17,17,17,0.09)] md:object-left"
-        />
-      </div>
+      <Image
+        src={FRAMES[i]}
+        alt=""
+        width={1800}
+        height={2000}
+        sizes="(max-width: 767px) 100vw, min(90vw, 1200px)"
+        priority
+        className="h-[100dvh] min-h-[100dvh] w-auto max-w-none shrink-0 object-contain object-bottom drop-shadow-[8px_18px_0_rgba(17,17,17,0.09)] md:object-left"
+      />
     </div>
   );
 }
