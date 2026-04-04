@@ -12,6 +12,7 @@ import RotatingText from "@/components/RotatingText";
 import LiquidEther from "@/components/LiquidEther";
 import TextType from "@/components/TextType";
 import { ContactSection } from "@/components/sections/contact-section";
+import { HeroBrandMarquee } from "@/components/sections/hero-brand-marquee";
 import { HeroStickerMotion } from "@/components/sections/hero-sticker-motion";
 import { StickerWindows } from "@/components/sections/sticker-windows";
 import { homeContent, serviceCards } from "@/content/site/home";
@@ -223,7 +224,7 @@ export default function HomePage() {
       <section
         id="hero"
         ref={heroScopeRef}
-        className="relative isolate flex min-h-[100dvh] flex-col overflow-hidden border-y-2 border-black bg-[#f4ede6]"
+        className="relative isolate flex min-h-[100dvh] flex-col overflow-x-hidden border-y-2 border-black bg-[#f4ede6]"
       >
         <div className="absolute inset-0 z-0">
           <LiquidEther
@@ -246,32 +247,34 @@ export default function HomePage() {
         </div>
         <div className="absolute inset-0 z-[1] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-15 mix-blend-multiply" />
 
-        <div className="hero-split relative z-10 flex min-h-0 flex-1 flex-col items-center justify-center px-4 pb-10 pt-[max(4.25rem,env(safe-area-inset-top,0px)+3.25rem)] md:px-6 md:pb-12 md:pt-24 lg:px-10">
-          {/* Stage: conjunto centrado en viewport. Grid = dos masas (izq figura / der copy), sin overlay. */}
-          <div className="hero-split__stage mx-auto w-full max-w-[min(1240px,calc(100vw-1.25rem))]">
-            <div className="grid grid-cols-1 items-center gap-y-10 md:grid-cols-[minmax(0,42fr)_minmax(0,50fr)] md:items-center md:gap-x-8 lg:gap-x-11 xl:gap-x-14">
-              <div className="hero-split__figure-area flex w-full min-w-0 flex-col items-center justify-end md:items-stretch">
-                <div className="relative w-full max-w-[min(22rem,88vw)] md:max-w-none">
-                  <div className="relative mx-auto h-[min(76dvh,50rem)] w-full md:mx-0 md:h-[min(95dvh,calc(100dvh-5rem))] md:max-h-[min(98dvh,1000px)]">
-                    <HeroStickerMotion />
-                  </div>
+        <div className="hero-split relative z-10 flex min-h-0 flex-1 flex-col items-center justify-center px-4 pb-10 pt-0 md:px-6 md:pb-12 lg:px-10">
+          {/* Figura: slot exactamente 100vh (altura de viewport). Copy: 60vw. */}
+          <div className="hero-split__stage mx-auto w-full max-w-[100%] md:max-w-[min(1600px,100%)]">
+            <div className="grid grid-cols-1 items-center gap-y-10 md:grid-cols-[minmax(12rem,1fr)_60vw] md:items-stretch md:gap-x-6 lg:gap-x-8 xl:gap-x-10">
+              <div className="hero-split__figure-area flex w-full min-w-0 flex-col items-center justify-end md:min-h-[100vh] md:w-full md:shrink-0 md:items-end md:justify-end">
+                <div className="relative mx-auto h-[min(88dvh,52rem)] w-full max-w-[min(22rem,88vw)] md:mx-0 md:h-[100vh] md:min-h-[100vh] md:max-w-none md:w-full">
+                  <HeroStickerMotion />
                 </div>
               </div>
 
-              <div className="hero-split__copy-area flex min-w-0 flex-col items-start justify-center text-left">
-                <p className="hero-soft-line inline-flex rotate-[-1.4deg] items-center gap-2 rounded-full bg-black px-4 py-1.5 text-[11px] uppercase tracking-[0.2em] text-[#f4ede6] md:text-xs">
-                  <span>◆</span>
-                  LAS GIRLS+ · BRANDING · TECH · ESTRATEGIA
-                  <span>◆</span>
-                </p>
+              <div className="hero-split__copy-area mx-auto flex w-full max-w-[60vw] min-w-0 flex-col items-start justify-center self-center pt-[max(4.25rem,env(safe-area-inset-top,0px)+3.25rem)] text-left md:mx-0 md:w-[60vw] md:max-w-[60vw] md:shrink-0 md:self-center md:pt-24 md:pl-1 lg:pl-2">
+                <HeroBrandMarquee />
 
-                <h1 className="hero-main-line mt-6 w-full font-display text-[13vw] uppercase leading-[0.84] text-black sm:text-[10vw] md:mt-8 md:max-w-[20ch] md:text-[clamp(3rem,4.6vw,6.6rem)] lg:text-[clamp(3.35rem,4.35vw,7.25rem)]">
+                <h1 className="hero-main-line mt-6 w-full font-display font-black uppercase leading-[0.82] tracking-[-0.015em] text-black md:mt-8 
+                  text-[clamp(4.3rem,12.3vw,6rem)] 
+                  md:max-w-none md:text-[clamp(4.9rem,10.5vw,7rem)] 
+                  lg:text-[clamp(5.4rem,10.8vw,7.9rem)]">
                   SOLUCIONES
                 </h1>
-                <h1 className="hero-main-line w-full font-display text-[13vw] uppercase leading-[0.84] text-black sm:text-[10vw] md:max-w-[20ch] md:text-[clamp(3rem,4.6vw,6.6rem)] lg:text-[clamp(3.35rem,4.35vw,7.25rem)]">
+
+                <h1 className="hero-main-line w-full font-display font-black uppercase leading-[0.82] tracking-[-0.015em] text-black 
+                  text-[clamp(4.3rem,12.3vw,6rem)] 
+                  md:max-w-none md:text-[clamp(4.9rem,10.5vw,7rem)] 
+                  lg:text-[clamp(5.4rem,10.8vw,7.9rem)]">
                   DIGITALES QUE
                 </h1>
-                <div className="hero-rotating-reveal mt-1 flex w-full min-w-0 max-w-full items-stretch justify-start bg-black py-1 pl-0 pr-2">
+
+                <div className="hero-rotating-reveal mt-1 flex w-full min-w-0 max-w-full items-stretch justify-start bg-black py-1.5 pl-0 pr-2 md:py-2">
                   <div className="hero-rotating-shell flex min-h-[0.9em] w-full min-w-0 items-center justify-start overflow-hidden">
                     <RotatingText
                       texts={heroRotatingWords}
@@ -289,12 +292,17 @@ export default function HomePage() {
                     />
                   </div>
                 </div>
-                <p className="hero-soft-line mt-3 font-accent text-5xl text-black sm:text-6xl lg:text-7xl xl:text-8xl">
+                
+                <p className="hero-soft-line mt-4 font-accent font-medium leading-[1.05] text-black
+                  text-[clamp(2.7rem,6.2vw,3.9rem)] 
+                  sm:text-[clamp(2.8rem,5.8vw,4.2rem)] 
+                  md:text-[clamp(2.8rem,5.6vw,6rem)] 
+                  lg:text-[clamp(4rem,5vw,6rem)]">
                   no que decoran
                 </p>
 
-                <div className="hero-soft-line mt-8 h-[2px] w-full max-w-[520px] bg-black" />
-                <p className="hero-soft-line mt-5 w-full max-w-[36rem] text-base leading-relaxed text-black/80 lg:text-lg">
+                <div className="hero-soft-line mt-8 h-[3px] w-full max-w-full bg-black md:max-w-[52ch]" />
+                <p className="hero-soft-line mt-5 w-full max-w-full text-base font-medium uppercase leading-snug tracking-wide text-black/85 md:max-w-[52ch] lg:text-lg">
                   No necesitás tener todo claro. Si tenés una idea -aunque esté en cero- te ayudamos a bajarla, ordenarla y
                   convertirla en algo que funcione de verdad.
                 </p>
@@ -308,7 +316,7 @@ export default function HomePage() {
                   </Link>
                 </div>
 
-                <div className="hero-soft-line relative z-20 mt-7 flex w-full max-w-[36rem] flex-wrap items-start gap-x-2 gap-y-1 text-sm text-black/72">
+                <div className="hero-soft-line relative z-20 mt-7 flex w-full max-w-full flex-wrap items-start gap-x-2 gap-y-1 text-sm text-black/72 md:max-w-[52ch]">
                   <span>Primera consulta sin costo</span>
                   <span className="hidden sm:inline">·</span>
                   <span>Te ayudamos a entender qué necesitás antes de venderte algo</span>

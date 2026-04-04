@@ -27,16 +27,16 @@ export function HeroStickerMotion({ className = "" }: Props) {
 
   return (
     <div
-      className={`hero-sticker-motion pointer-events-none relative z-[11] flex h-full min-h-0 w-full items-end justify-center md:justify-start ${className}`}
+      className={`hero-sticker-motion pointer-events-none relative z-[11] flex h-full min-h-full w-full items-end justify-center md:justify-start ${className}`}
       aria-hidden
     >
-      <div className="relative flex h-full min-h-0 w-auto max-w-full items-end">
+      <div className="relative box-border flex h-full min-h-full w-auto max-w-full items-end">
         <Image
           src={FRAMES[i]}
           alt=""
-          width={1200}
-          height={1500}
-          sizes="(max-width: 767px) 90vw, 42vw"
+          width={1800}
+          height={2000}
+          sizes="(max-width: 767px) 90vw, 38vw"
           priority
           className="h-full max-h-full w-auto max-w-full object-contain object-bottom object-center drop-shadow-[8px_18px_0_rgba(17,17,17,0.09)] md:object-left"
         />
