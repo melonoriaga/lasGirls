@@ -1,0 +1,101 @@
+"use client";
+
+import Link from "next/link";
+import { motion } from "motion/react";
+import { ArrowRight } from "lucide-react";
+import { TOOLS_LIST } from "@/components/tools/tools-data";
+import { TOOL_THEME } from "@/components/tools/tool-layout";
+
+const { BEIGE } = TOOL_THEME;
+
+export function ToolsHub() {
+  return (
+    <div className="min-h-screen" style={{ background: BEIGE }}>
+      <nav
+        className="sticky top-0 z-[100] flex items-center justify-between border-b border-black/10 px-4 py-3 sm:px-10"
+        style={{ background: BEIGE }}
+      >
+        <Link
+          href="/"
+          className="border-[1.5px] border-black/30 px-3 py-1.5 text-[0.65rem] font-extrabold uppercase tracking-[0.16em] text-[#111] transition-colors hover:border-[#FF6FAF] hover:text-[#FF6FAF]"
+        >
+          ← Inicio
+        </Link>
+        <span className="text-[0.55rem] font-bold uppercase tracking-[0.18em] text-[#111]/30">
+          Herramientas gratuitas
+        </span>
+        <span className="hidden font-accent text-sm text-[#FF6FAF] sm:inline">Las Girls+</span>
+      </nav>
+
+      <header className="grid items-end gap-8 border-b border-black/10 px-4 py-12 sm:grid-cols-[1fr_auto] sm:px-10 sm:py-16">
+        <motion.div
+          initial={{ opacity: 0, y: 32 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <p className="mb-3 text-[0.54rem] font-extrabold uppercase tracking-[0.22em] text-[#111]/35">
+            ✦ Utilidades digitales
+          </p>
+          <h1 className="font-accent text-[clamp(2.5rem,9vw,6rem)] uppercase leading-[0.88] tracking-tight text-[#111]">
+            Herramientas
+            <br />
+            <span className="text-[#FF6FAF]" style={{ fontStyle: "italic" }}>
+              gratuitas.
+            </span>
+          </h1>
+          <p className="mt-4 max-w-md text-sm leading-relaxed text-[#111]/50">
+            Utilidades simples para resolver cosas rápido. Sin registro. Misma lógica que en melonoriaga.com, adaptadas acá.
+          </p>
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="pb-2 text-center sm:text-right"
+        >
+          <div className="font-accent text-[clamp(3rem,6vw,5rem)] leading-none text-[#111]/[0.06]">
+            0{TOOLS_LIST.length}
+          </div>
+          <p className="-mt-1 text-[0.46rem] font-extrabold uppercase tracking-[0.2em] text-[#111]/25">herramientas</p>
+        </motion.div>
+      </header>
+
+      <div className="grid gap-4 px-4 py-10 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 sm:px-10">
+        {TOOLS_LIST.map((tool, i) => {
+          const Icon = tool.icon;
+          return (
+            <motion.div key={tool.slug} initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.55, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}>
+              <Link
+                href={`/herramientas/${tool.slug}`}
+                className="group relative flex h-full flex-col gap-4 border border-black/15 bg-[#F4EDE6] p-6 pb-8 text-left transition-all hover:-translate-y-1 hover:border-black/35 hover:shadow-[0_12px_40px_rgba(17,17,17,0.08)] sm:p-8"
+              >
+                <span className="absolute right-4 top-4 border border-[#FF6FAF] px-2 py-0.5 text-[0.44rem] font-extrabold uppercase tracking-[0.2em] text-[#FF6FAF]">
+                  {tool.tag}
+                </span>
+                <div className="flex h-12 w-12 items-center justify-center bg-[#111]">
+                  <Icon size={22} color={BEIGE} strokeWidth={1.5} />
+                </div>
+                <div className="flex flex-1 flex-col gap-2">
+                  <h2 className="font-accent text-[clamp(1.15rem,2.5vw,1.75rem)] uppercase leading-none text-[#111]">{tool.name}</h2>
+                  <p className="text-[0.82rem] leading-relaxed text-[#111]/60">{tool.desc}</p>
+                  <p className="text-[0.68rem] leading-snug text-[#111]/38">{tool.detail}</p>
+                </div>
+                <div className="mt-auto flex items-center gap-1 text-[0.58rem] font-extrabold uppercase tracking-[0.14em] text-[#111]/40">
+                  Usar herramienta
+                  <ArrowRight size={12} strokeWidth={2} className="transition-transform group-hover:translate-x-1" />
+                </div>
+              </Link>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      <footer className="flex flex-wrap items-center justify-between gap-4 border-t border-black/10 px-4 py-8 sm:px-10">
+        <p className="text-[0.58rem] tracking-[0.1em] text-[#111]/30">¿Necesitás otra utilidad? Escribinos por contacto.</p>
+        <Link href="/#contacto" className="text-[0.58rem] font-extrabold uppercase tracking-[0.14em] text-[#FF6FAF]">
+          Contactar ✦
+        </Link>
+      </footer>
+    </div>
+  );
+}

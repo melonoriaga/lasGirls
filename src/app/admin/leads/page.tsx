@@ -6,8 +6,15 @@ export default async function AdminLeadsPage() {
   const leads = snapshot.docs.map((item) => ({ id: item.id, ...item.data() })) as Array<{
     id: string;
     fullName?: string;
+    email?: string;
+    company?: string;
     inquiryType?: string;
+    serviceInterest?: string[];
     status?: string;
+    budgetStatus?: string;
+    latestBudgetSentAt?: string;
+    assignedTo?: string;
+    assignedToUserId?: string;
     createdAt?: string;
   }>;
 

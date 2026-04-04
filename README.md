@@ -132,6 +132,18 @@ También podés usar el script bash:
 ./scripts/firebase-release.sh
 ```
 
+### Si `firebase:deploy:hosting` falla con “Rollout failed”
+
+El mensaje del CLI no incluye el detalle. Abrí [Firebase Console → App Hosting](https://console.firebase.google.com/project/_/apphosting), entrá al backend **las-girls** y revisá el **build** o **rollout** fallido (enlaza a Cloud Build / logs).
+
+Causas frecuentes:
+
+- **CVE / versión de Next**: el buildpack valida la versión de `next`; mantené `next` y `eslint-config-next` alineados en la última parche de tu línea (p. ej. 16.2.x). En el repo va `@apphosting/adapter-nextjs` como devDependency para alinearse con el adaptador que usa Cloud Build.
+- **Secreto `LASGIRLS_FIREBASE_WEB_API_KEY`**: debe existir y el backend de App Hosting debe tener permiso (Secret Manager). Si falta: `npx firebase-tools apphosting:secrets:set LASGIRLS_FIREBASE_WEB_API_KEY` y volver a asociar el secreto al backend.
+- **Memoria en runtime**: en `apphosting.yaml`, `runConfig.memoryMiB` está en 1024 para SSR; si aún hay OOM en logs de Cloud Run, subilo.
+
+Para más contexto: [Manage rollouts](https://firebase.google.com/docs/app-hosting/rollouts).
+
 ### Checklist previo
 
 - Variables de entorno productivas cargadas.

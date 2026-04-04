@@ -2,12 +2,16 @@
 # See https://firebase.google.com/docs/app-hosting/configure#cloud-run
 runConfig:
   minInstances: 0
+  cpu: 1
+  memoryMiB: 1024
   # maxInstances: 100
   # concurrency: 80
-  # cpu: 1
-  # memoryMiB: 512
 
 # Environment variables and secrets.
+# La clave web de Firebase NO debe estar en texto plano en git (Google la detecta en repos públicos).
+# Creá el secreto una vez y asignale el valor NUEVO tras rotar la clave en GCP:
+#   firebase apphosting:secrets:set LASGIRLS_FIREBASE_WEB_API_KEY
+# Vinculalo al backend de App Hosting cuando el CLI lo pida.
 env:
   - variable: APP_URL
     value: https://las-girls--las-girls.us-central1.hosted.app
@@ -16,7 +20,7 @@ env:
       - RUNTIME
 
   - variable: NEXT_PUBLIC_FIREBASE_API_KEY
-    value: "AIzaSyDkmU13ApD4yeci8QKul88NrxIrtnRMB9w"
+    secret: LASGIRLS_FIREBASE_WEB_API_KEY
     availability:
       - BUILD
       - RUNTIME
@@ -50,14 +54,6 @@ env:
     availability:
       - BUILD
       - RUNTIME
-  # Configure environment variables.
-  # See https://firebase.google.com/docs/app-hosting/configure#user-defined-environment
-  - variable: MESSAGE
-    value: Hello world!
-    availability:
-      - BUILD
-      - RUNTIME
-
   # Grant access to secrets in Cloud Secret Manager.
   # You can create secrets with the CLI command `firebase apphosting:secrets:set <secretName>`.
   # See https://firebase.google.com/docs/app-hosting/configure#secret-parameters

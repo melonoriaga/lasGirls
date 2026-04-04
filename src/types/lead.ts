@@ -1,10 +1,36 @@
-export type LeadStatus =
+export type LeadPipelineStatus =
   | "new"
   | "contacted"
+  | "brief_pending"
+  | "budget_pending"
+  | "budget_sent"
+  | "awaiting_approval"
+  | "changes_requested"
+  | "docs_pending"
+  | "approved"
+  | "rejected"
+  | "converted"
   | "in_followup"
   | "qualified"
-  | "archived"
-  | "converted";
+  | "archived";
+
+/** Alias por compatibilidad con servicios/APIs que importan LeadStatus. */
+export type LeadStatus = LeadPipelineStatus;
+
+export type BudgetStatus =
+  | "not_sent"
+  | "sent"
+  | "awaiting_response"
+  | "approved"
+  | "rejected"
+  | "needs_changes";
+
+export type LeadBudgetStatus =
+  | "sent"
+  | "awaiting_approval"
+  | "approved"
+  | "rejected"
+  | "needs_changes";
 
 export type InquiryType =
   | "consulta_general"
@@ -22,7 +48,10 @@ export type ProjectStage =
   | "empezando"
   | "marca_necesita_crecer"
   | "web_app_necesita_mejorar"
-  | "acompanamiento_integral";
+  | "acompanamiento_integral"
+  | "validando"
+  | "listo_para_empezar"
+  | "en_proceso";
 
 export type LeadMetadata = {
   userAgent?: string;
@@ -38,20 +67,43 @@ export type Lead = {
   email: string;
   phone: string;
   company?: string;
-  inquiryType: InquiryType;
+  inquiryType: InquiryType | string;
   serviceInterest: string[];
   budgetRange?: string;
-  projectStage: ProjectStage;
+  projectStage: ProjectStage | string;
   message: string;
   source: string;
   preferredContactMethod: "email" | "whatsapp" | "telefono";
-  status: LeadStatus;
+  status: LeadPipelineStatus | string;
+  budgetStatus?: BudgetStatus | string;
+  latestBudgetLink?: string;
+  latestBudgetSentAt?: string;
+  latestBudgetAmount?: number;
+  currency?: "ARS" | "USD" | string;
+  missingDocuments?: string[];
+  internalNotes?: string;
   assignedTo?: string;
+  assignedToUserId?: string;
   tags: string[];
   createdAt: string;
   updatedAt: string;
+  createdBy?: string;
   convertedToClientId?: string;
   metadata: LeadMetadata;
+};
+
+export type LeadBudget = {
+  id: string;
+  title: string;
+  link: string;
+  amount?: number;
+  currency?: "ARS" | "USD";
+  sentAt: string;
+  status: LeadBudgetStatus | string;
+  notes?: string;
+  createdByUserId: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type LeadNoteType =
@@ -65,6 +117,6 @@ export type LeadNote = {
   content: string;
   createdBy: string;
   createdAt: string;
-  type: LeadNoteType;
+  type: LeadNoteType | string;
   pinned: boolean;
 };

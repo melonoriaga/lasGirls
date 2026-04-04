@@ -21,8 +21,13 @@ export async function POST(request: Request) {
       source: parsed.source,
       preferredContactMethod: parsed.preferredContactMethod,
       status: "new",
+      budgetStatus: "not_sent",
       assignedTo: "",
+      assignedToUserId: "",
+      missingDocuments: [],
+      internalNotes: "",
       tags: [],
+      currency: "USD",
       createdAt: now,
       updatedAt: now,
       metadata: {
