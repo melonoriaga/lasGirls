@@ -12,6 +12,7 @@ import RotatingText from "@/components/RotatingText";
 import LiquidEther from "@/components/LiquidEther";
 import TextType from "@/components/TextType";
 import { ContactSection } from "@/components/sections/contact-section";
+import { MethodologyFeed } from "@/components/sections/methodology-feed";
 import { HeroBrandMarquee } from "@/components/sections/hero-brand-marquee";
 import { HeroStickerMotion } from "@/components/sections/hero-sticker-motion";
 import { StickerWindows } from "@/components/sections/sticker-windows";
@@ -246,17 +247,17 @@ export default function HomePage() {
         </div>
         <div className="absolute inset-0 z-[1] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-15 mix-blend-multiply" />
 
-        <div className="hero-split relative z-10 flex min-h-0 flex-1 flex-col items-center justify-center px-4 pb-10 pt-0 md:px-6 md:pb-12 lg:px-10">
-          {/* Figura: slot exactamente 100vh (altura de viewport). Copy: 60vw. */}
-          <div className="hero-split__stage mx-auto w-full max-w-[100%] md:max-w-[min(1600px,100%)]">
-            <div className="grid grid-cols-1 items-stretch gap-y-10 md:grid-cols-[minmax(12rem,1fr)_60vw] md:gap-x-6 lg:gap-x-8 xl:gap-x-10">
-              <div className="hero-split__figure-area relative z-0 flex w-full min-h-[100dvh] min-w-0 flex-col items-center justify-end md:min-h-[100dvh] md:w-full md:shrink-0 md:items-end md:justify-end">
+        <div className="hero-split relative z-10 flex min-h-0 flex-1 flex-col items-center justify-center px-4 pb-10 pt-0 sm:px-5 md:px-6 md:pb-12 lg:px-10">
+          {/* Figura: 100dvh/svh; copy ancho completo en móvil, ~50–58vw en laptop para no aplastar la figura. */}
+          <div className="hero-split__stage mx-auto w-full max-w-full md:max-w-[min(1600px,100%)]">
+            <div className="grid grid-cols-1 items-stretch gap-y-8 sm:gap-y-10 md:grid-cols-[minmax(10rem,1fr)_min(54vw,36rem)] md:gap-x-5 lg:grid-cols-[minmax(12rem,1fr)_min(56vw,40rem)] lg:gap-x-7 xl:grid-cols-[minmax(14rem,1fr)_58vw] xl:gap-x-10">
+              <div className="hero-split__figure-area relative z-0 flex w-full min-h-[min(100svh,100dvh)] min-w-0 flex-col items-center justify-end md:min-h-[100dvh] md:w-full md:shrink-0 md:items-end md:justify-end">
                 <div className="relative z-0 mx-auto w-full min-w-0 md:mx-0 md:max-w-none">
                   <HeroStickerMotion />
                 </div>
               </div>
 
-              <div className="hero-split__copy-area relative z-30 mx-auto flex w-full max-w-[60vw] min-w-0 flex-col items-start justify-center self-center pt-[max(4.25rem,env(safe-area-inset-top,0px)+3.25rem)] text-left md:mx-0 md:w-[60vw] md:max-w-[60vw] md:shrink-0 md:self-center md:pt-24 md:pl-1 lg:pl-2">
+              <div className="hero-split__copy-area relative z-30 mx-auto flex w-full max-w-full min-w-0 flex-col items-start justify-center self-center pt-[max(4.25rem,env(safe-area-inset-top,0px)+3.25rem)] text-left md:w-auto md:max-w-none md:shrink-0 md:self-center md:pt-20 md:pl-1 lg:pt-24 lg:pl-2">
                 <HeroBrandMarquee />
 
                 <h1 className="hero-main-line mt-6 w-full font-display font-black uppercase leading-[1] tracking-[-0.015em] text-black md:mt-8
@@ -419,49 +420,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section
-        id="metodologia"
-        className="vh-section relative overflow-hidden border-t-2 border-black bg-[#ff6faf] px-5 py-20 lg:px-10"
-      >
-        <div className="mx-auto w-full max-w-[1200px]">
-          <div className="meth-header relative z-[4] mb-14">
-            <h2 className="font-display text-6xl uppercase leading-[0.95] text-black lg:text-[5.5rem]">
-              TRABAJAR CON NOSOTRAS
-            </h2>
-            <p className="font-accent text-5xl text-black lg:text-[3.2rem]">es asi de simple.</p>
-          </div>
-
-          <div className="process-grid-rows relative z-[4] grid border-t-2 border-black lg:grid-cols-3">
-            {homeContent.methodology.blocks.slice(0, 3).map((block, index) => (
-              <article
-                key={block.title}
-                className="meth-col process-col relative overflow-hidden border-l-0 border-black px-6 py-10 lg:border-l-2 lg:first:border-l-0"
-              >
-                <span className="meth-index pointer-events-none absolute left-2 top-0 font-display text-[clamp(9rem,30vw,24rem)] leading-[0.7] text-[#ffb8d9] opacity-60">
-                  {index + 1}
-                </span>
-
-                <div className="relative z-10 flex min-h-[280px] flex-col justify-between">
-                  <h3 className="font-display text-[clamp(2.1rem,5.5vw,5.8rem)] uppercase leading-[1.02] tracking-[-0.02em] text-black">
-                    <DecryptedText
-                      text={block.title.toUpperCase()}
-                      speed={32}
-                      maxIterations={12}
-                      sequential
-                      animateOn="view"
-                      className="inline-block"
-                      encryptedClassName="inline-block text-black/70"
-                    />
-                  </h3>
-                  <p className="max-w-[30ch] font-body text-[clamp(1.02rem,2.2vw,1.35rem)] uppercase leading-[1.6] tracking-[-0.01em] text-black/90">
-                    {block.description}
-                  </p>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
+      <MethodologyFeed />
 
       <section id="servicios" className="vh-section relative overflow-hidden border-t-2 border-black bg-[#f4ede6]">
         <div className="w-full max-w-none">

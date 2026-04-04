@@ -6,29 +6,13 @@ import { useEffect, useState } from "react";
 const TICK_MS = 1350;
 
 const FRAMES = [
-  {
-    src: "/LASGIRLSS/STIKER-004.png" as const,
-    width: 1435,
-    height: 2192,
-    heightClass: "h-[100dvh]",
-    mobileTranslateX: "-50%",
-    desktopTranslateX: "0%",
-    translateY: "0%",
-    scale: 1,
-    zIndex: 2,
-  },
-  {
-    src: "/LASGIRLSS/STIKER-001.png" as const,
-    width: 962,
-    height: 1715,
-    heightClass: "h-[115dvh]",
-    mobileTranslateX: "-50%",
-    desktopTranslateX: "0%",
-    translateY: "0%",
-    scale: 1,
-    zIndex: 1,
-  },
+  { src: "/LASGIRLSS/STIKER-004.png" as const, width: 1435, height: 2192 },
+  { src: "/LASGIRLSS/STIKER-001.png" as const, width: 962, height: 1715 },
 ] as const;
+
+/** Misma caja para ambos: siempre 100dvh de alto (móvil acotado con svh por UI del navegador). */
+const STICKER_SIZE_CLASS =
+  "h-[min(100dvh,100svh)] min-h-[min(100dvh,100svh)] md:h-[100dvh] md:min-h-[100dvh] w-auto max-w-[min(100vw,100%)] max-md:max-w-[100vw]";
 
 type Props = {
   className?: string;
@@ -36,25 +20,6 @@ type Props = {
 
 export function HeroStickerMotion({ className = "" }: Props) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [isDesktop, setIsDesktop] = useState(false);
-
-  useEffect(() => {
-    const media = window.matchMedia("(min-width: 768px)");
-
-    const handleChange = () => {
-      setIsDesktop(media.matches);
-    };
-
-    handleChange();
-
-    if (typeof media.addEventListener === "function") {
-      media.addEventListener("change", handleChange);
-      return () => media.removeEventListener("change", handleChange);
-    }
-
-    media.addListener(handleChange);
-    return () => media.removeListener(handleChange);
-  }, []);
 
   useEffect(() => {
     const id = window.setInterval(() => {
@@ -66,7 +31,7 @@ export function HeroStickerMotion({ className = "" }: Props) {
 
   return (
     <div
-      className={`hero-sticker-motion pointer-events-none relative min-h-[100dvh] w-full overflow-visible ${className}`}
+      className={`hero-sticker-motion pointer-events-none relative min-h-[min(100dvh,100svh)] w-full overflow-visible md:min-h-[100dvh] ${className}`}
       aria-hidden
     >
       {FRAMES.map((frame, index) => {
@@ -79,24 +44,17 @@ export function HeroStickerMotion({ className = "" }: Props) {
             alt=""
             width={frame.width}
             height={frame.height}
-            sizes="(max-width: 767px) 200vw, min(1600px, 100vw)"
+            sizes="(max-width: 767px) 100vw, (max-width: 1279px) 50vw, min(1600px, 42vw)"
             priority={index === 0}
             className={[
-              "absolute bottom-0 left-1/2 w-auto max-w-none object-contain object-bottom object-center",
+              "absolute bottom-0 left-1/2 -translate-x-1/2",
+              "object-contain object-bottom md:left-0 md:translate-x-0 md:object-left",
               "drop-shadow-[8px_18px_0_rgba(17,17,17,0.09)]",
-              "transition-opacity duration-500 ease-out",
-              "md:left-0 md:object-left",
-              frame.heightClass,
-              isActive ? "opacity-100" : "opacity-0",
+              "origin-bottom md:origin-bottom-left",
+              "transition-[opacity,transform] duration-500 ease-out",
+              STICKER_SIZE_CLASS,
+              isActive ? "z-[2] opacity-100 rotate-0" : "z-[1] opacity-0 -rotate-[1.75deg]",
             ].join(" ")}
-            style={{
-              zIndex: frame.zIndex,
-              transform: isDesktop
-                ? `translate(${frame.desktopTranslateX}, ${frame.translateY}) scale(${frame.scale})`
-                : `translate(${frame.mobileTranslateX}, ${frame.translateY}) scale(${frame.scale})`,
-              transformOrigin: isDesktop ? "bottom left" : "bottom center",
-              willChange: "opacity, transform",
-            }}
           />
         );
       })}
