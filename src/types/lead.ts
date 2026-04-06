@@ -80,6 +80,7 @@ export type Lead = {
   latestBudgetSentAt?: string;
   latestBudgetAmount?: number;
   currency?: "ARS" | "USD" | string;
+  budgetPaymentType?: "one_time" | "retainer" | string;
   missingDocuments?: string[];
   internalNotes?: string;
   assignedTo?: string;

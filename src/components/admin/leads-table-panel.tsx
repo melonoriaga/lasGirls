@@ -1,9 +1,19 @@
 "use client";
 
 import Link from "next/link";
+import {
+  RiAddLine,
+  RiArrowRightSLine,
+  RiCloseLine,
+  RiDeleteBinLine,
+  RiRefreshLine,
+} from "@remixicon/react";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ConfirmDialog } from "@/components/admin/confirm-dialog";
+import { useAdminToast } from "@/components/admin/admin-toast-provider";
 import { CreateLeadForm } from "@/components/admin/create-lead-form";
+import { leadBudgetStatusLabel, leadPipelineStatusLabel } from "@/lib/admin/lead-statuses";
 
 type LeadRow = {
   id: string;
@@ -17,6 +27,7 @@ type LeadRow = {
   latestBudgetSentAt?: string;
   assignedTo?: string;
   assignedToUserId?: string;
+  convertedToClientId?: string;
   createdAt?: string;
 };
 
@@ -64,8 +75,10 @@ function serviceLabel(lead: LeadRow) {
 
 export function LeadsTablePanel({ leads }: Props) {
   const router = useRouter();
+  const toast = useAdminToast();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [flash, setFlash] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<LeadRow | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
@@ -101,6 +114,33 @@ export function LeadsTablePanel({ leads }: Props) {
     });
   }, [leads, query, statusFilter, typeFilter]);
 
+  const deleteLeadDisplay = deleteTarget
+    ? String(deleteTarget.fullName || deleteTarget.email || deleteTarget.id)
+    : "";
+
+  const runDeleteLead = async () => {
+    if (!deleteTarget) return;
+    setDeleteLoading(true);
+    try {
+      const res = await fetch(`/api/admin/leads/${deleteTarget.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      const json = (await res.json()) as { ok?: boolean; error?: string };
+      if (!res.ok || !json.ok) {
+        toast.error(json.error ?? "No se pudo eliminar el lead.");
+        return;
+      }
+      setDeleteTarget(null);
+      toast.success("Lead eliminado correctamente.");
+      router.refresh();
+    } catch {
+      toast.error("Error de red al eliminar.");
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   return (
     <>
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
@@ -108,18 +148,20 @@ export function LeadsTablePanel({ leads }: Props) {
           <button
             type="button"
             onClick={() => setIsModalOpen(true)}
-            className="rounded-xl bg-rose-300 px-4 py-2 text-xs font-semibold text-zinc-900 transition hover:bg-rose-400"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-rose-300 px-4 py-2 text-xs font-semibold text-zinc-900 transition hover:bg-rose-400"
           >
+            <RiAddLine className="size-4 shrink-0" aria-hidden />
             Nuevo lead manual
           </button>
           <button
             type="button"
             onClick={() => {
               router.refresh();
-              setFlash({ type: "success", text: "Tabla actualizada manualmente." });
+              toast.success("Tabla actualizada manualmente.");
             }}
-            className="rounded-xl border border-zinc-200 bg-white px-4 py-2 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-100"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-4 py-2 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-100"
           >
+            <RiRefreshLine className="size-4 shrink-0" aria-hidden />
             Actualizar tabla
           </button>
         </div>
@@ -139,7 +181,7 @@ export function LeadsTablePanel({ leads }: Props) {
             <option value="all">Todos los estados</option>
             {statuses.map((status) => (
               <option key={status} value={status}>
-                {status}
+                {leadPipelineStatusLabel(status)}
               </option>
             ))}
           </select>
@@ -158,16 +200,6 @@ export function LeadsTablePanel({ leads }: Props) {
         </div>
       </div>
 
-      {flash ? (
-        <div
-          className={`mt-3 rounded-xl px-3 py-2 text-sm ${
-            flash.type === "success" ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"
-          }`}
-        >
-          {flash.text}
-        </div>
-      ) : null}
-
       <div className="mt-4 overflow-x-auto rounded-2xl border border-zinc-200 bg-white">
         <table className="w-full min-w-[1200px] text-left text-sm">
           <thead className="border-b border-zinc-200 bg-zinc-50">
@@ -181,7 +213,7 @@ export function LeadsTablePanel({ leads }: Props) {
               <th className="p-3 font-medium text-zinc-600">Último envío</th>
               <th className="p-3 font-medium text-zinc-600">Resp.</th>
               <th className="p-3 font-medium text-zinc-600">Alta</th>
-              <th className="p-3 font-medium text-zinc-600">Detalle</th>
+              <th className="p-3 font-medium text-zinc-600">Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -204,7 +236,7 @@ export function LeadsTablePanel({ leads }: Props) {
                         lead.status,
                       )}`}
                     >
-                      {lead.status}
+                      {leadPipelineStatusLabel(lead.status)}
                     </span>
                   </td>
                   <td className="p-3">
@@ -213,7 +245,7 @@ export function LeadsTablePanel({ leads }: Props) {
                         lead.budgetStatus,
                       )}`}
                     >
-                      {String(lead.budgetStatus ?? "not_sent")}
+                      {leadBudgetStatusLabel(lead.budgetStatus)}
                     </span>
                   </td>
                   <td className="p-3 text-zinc-500">{String(lead.latestBudgetSentAt ?? "").slice(0, 10) || "—"}</td>
@@ -222,9 +254,32 @@ export function LeadsTablePanel({ leads }: Props) {
                   </td>
                   <td className="p-3 text-zinc-600">{String(lead.createdAt ?? "").slice(0, 10)}</td>
                   <td className="p-3">
-                    <Link href={`/admin/leads/${lead.id}`} className="font-medium text-[#db2777] hover:underline">
-                      Ver
-                    </Link>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Link
+                        href={`/admin/leads/${lead.id}`}
+                        className="inline-flex items-center gap-0.5 font-medium text-[#db2777] hover:underline"
+                      >
+                        Ver
+                        <RiArrowRightSLine className="size-3.5" aria-hidden />
+                      </Link>
+                      {String(lead.status ?? "") === "converted" && lead.convertedToClientId ? (
+                        <Link
+                          href={`/admin/clients/${lead.convertedToClientId}`}
+                          className="inline-flex items-center gap-0.5 text-xs font-semibold text-emerald-700 hover:text-emerald-900 hover:underline"
+                        >
+                          Ver cliente
+                          <RiArrowRightSLine className="size-3.5" aria-hidden />
+                        </Link>
+                      ) : null}
+                      <button
+                        type="button"
+                        onClick={() => setDeleteTarget(lead)}
+                        className="inline-flex items-center gap-0.5 text-xs font-semibold text-red-700 hover:text-red-900 hover:underline"
+                      >
+                        <RiDeleteBinLine className="size-3.5" aria-hidden />
+                        Eliminar
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -232,6 +287,22 @@ export function LeadsTablePanel({ leads }: Props) {
           </tbody>
         </table>
       </div>
+
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        title="¿Eliminar este lead?"
+        description={
+          deleteTarget
+            ? `Se va a borrar permanentemente «${deleteLeadDisplay}» y todo lo asociado (notas y presupuestos del lead). Esta acción no se puede deshacer.`
+            : undefined
+        }
+        confirmLabel="Sí, eliminar"
+        cancelLabel="Cancelar"
+        danger
+        loading={deleteLoading}
+        onCancel={() => !deleteLoading && setDeleteTarget(null)}
+        onConfirm={() => void runDeleteLead()}
+      />
 
       {isModalOpen ? (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4">
@@ -241,8 +312,9 @@ export function LeadsTablePanel({ leads }: Props) {
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="rounded-lg border border-zinc-300 bg-white px-2.5 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-100"
+                className="inline-flex items-center gap-1 rounded-lg border border-zinc-300 bg-white px-2.5 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-100"
               >
+                <RiCloseLine className="size-3.5" aria-hidden />
                 Cerrar
               </button>
             </div>
@@ -250,10 +322,10 @@ export function LeadsTablePanel({ leads }: Props) {
               hideHeader
               onSuccess={() => {
                 setIsModalOpen(false);
-                setFlash({ type: "success", text: "Lead creado correctamente." });
+                toast.success("Lead creado correctamente.");
               }}
               onError={(message) => {
-                setFlash({ type: "error", text: message });
+                toast.error(message);
               }}
             />
           </div>

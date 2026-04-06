@@ -1,7 +1,18 @@
 "use client";
 
 import Link from "next/link";
+import {
+  RiArrowLeftSLine,
+  RiArrowRightSLine,
+  RiCloseCircleLine,
+  RiDeleteBinLine,
+  RiPauseCircleLine,
+  RiPlayCircleLine,
+  RiSearchLine,
+} from "@remixicon/react";
 import { useEffect, useState } from "react";
+import { ConfirmDialog } from "@/components/admin/confirm-dialog";
+import { useAdminToast } from "@/components/admin/admin-toast-provider";
 import { getClientDisplayName } from "@/types/client";
 
 type ClientRow = Record<string, unknown> & { id: string };
@@ -48,7 +59,15 @@ function monthlyRef(row: ClientRow) {
   return "—";
 }
 
+function isClientInactive(row: ClientRow) {
+  const s = String(row.status ?? "active").toLowerCase();
+  return s === "inactive" || s === "archived";
+}
+
+type ConfirmAction = "deactivate" | "reactivate" | "delete";
+
 export function ClientsTablePanel() {
+  const toast = useAdminToast();
   const [pageSize, setPageSize] = useState(10);
   const [q, setQ] = useState("");
   const [qInput, setQInput] = useState("");
@@ -62,6 +81,8 @@ export function ClientsTablePanel() {
   const [lastId, setLastId] = useState<string | null>(null);
   const [firstId, setFirstId] = useState<string | null>(null);
   const [backStack, setBackStack] = useState<string[]>([]);
+  const [confirm, setConfirm] = useState<{ action: ConfirmAction; row: ClientRow } | null>(null);
+  const [confirmLoading, setConfirmLoading] = useState(false);
 
   const fetchList = async (opts: { startAfterId?: string; endBeforeId?: string; searchQuery?: string } = {}) => {
     setLoading(true);
@@ -104,6 +125,47 @@ export function ClientsTablePanel() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- refetch list when page size or active search changes
   }, [pageSize, q]);
 
+  const refreshFirstPage = () => {
+    setBackStack([]);
+    void fetchList({ searchQuery: q });
+  };
+
+  const runConfirmedAction = async () => {
+    if (!confirm) return;
+    const { action, row } = confirm;
+    setConfirmLoading(true);
+    try {
+      if (action === "deactivate") {
+        const res = await fetch(`/api/admin/clients/${row.id}/deactivate`, {
+          method: "POST",
+          credentials: "include",
+        });
+        const json = (await res.json()) as { ok?: boolean; error?: string };
+        if (!res.ok || !json.ok) throw new Error(json.error ?? "No se pudo desactivar.");
+        toast.success("Cliente desactivado.");
+      } else if (action === "reactivate") {
+        const res = await fetch(`/api/admin/clients/${row.id}/reactivate`, {
+          method: "POST",
+          credentials: "include",
+        });
+        const json = (await res.json()) as { ok?: boolean; error?: string };
+        if (!res.ok || !json.ok) throw new Error(json.error ?? "No se pudo reactivar.");
+        toast.success("Cliente reactivado.");
+      } else {
+        const res = await fetch(`/api/admin/clients/${row.id}`, { method: "DELETE", credentials: "include" });
+        const json = (await res.json()) as { ok?: boolean; error?: string };
+        if (!res.ok || !json.ok) throw new Error(json.error ?? "No se pudo eliminar.");
+        toast.success("Cliente eliminado.");
+      }
+      setConfirm(null);
+      refreshFirstPage();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Error al procesar la acción.");
+    } finally {
+      setConfirmLoading(false);
+    }
+  };
+
   const applySearch = () => {
     setQ(qInput);
     setBackStack([]);
@@ -145,12 +207,18 @@ export function ClientsTablePanel() {
         <button
           type="button"
           onClick={applySearch}
-          className="rounded-xl bg-rose-300 px-4 py-2.5 text-xs font-semibold text-zinc-900 hover:bg-rose-400"
+          className="inline-flex items-center gap-1.5 rounded-xl bg-rose-300 px-4 py-2.5 text-xs font-semibold text-zinc-900 hover:bg-rose-400"
         >
+          <RiSearchLine className="size-4 shrink-0" aria-hidden />
           Buscar
         </button>
         {q ? (
-          <button type="button" onClick={clearSearch} className="rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-xs text-zinc-700">
+          <button
+            type="button"
+            onClick={clearSearch}
+            className="inline-flex items-center gap-1 rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-xs text-zinc-700"
+          >
+            <RiCloseCircleLine className="size-4 shrink-0" aria-hidden />
             Limpiar
           </button>
         ) : null}
@@ -179,6 +247,37 @@ export function ClientsTablePanel() {
 
       {error ? <p className="mt-3 text-sm text-red-700">{error}</p> : null}
 
+      <ConfirmDialog
+        open={Boolean(confirm)}
+        title={
+          confirm?.action === "delete"
+            ? "¿Eliminar este cliente?"
+            : confirm?.action === "deactivate"
+              ? "¿Desactivar este cliente?"
+              : "¿Reactivar este cliente?"
+        }
+        description={
+          confirm?.action === "delete"
+            ? `Se borrará permanentemente «${getClientDisplayName(confirm.row)}» y todo lo asociado: notas, links, facturas, pagos e historial de actividad. No se puede deshacer.`
+            : confirm?.action === "deactivate"
+              ? `«${getClientDisplayName(confirm.row)}» quedará como inactivo: seguirá en el listado pero marcado como desactivado. Podés reactivarlo cuando quieras.`
+              : confirm
+                ? `«${getClientDisplayName(confirm.row)}» volverá a estado activo.`
+                : undefined
+        }
+        confirmLabel={
+          confirm?.action === "delete"
+            ? "Sí, eliminar"
+            : confirm?.action === "deactivate"
+              ? "Desactivar"
+              : "Reactivar"
+        }
+        danger={confirm?.action === "delete" || confirm?.action === "deactivate"}
+        loading={confirmLoading}
+        onCancel={() => !confirmLoading && setConfirm(null)}
+        onConfirm={() => void runConfirmedAction()}
+      />
+
       <div className="mt-4 overflow-x-auto rounded-2xl border border-zinc-200 bg-white">
         {loading ? (
           <div className="p-10 text-center text-sm text-zinc-500">Cargando clientes...</div>
@@ -201,24 +300,75 @@ export function ClientsTablePanel() {
               </tr>
             </thead>
             <tbody>
-              {items.map((row) => (
-                <tr key={row.id} className="border-b border-zinc-100 last:border-b-0 hover:bg-zinc-50/80">
-                  <td className="p-3 font-medium text-zinc-900">{getClientDisplayName(row)}</td>
+              {items.map((row) => {
+                const inactive = isClientInactive(row);
+                return (
+                <tr
+                  key={row.id}
+                  className={`border-b border-zinc-100 last:border-b-0 hover:bg-zinc-50/80 ${
+                    inactive ? "bg-zinc-50/90 text-zinc-600" : ""
+                  }`}
+                >
+                  <td className={`p-3 font-medium ${inactive ? "text-zinc-600" : "text-zinc-900"}`}>
+                    {getClientDisplayName(row)}
+                  </td>
                   <td className="p-3 text-zinc-700">{String(row.email ?? "—")}</td>
                   <td className="p-3 text-zinc-600">{String(row.brandName || row.company || "—")}</td>
-                  <td className="p-3 text-zinc-700">{String(row.status ?? "—")}</td>
+                  <td className="p-3 text-zinc-700">
+                    {inactive ? (
+                      <span className="inline-flex rounded-full border border-orange-200 bg-orange-50 px-2 py-0.5 text-xs font-medium text-orange-900">
+                        {String(row.status ?? "—")}
+                      </span>
+                    ) : (
+                      String(row.status ?? "—")
+                    )}
+                  </td>
                   <td className="max-w-[180px] truncate p-3 text-zinc-600">{serviceLabel(row)}</td>
                   <td className="p-3 text-zinc-600">{billingLabel(row)}</td>
                   <td className="p-3 text-zinc-700">{monthlyRef(row)}</td>
                   <td className="p-3 text-zinc-600">{String(row.invoiceStatus ?? "—")}</td>
                   <td className="p-3 text-zinc-500">{String(row.createdAt ?? "").slice(0, 10)}</td>
                   <td className="p-3">
-                    <Link href={`/admin/clients/${row.id}`} className="font-medium text-[#db2777] hover:underline">
-                      Ver
-                    </Link>
+                    <div className="flex flex-col gap-1.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2">
+                      <Link
+                        href={`/admin/clients/${row.id}`}
+                        className="inline-flex items-center gap-0.5 font-medium text-[#db2777] hover:underline"
+                      >
+                        Ver
+                        <RiArrowRightSLine className="size-3.5" aria-hidden />
+                      </Link>
+                      {inactive ? (
+                        <button
+                          type="button"
+                          onClick={() => setConfirm({ action: "reactivate", row })}
+                          className="inline-flex items-center gap-0.5 text-left text-xs font-semibold text-emerald-800 hover:underline"
+                        >
+                          <RiPlayCircleLine className="size-3.5 shrink-0" aria-hidden />
+                          Reactivar
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setConfirm({ action: "deactivate", row })}
+                          className="inline-flex items-center gap-0.5 text-left text-xs font-semibold text-amber-800 hover:underline"
+                        >
+                          <RiPauseCircleLine className="size-3.5 shrink-0" aria-hidden />
+                          Desactivar
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setConfirm({ action: "delete", row })}
+                        className="inline-flex items-center gap-0.5 text-left text-xs font-semibold text-red-700 hover:underline"
+                      >
+                        <RiDeleteBinLine className="size-3.5 shrink-0" aria-hidden />
+                        Eliminar
+                      </button>
+                    </div>
                   </td>
                 </tr>
-              ))}
+              );
+              })}
             </tbody>
           </table>
         )}
@@ -230,17 +380,19 @@ export function ClientsTablePanel() {
             type="button"
             disabled={!hasPrev}
             onClick={goPrev}
-            className="rounded-xl border border-zinc-200 bg-white px-4 py-2 text-xs font-semibold text-zinc-700 disabled:opacity-40 hover:bg-zinc-100"
+            className="inline-flex items-center gap-1 rounded-xl border border-zinc-200 bg-white px-4 py-2 text-xs font-semibold text-zinc-700 disabled:opacity-40 hover:bg-zinc-100"
           >
+            <RiArrowLeftSLine className="size-4 shrink-0" aria-hidden />
             Anterior
           </button>
           <button
             type="button"
             disabled={!hasNext}
             onClick={goNext}
-            className="rounded-xl border border-zinc-200 bg-white px-4 py-2 text-xs font-semibold text-zinc-700 disabled:opacity-40 hover:bg-zinc-100"
+            className="inline-flex items-center gap-1 rounded-xl border border-zinc-200 bg-white px-4 py-2 text-xs font-semibold text-zinc-700 disabled:opacity-40 hover:bg-zinc-100"
           >
             Siguiente
+            <RiArrowRightSLine className="size-4 shrink-0" aria-hidden />
           </button>
         </div>
       ) : null}

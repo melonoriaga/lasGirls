@@ -15,6 +15,7 @@ export default async function AdminLeadsPage() {
     latestBudgetSentAt?: string;
     assignedTo?: string;
     assignedToUserId?: string;
+    convertedToClientId?: string;
     createdAt?: string;
   }>;
 

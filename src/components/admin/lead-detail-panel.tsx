@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useAdminToast } from "@/components/admin/admin-toast-provider";
+import { leadBudgetStatusLabel, leadPipelineStatusLabel } from "@/lib/admin/lead-statuses";
 
 const inputClass =
   "block w-full rounded-lg border border-zinc-300 bg-zinc-50 px-3 py-2.5 text-sm text-zinc-900 focus:border-rose-300 focus:ring-rose-300";
@@ -49,6 +51,7 @@ const BUDGET_STATUSES = [
 type Props = { leadId: string };
 
 export function LeadDetailPanel({ leadId }: Props) {
+  const toast = useAdminToast();
   const [lead, setLead] = useState<LeadData | null>(null);
   const [notes, setNotes] = useState<LeadNote[]>([]);
   const [budgets, setBudgets] = useState<LeadBudget[]>([]);
@@ -78,7 +81,6 @@ export function LeadDetailPanel({ leadId }: Props) {
   const [noteType, setNoteType] = useState("internal_note");
   const [notePinned, setNotePinned] = useState(false);
   const [error, setError] = useState("");
-  const [flash, setFlash] = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
   const [bTitle, setBTitle] = useState("");
   const [bLink, setBLink] = useState("");
@@ -87,6 +89,7 @@ export function LeadDetailPanel({ leadId }: Props) {
   const [bStatus, setBStatus] = useState("sent");
   const [bNotes, setBNotes] = useState("");
   const [bSaving, setBSaving] = useState(false);
+  const noteInFlightRef = useRef(false);
 
   const loadLead = useCallback(async () => {
     setError("");
@@ -143,7 +146,6 @@ export function LeadDetailPanel({ leadId }: Props) {
 
   const saveLead = async () => {
     setSaving(true);
-    setFlash(null);
     const response = await fetch(`/api/admin/leads/${leadId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -168,18 +170,17 @@ export function LeadDetailPanel({ leadId }: Props) {
     });
     const json = (await response.json()) as { ok?: boolean; error?: string };
     if (!response.ok || !json.ok) {
-      setFlash({ type: "err", text: json.error ?? "No pudimos guardar." });
+      toast.error(json.error ?? "No pudimos guardar.");
       setSaving(false);
       return;
     }
     await loadLead();
-    setFlash({ type: "ok", text: "Lead actualizado." });
+    toast.success("Lead actualizado.");
     setSaving(false);
   };
 
   const addBudget = async () => {
     setBSaving(true);
-    setFlash(null);
     const sentAt = new Date().toISOString();
     const res = await fetch(`/api/admin/leads/${leadId}/budgets`, {
       method: "POST",
@@ -196,7 +197,7 @@ export function LeadDetailPanel({ leadId }: Props) {
     });
     const json = (await res.json()) as { ok?: boolean; error?: string };
     if (!res.ok || !json.ok) {
-      setFlash({ type: "err", text: json.error ?? "No pudimos agregar el presupuesto." });
+      toast.error(json.error ?? "No pudimos agregar el presupuesto.");
       setBSaving(false);
       return;
     }
@@ -205,32 +206,38 @@ export function LeadDetailPanel({ leadId }: Props) {
     setBAmount("");
     setBNotes("");
     await loadLead();
-    setFlash({ type: "ok", text: "Presupuesto agregado al historial." });
+    toast.success("Presupuesto agregado al historial.");
     setBSaving(false);
   };
 
-  const addNote = async () => {
-    if (!noteContent.trim()) return;
+  const addNote = async (event?: React.FormEvent) => {
+    event?.preventDefault();
+    const trimmed = noteContent.trim();
+    if (!trimmed || addingNote || noteInFlightRef.current) return;
+    noteInFlightRef.current = true;
     setAddingNote(true);
-    const response = await fetch(`/api/admin/leads/${leadId}/notes`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content: noteContent, type: noteType, pinned: notePinned }),
-    });
-    if (!response.ok) {
-      setFlash({ type: "err", text: "No pudimos agregar la nota." });
+    try {
+      const response = await fetch(`/api/admin/leads/${leadId}/notes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ content: trimmed, type: noteType, pinned: notePinned }),
+      });
+      if (!response.ok) {
+        toast.error("No pudimos agregar la nota.");
+        return;
+      }
+      setNoteContent("");
+      setNoteType("internal_note");
+      setNotePinned(false);
+      await loadLead();
+    } finally {
+      noteInFlightRef.current = false;
       setAddingNote(false);
-      return;
     }
-    setNoteContent("");
-    setNoteType("internal_note");
-    setNotePinned(false);
-    await loadLead();
-    setAddingNote(false);
   };
 
   const convertLead = async () => {
-    setFlash(null);
     let force = false;
     if (status !== "approved" && lead?.status !== "approved") {
       force = window.confirm(
@@ -245,14 +252,11 @@ export function LeadDetailPanel({ leadId }: Props) {
     });
     const json = (await response.json()) as { ok?: boolean; error?: string; code?: string; clientId?: string };
     if (!response.ok || !json.ok) {
-      setFlash({ type: "err", text: json.error ?? "No pudimos convertir." });
+      toast.error(json.error ?? "No pudimos convertir.");
       return;
     }
     await loadLead();
-    setFlash({
-      type: "ok",
-      text: json.clientId ? `Cliente creado. ID: ${json.clientId}` : "Lead convertido.",
-    });
+    toast.success(json.clientId ? `Cliente creado. ID: ${json.clientId}` : "Lead convertido.");
   };
 
   if (error && !lead) return <p className="text-sm text-red-700">{error}</p>;
@@ -271,15 +275,6 @@ export function LeadDetailPanel({ leadId }: Props) {
       </div>
 
       <h1 className="text-3xl font-semibold tracking-tight text-zinc-900">{String(lead.fullName ?? "Lead")}</h1>
-      {flash ? (
-        <div
-          className={`rounded-xl px-3 py-2 text-sm ${
-            flash.type === "ok" ? "bg-emerald-50 text-emerald-800" : "bg-red-50 text-red-800"
-          }`}
-        >
-          {flash.text}
-        </div>
-      ) : null}
       {error ? <p className="text-sm text-red-700">{error}</p> : null}
 
       <div className="grid gap-5 xl:grid-cols-[1.15fr_0.85fr]">
@@ -363,8 +358,9 @@ export function LeadDetailPanel({ leadId }: Props) {
               type="button"
               disabled={saving}
               onClick={() => void saveLead()}
-              className="rounded-xl bg-rose-300 px-4 py-2 text-xs font-semibold text-zinc-900 disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-xl bg-rose-300 px-4 py-2 text-xs font-semibold text-zinc-900 disabled:opacity-60"
             >
+              {saving ? <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-zinc-700 border-t-transparent" /> : null}
               {saving ? "Guardando..." : "Guardar cambios"}
             </button>
           </div>
@@ -377,7 +373,7 @@ export function LeadDetailPanel({ leadId }: Props) {
             <select className={inputClass} value={status} onChange={(e) => setStatus(e.target.value)}>
               {PIPELINE_STATUSES.map((s) => (
                 <option key={s} value={s}>
-                  {s}
+                  {leadPipelineStatusLabel(s)}
                 </option>
               ))}
             </select>
@@ -387,7 +383,7 @@ export function LeadDetailPanel({ leadId }: Props) {
             <select className={inputClass} value={budgetStatus} onChange={(e) => setBudgetStatus(e.target.value)}>
               {BUDGET_STATUSES.map((s) => (
                 <option key={s} value={s}>
-                  {s}
+                  {leadBudgetStatusLabel(s)}
                 </option>
               ))}
             </select>
@@ -395,10 +391,12 @@ export function LeadDetailPanel({ leadId }: Props) {
           <div className="grid gap-2">
             <button
               type="button"
+              disabled={saving}
               onClick={() => void saveLead()}
-              className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2 text-xs font-semibold text-zinc-800 hover:bg-zinc-100"
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2 text-xs font-semibold text-zinc-800 hover:bg-zinc-100 disabled:opacity-60"
             >
-              Guardar estado / presupuesto
+              {saving ? <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-zinc-500 border-t-transparent" /> : null}
+              {saving ? "Guardando estado..." : "Guardar estado / presupuesto"}
             </button>
             <button
               type="button"
@@ -485,10 +483,18 @@ export function LeadDetailPanel({ leadId }: Props) {
         </div>
       </div>
 
-      <div className="grid gap-4 rounded-2xl border border-zinc-200 bg-white p-5">
+      <form
+        className="grid gap-4 rounded-2xl border border-zinc-200 bg-white p-5"
+        onSubmit={(e) => void addNote(e)}
+      >
         <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-zinc-700">Notas internas</h2>
         <div className="grid gap-3 lg:grid-cols-[1fr_160px_auto]">
-          <textarea className={`${inputClass} min-h-[88px]`} placeholder="Agregar nota..." value={noteContent} onChange={(e) => setNoteContent(e.target.value)} />
+          <textarea
+            className={`${inputClass} min-h-[88px]`}
+            placeholder="Agregar nota..."
+            value={noteContent}
+            onChange={(e) => setNoteContent(e.target.value)}
+          />
           <select className={inputClass} value={noteType} onChange={(e) => setNoteType(e.target.value)}>
             <option value="internal_note">Nota interna</option>
             <option value="call_summary">Resumen llamada</option>
@@ -501,9 +507,8 @@ export function LeadDetailPanel({ leadId }: Props) {
           </label>
         </div>
         <button
-          type="button"
+          type="submit"
           disabled={addingNote || !noteContent.trim()}
-          onClick={() => void addNote()}
           className="w-fit rounded-xl bg-rose-300 px-4 py-2 text-xs font-semibold text-zinc-900 disabled:opacity-50"
         >
           {addingNote ? "Guardando..." : "Agregar nota"}
@@ -519,7 +524,7 @@ export function LeadDetailPanel({ leadId }: Props) {
             </article>
           ))}
         </div>
-      </div>
+      </form>
     </section>
   );
 }

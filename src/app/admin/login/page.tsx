@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   browserLocalPersistence,
   browserSessionPersistence,
@@ -17,12 +17,21 @@ const inputClassName =
 
 export default function AdminLoginPage() {
   const router = useRouter();
+  const [postLoginPath, setPostLoginPath] = useState("/admin/leads");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const next = params.get("next");
+    if (next && next.startsWith("/admin") && !next.startsWith("/admin/login")) {
+      setPostLoginPath(next);
+    }
+  }, []);
 
   const onSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -36,6 +45,7 @@ export default function AdminLoginPage() {
       const response = await fetch("/api/admin/session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ idToken: token, remember: rememberMe }),
       });
 
@@ -43,7 +53,7 @@ export default function AdminLoginPage() {
         const data = (await response.json().catch(() => null)) as { error?: string } | null;
         throw new Error(data?.error ?? "No se pudo crear la sesión.");
       }
-      router.push("/admin/leads");
+      router.push(postLoginPath);
       router.refresh();
     } catch (err) {
       const message = err instanceof Error ? err.message : "No pudimos iniciar sesión. Revisá tus datos o la invitación.";

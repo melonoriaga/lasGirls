@@ -1,3 +1,4 @@
+import type { CollectionReference } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
 import { logAdminActivity } from "@/lib/activity/log";
 import { getSessionActor } from "@/lib/api/admin-session";
@@ -6,6 +7,59 @@ import { budgetStatusSchema } from "@/lib/validations/pipeline";
 import { leadStatusSchema } from "@/lib/validations/lead";
 
 type Context = { params: Promise<{ id: string }> };
+
+const BATCH = 400;
+
+async function deleteQueryInBatches(collectionRef: CollectionReference) {
+  while (true) {
+    const snap = await collectionRef.limit(BATCH).get();
+    if (snap.empty) break;
+    const batch = adminDb.batch();
+    for (const doc of snap.docs) {
+      batch.delete(doc.ref);
+    }
+    await batch.commit();
+  }
+}
+
+export async function DELETE(request: Request, context: Context) {
+  const actor = await getSessionActor();
+  if (!actor?.uid) {
+    return NextResponse.json({ ok: false, error: "No autorizado." }, { status: 401 });
+  }
+
+  const { id } = await context.params;
+  const leadRef = adminDb.collection("leads").doc(id);
+  const snapshot = await leadRef.get();
+  if (!snapshot.exists) {
+    return NextResponse.json({ ok: false, error: "Lead inexistente." }, { status: 404 });
+  }
+
+  const data = snapshot.data() as { fullName?: string; email?: string };
+
+  try {
+    await deleteQueryInBatches(leadRef.collection("notes"));
+    await deleteQueryInBatches(leadRef.collection("budgets"));
+    await leadRef.delete();
+
+    await logAdminActivity({
+      request,
+      action: "lead_deleted",
+      targetType: "lead",
+      targetId: id,
+      metadata: { fullName: data.fullName ?? "", email: data.email ?? "" },
+      fallbackActor: { uid: actor.uid, email: actor.email ?? "" },
+    });
+
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "No se pudo eliminar el lead.";
+    return NextResponse.json(
+      { ok: false, error: process.env.NODE_ENV === "development" ? message : "No se pudo eliminar el lead." },
+      { status: 500 },
+    );
+  }
+}
 
 export async function GET(_request: Request, context: Context) {
   const actor = await getSessionActor();

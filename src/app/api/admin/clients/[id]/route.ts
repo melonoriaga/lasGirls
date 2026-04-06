@@ -1,3 +1,4 @@
+import type { CollectionReference } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
 import { getSessionActor } from "@/lib/api/admin-session";
 import { logAdminActivity } from "@/lib/activity/log";
@@ -6,6 +7,22 @@ import { logClientActivity } from "@/lib/clients/activity";
 import { clientPatchSchema } from "@/lib/validations/pipeline";
 
 type Context = { params: Promise<{ id: string }> };
+
+const BATCH = 400;
+
+const CLIENT_SUBCOLLECTIONS = ["notes", "links", "invoices", "payments", "activity"] as const;
+
+async function deleteCollectionInBatches(collectionRef: CollectionReference) {
+  while (true) {
+    const snap = await collectionRef.limit(BATCH).get();
+    if (snap.empty) break;
+    const batch = adminDb.batch();
+    for (const doc of snap.docs) {
+      batch.delete(doc.ref);
+    }
+    await batch.commit();
+  }
+}
 
 export async function GET(_request: Request, context: Context) {
   const actor = await getSessionActor();
@@ -101,5 +118,48 @@ export async function PATCH(request: Request, context: Context) {
     return NextResponse.json({ ok: true });
   } catch (error) {
     return NextResponse.json({ ok: false, error: (error as Error).message }, { status: 400 });
+  }
+}
+
+export async function DELETE(request: Request, context: Context) {
+  const actor = await getSessionActor();
+  if (!actor?.uid) {
+    return NextResponse.json({ ok: false, error: "No autorizado." }, { status: 401 });
+  }
+
+  const { id } = await context.params;
+  const clientRef = adminDb.collection("clients").doc(id);
+  const snapshot = await clientRef.get();
+  if (!snapshot.exists) {
+    return NextResponse.json({ ok: false, error: "Cliente inexistente." }, { status: 404 });
+  }
+
+  const data = snapshot.data() as { fullName?: string; displayName?: string; email?: string };
+
+  try {
+    for (const name of CLIENT_SUBCOLLECTIONS) {
+      await deleteCollectionInBatches(clientRef.collection(name));
+    }
+    await clientRef.delete();
+
+    await logAdminActivity({
+      request,
+      action: "client_deleted",
+      targetType: "client",
+      targetId: id,
+      metadata: {
+        fullName: data.fullName ?? data.displayName ?? "",
+        email: data.email ?? "",
+      },
+      fallbackActor: { uid: actor.uid, email: actor.email ?? "" },
+    });
+
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "No se pudo eliminar el cliente.";
+    return NextResponse.json(
+      { ok: false, error: process.env.NODE_ENV === "development" ? message : "No se pudo eliminar el cliente." },
+      { status: 500 },
+    );
   }
 }

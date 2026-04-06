@@ -6,12 +6,18 @@ import { logAdminActivity } from "@/lib/activity/log";
 
 const schema = z.object({
   fullName: z.string().min(2),
-  email: z.string().email(),
+  email: z
+    .string()
+    .optional()
+    .default("")
+    .refine((value) => !value || z.string().email().safeParse(value).success, "Email inválido."),
   phone: z.string().min(6),
   company: z.string().optional().default(""),
   inquiryType: z.string().optional().default("consulta_general"),
   serviceInterest: z.array(z.string()).optional().default([]),
   budgetRange: z.string().optional().default(""),
+  budgetCurrency: z.enum(["ARS", "USD", "EUR"]).optional().default("USD"),
+  budgetPaymentType: z.enum(["one_time", "retainer"]).optional().default("one_time"),
   projectStage: z.string().optional().default("solo_idea"),
   message: z.string().min(2),
   source: z.string().optional().default("admin-manual"),
@@ -41,7 +47,8 @@ export async function POST(request: Request) {
       missingDocuments: [],
       internalNotes: "",
       convertedToClientId: "",
-      currency: "USD",
+      currency: parsed.budgetCurrency,
+      budgetPaymentType: parsed.budgetPaymentType,
       metadata: {
         source: "admin-manual",
       },

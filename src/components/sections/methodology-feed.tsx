@@ -1,7 +1,13 @@
+"use client";
+
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { homeContent } from "@/content/site/home";
 
 const NOISE_BG = "url('https://grainy-gradients.vercel.app/noise.svg')";
+const SCRAMBLE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
 const ASSETS = {
   s1: "/brand/stickers/sticker-1.png",
@@ -38,7 +44,7 @@ const blocks = homeContent.methodology.blocks;
 const CARD_SPECS: FeedCardSpec[] = [
   {
     indexLabel: "01",
-    title: "DIAGNÓSTICO\nY ACOMPAÑA\nMIENTO\nINICIAL",
+    title: "DIAGNÓSTICO Y\nACOMPAÑAMIENTO\nINICIAL",
     body: blocks[0]?.description ?? "",
     cardBg: "#F3EEE8",
     cutBg: "#E5DDD3",
@@ -68,7 +74,7 @@ const CARD_SPECS: FeedCardSpec[] = [
   },
   {
     indexLabel: "02",
-    title: "DEFINICIÓN\nDE NECESI\nDADES\nREALES",
+    title: "DEFINICIÓN\nDE NECESIDADES\nREALES",
     body: blocks[1]?.description ?? "",
     cardBg: "#EFE7DD",
     cutBg: "#E3DBD1",
@@ -92,7 +98,7 @@ const CARD_SPECS: FeedCardSpec[] = [
   },
   {
     indexLabel: "03",
-    title: "ROADMAP\nA MEDI\nDA",
+    title: "ROADMAP\nA MEDIDA",
     body: blocks[2]?.description ?? "",
     cardBg: "#F5EFE6",
     cutBg: "#E8E1D7",
@@ -134,7 +140,161 @@ function StickerDecor({ spec }: { spec: StickerSpec }) {
   );
 }
 
+type ScrambleSegment =
+  | { kind: "br"; key: number }
+  | { kind: "text"; small: boolean; parts: { idx: number; char: string }[] };
+
+function buildScrambleSegments(text: string, smallerSubstring?: string): ScrambleSegment[] {
+  const chars = Array.from(text);
+  const range =
+    smallerSubstring && text.includes(smallerSubstring)
+      ? { start: text.indexOf(smallerSubstring), end: text.indexOf(smallerSubstring) + smallerSubstring.length }
+      : null;
+
+  const segs: ScrambleSegment[] = [];
+  const buf: { idx: number; char: string }[] = [];
+  let bufSmall: boolean | null = null;
+
+  const flush = () => {
+    if (buf.length) {
+      segs.push({ kind: "text", small: bufSmall ?? false, parts: [...buf] });
+      buf.length = 0;
+      bufSmall = null;
+    }
+  };
+
+  for (let idx = 0; idx < chars.length; idx++) {
+    const c = chars[idx];
+    if (c === "\n") {
+      flush();
+      segs.push({ kind: "br", key: idx });
+      continue;
+    }
+    const small = !!(range && idx >= range.start && idx < range.end);
+    if (buf.length > 0 && small !== bufSmall) flush();
+    buf.push({ idx, char: c });
+    bufSmall = small;
+  }
+  flush();
+  return segs;
+}
+
+function ScrambleScrollTitle({
+  text,
+  className,
+  smallerSubstring,
+  smallerClassName = "inline text-[0.74em] sm:text-[0.8em] lg:text-[0.86em]",
+}: {
+  text: string;
+  className: string;
+  smallerSubstring?: string;
+  smallerClassName?: string;
+}) {
+  const rootRef = useRef<HTMLHeadingElement | null>(null);
+  const tweenRef = useRef<gsap.core.Tween | null>(null);
+  const spansRef = useRef<(HTMLSpanElement | null)[]>([]);
+
+  const segments = useMemo(
+    () => buildScrambleSegments(text, smallerSubstring),
+    [text, smallerSubstring],
+  );
+
+  useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger);
+
+    const spans = spansRef.current.filter((node): node is HTMLSpanElement => Boolean(node));
+    if (!rootRef.current || spans.length === 0) return;
+
+    const finals = spans.map((span) => span.dataset.finalChar ?? "");
+
+    const paintFinal = () => {
+      spans.forEach((span, idx) => {
+        span.textContent = finals[idx];
+      });
+    };
+
+    const paintFrame = (progress: number) => {
+      const reveal = Math.floor(progress * finals.length);
+      spans.forEach((span, idx) => {
+        span.textContent =
+          idx <= reveal
+            ? finals[idx]
+            : SCRAMBLE_CHARS[Math.floor(Math.random() * SCRAMBLE_CHARS.length)];
+      });
+    };
+
+    paintFinal();
+
+    const runScramble = () => {
+      tweenRef.current?.kill();
+      const state = { progress: 0 };
+      tweenRef.current = gsap.to(state, {
+        progress: 1,
+        duration: 1.05,
+        ease: "power2.out",
+        onStart: () => paintFrame(0),
+        onUpdate: () => paintFrame(state.progress),
+        onComplete: paintFinal,
+      });
+    };
+
+    const trigger = ScrollTrigger.create({
+      trigger: rootRef.current,
+      start: "top 85%",
+      onEnter: runScramble,
+      onEnterBack: runScramble,
+    });
+
+    return () => {
+      tweenRef.current?.kill();
+      trigger.kill();
+    };
+  }, [text, smallerSubstring]);
+
+  return (
+    <h3 ref={rootRef} className={className} aria-label={text.replace(/\n/g, " ")}>
+      {segments.map((seg, segIdx) =>
+        seg.kind === "br" ? (
+          <br key={`break-${seg.key}`} />
+        ) : seg.small ? (
+          <span key={`seg-s-${segIdx}`} className={smallerClassName}>
+            {seg.parts.map(({ idx, char }) => (
+              <span
+                key={`${char}-${idx}`}
+                ref={(node) => {
+                  spansRef.current[idx] = node;
+                }}
+                data-final-char={char}
+                className="inline"
+              >
+                {char}
+              </span>
+            ))}
+          </span>
+        ) : (
+          <span key={`seg-n-${segIdx}`} className="contents">
+            {seg.parts.map(({ idx, char }) => (
+              <span
+                key={`${char}-${idx}`}
+                ref={(node) => {
+                  spansRef.current[idx] = node;
+                }}
+                data-final-char={char}
+                className="inline"
+              >
+                {char}
+              </span>
+            ))}
+          </span>
+        ),
+      )}
+    </h3>
+  );
+}
+
 export function MethodologyFeed() {
+  const [activeCard, setActiveCard] = useState<string | null>(null);
+
   return (
     <section
       id="metodologia"
@@ -150,17 +310,35 @@ export function MethodologyFeed() {
         </header>
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 lg:gap-10 xl:gap-16">
-          {CARD_SPECS.map((card) => (
-            <article
-              key={card.indexLabel}
-              className="group/meth-post relative rounded-[18px] motion-reduce:transition-none"
-            >
+          {CARD_SPECS.map((card) => {
+            const isFocused = activeCard === card.indexLabel;
+            const isMuted = activeCard !== null && !isFocused;
+
+            return (
+              <article
+                key={card.indexLabel}
+                onMouseEnter={() => setActiveCard(card.indexLabel)}
+                onMouseLeave={() => setActiveCard(null)}
+                className={`group/meth-post relative rounded-[18px] transition-all duration-500 ease-out motion-reduce:transition-none ${
+                  isFocused
+                    ? "z-30 lg:scale-[1.1]"
+                    : isMuted
+                      ? "z-0 lg:scale-[0.92] lg:opacity-65"
+                      : "z-10 lg:scale-100 lg:opacity-100"
+                }`}
+              >
               <div
-                className="relative flex aspect-4/5 w-full flex-col overflow-hidden rounded-[18px] border-2 border-black/80 shadow-[0_10px_24px_rgba(17,17,17,0.14)] transition-transform duration-300 ease-out motion-reduce:transition-none lg:hover:scale-[1.02]"
+                className={`relative flex aspect-4/5 w-full flex-col overflow-hidden rounded-[18px] border-2 border-black/80 transition-all duration-500 ease-out motion-reduce:transition-none ${
+                  isFocused
+                    ? "shadow-[0_24px_48px_rgba(17,17,17,0.28)]"
+                    : "shadow-[0_10px_24px_rgba(17,17,17,0.14)]"
+                }`}
                 style={{ backgroundColor: card.cardBg }}
               >
                 <span
-                  className={`pointer-events-none absolute z-0 font-black leading-none text-black/[0.07] ${card.watermarkClass}`}
+                  className={`pointer-events-none absolute z-0 font-black leading-none text-black/[0.07] transition-all duration-500 ease-out ${card.watermarkClass} ${
+                    isFocused ? "scale-[1.08] text-black/10" : isMuted ? "scale-95 text-black/4" : "scale-100"
+                  }`}
                   aria-hidden
                 >
                   {card.indexLabel}
@@ -172,37 +350,55 @@ export function MethodologyFeed() {
                   aria-hidden
                 />
 
-                <div className="pointer-events-none absolute inset-0 z-10" aria-hidden>
+                <div
+                  className={`pointer-events-none absolute inset-0 z-10 transition-all duration-500 ease-out ${
+                    isFocused ? "scale-[1.06]" : isMuted ? "scale-95 opacity-70" : "scale-100 opacity-100"
+                  }`}
+                  aria-hidden
+                >
                   {card.stickers.map((st, j) => (
                     <StickerDecor key={`${card.indexLabel}-${j}`} spec={st} />
                   ))}
                 </div>
 
-                <span className="absolute right-3 top-3 z-20 font-mono text-[10px] font-bold tabular-nums uppercase tracking-[0.18em] text-black/45">
+                <span
+                  className={`absolute right-3 top-3 z-20 font-mono text-[10px] font-bold tabular-nums uppercase tracking-[0.18em] transition-all duration-500 ${
+                    isFocused ? "text-black/70" : "text-black/45"
+                  }`}
+                >
                   {card.indexLabel}
                 </span>
 
                 <div
-                  className="relative z-20 flex min-h-0 flex-1 flex-col px-5 pb-6 pt-7 md:px-6 md:pb-7 md:pt-8"
+                  className={`relative z-20 flex min-h-0 flex-1 flex-col px-5 pb-6 pt-7 transition-all duration-500 md:px-6 md:pb-7 md:pt-8 ${
+                    isFocused ? "translate-y-[-3px]" : isMuted ? "translate-y-[3px]" : "translate-y-0"
+                  }`}
                   style={{ backgroundColor: "transparent" }}
                 >
                   <header className="flex-[0_0_50%] flex flex-col justify-start pr-1">
-                    <h3
-                      className="whitespace-pre-line font-display text-left text-[clamp(2.35rem,12vw,4rem)] font-black uppercase leading-[1] tracking-[-0.01em] text-black sm:text-[clamp(2.65rem,9vw,4.4rem)] lg:text-[clamp(3rem,4.7vw,4.9rem)] xl:text-[clamp(3.3rem,4.2vw,5.2rem)]"
-                    >
-                      {card.title}
-                    </h3>
+                    <ScrambleScrollTitle
+                      text={card.title}
+                      smallerSubstring={card.indexLabel === "01" ? "ACOMPAÑAMIENTO" : undefined}
+                      className={`hyphens-none whitespace-pre-line break-normal text-left font-display text-[clamp(2.35rem,12vw,4rem)] font-black uppercase leading-[1.02] tracking-[-0.01em] transition-all duration-500 sm:text-[clamp(2.65rem,9vw,4.4rem)] lg:text-[clamp(3rem,4.7vw,4.9rem)] xl:text-[clamp(3.3rem,4.2vw,5.2rem)] ${
+                        isFocused ? "text-black drop-shadow-[0_6px_10px_rgba(17,17,17,0.14)]" : "text-black"
+                      }`}
+                    />
                   </header>
 
                   <div className={`relative z-20 mt-1.5 flex min-h-0 flex-1 flex-col justify-start ${card.bodyShellClass}`}>
-                    <p className="max-w-76 text-left text-[1rem] font-medium leading-[1.45] text-black/88 md:text-[1.125rem] lg:text-[1.18rem]">
+                    <p
+                      className={`max-w-76 text-left text-[1rem] font-medium leading-[1.45] transition-all duration-500 md:text-[1.125rem] lg:text-[1.18rem] ${
+                        isFocused ? "text-black/95" : isMuted ? "text-black/70" : "text-black/88"
+                      }`}
+                    >
                       {card.body}
                     </p>
                   </div>
                 </div>
               </div>
             </article>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

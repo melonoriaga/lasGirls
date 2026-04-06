@@ -154,6 +154,9 @@ export type ClientNote = {
 export type ClientActivityAction =
   | "client_created"
   | "client_updated"
+  | "client_deactivated"
+  | "client_reactivated"
+  | "client_deleted"
   | "invoice_created"
   | "invoice_updated"
   | "payment_recorded"

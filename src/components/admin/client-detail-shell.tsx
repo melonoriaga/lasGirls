@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { AdminActionBadge } from "@/components/admin/admin-action-badge";
+import { useAdminToast } from "@/components/admin/admin-toast-provider";
 import { getClientDisplayName } from "@/types/client";
 
 type ClientDoc = Record<string, unknown> & { id: string };
@@ -16,6 +18,7 @@ type AdminUser = { id: string; fullName: string; email: string };
 type Props = { clientId: string };
 
 export function ClientDetailShell({ clientId }: Props) {
+  const toast = useAdminToast();
   const [tab, setTab] = useState<TabId>("summary");
   const [client, setClient] = useState<ClientDoc | null>(null);
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -28,7 +31,15 @@ export function ClientDetailShell({ clientId }: Props) {
   );
   const [notes, setNotes] = useState<Array<Record<string, unknown> & { id: string }>>([]);
   const [activity, setActivity] = useState<Array<Record<string, unknown> & { id: string }>>([]);
-  const [flash, setFlash] = useState<{ type: "ok" | "err"; text: string } | null>(null);
+
+  const onFlash = useCallback(
+    (f: { type: "ok" | "err"; text: string } | null) => {
+      if (!f) return;
+      if (f.type === "ok") toast.success(f.text);
+      else toast.error(f.text);
+    },
+    [toast],
+  );
 
   const loadClient = useCallback(async () => {
     setLoadError("");
@@ -113,16 +124,6 @@ export function ClientDetailShell({ clientId }: Props) {
             </p>
           </header>
 
-          {flash ? (
-            <div
-              className={`rounded-xl px-3 py-2 text-sm ${
-                flash.type === "ok" ? "bg-emerald-50 text-emerald-800" : "bg-red-50 text-red-800"
-              }`}
-            >
-              {flash.text}
-            </div>
-          ) : null}
-
           <nav className="flex flex-wrap gap-2 border-b border-zinc-200 pb-2">
             {(
               [
@@ -154,9 +155,9 @@ export function ClientDetailShell({ clientId }: Props) {
               users={users}
               onSaved={() => {
                 void loadClient();
-                setFlash({ type: "ok", text: "Cambios guardados." });
+                toast.success("Cambios guardados.");
               }}
-              onError={(t) => setFlash({ type: "err", text: t })}
+              onError={(t) => toast.error(t)}
             />
           ) : null}
 
@@ -165,12 +166,12 @@ export function ClientDetailShell({ clientId }: Props) {
               clientId={clientId}
               rows={links}
               onRefresh={() => void loadTabData()}
-              onFlash={setFlash}
+              onFlash={onFlash}
             />
           ) : null}
 
           {tab === "invoices" ? (
-            <InvoicesTab clientId={clientId} rows={invoices} onRefresh={() => void loadTabData()} onFlash={setFlash} />
+            <InvoicesTab clientId={clientId} rows={invoices} onRefresh={() => void loadTabData()} onFlash={onFlash} />
           ) : null}
 
           {tab === "payments" ? (
@@ -181,13 +182,13 @@ export function ClientDetailShell({ clientId }: Props) {
               payTotals={payTotals}
               invoices={invoices}
               onRefresh={() => void loadTabData()}
-              onFlash={setFlash}
+              onFlash={onFlash}
               userName={userName}
             />
           ) : null}
 
           {tab === "notes" ? (
-            <NotesTab clientId={clientId} rows={notes} onRefresh={() => void loadTabData()} onFlash={setFlash} />
+            <NotesTab clientId={clientId} rows={notes} onRefresh={() => void loadTabData()} onFlash={onFlash} />
           ) : null}
 
           {tab === "activity" ? <ActivityTab rows={activity} userName={userName} /> : null}
@@ -803,38 +804,71 @@ function NotesTab({
 }) {
   const [content, setContent] = useState("");
   const [type, setType] = useState("general");
-  const add = async () => {
-    const res = await fetch(`/api/admin/clients/${clientId}/notes`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content, type }),
-    });
-    const j = (await res.json()) as { ok?: boolean; error?: string };
-    if (!res.ok || !j.ok) {
-      onFlash({ type: "err", text: j.error ?? "Error" });
-      return;
+  const [saving, setSaving] = useState(false);
+  const inFlightRef = useRef(false);
+
+  const add = async (event?: React.FormEvent) => {
+    event?.preventDefault();
+    const trimmed = content.trim();
+    if (!trimmed || saving || inFlightRef.current) return;
+    inFlightRef.current = true;
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/admin/clients/${clientId}/notes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ content: trimmed, type }),
+      });
+      const j = (await res.json()) as { ok?: boolean; error?: string };
+      if (!res.ok || !j.ok) {
+        onFlash({ type: "err", text: j.error ?? "Error" });
+        return;
+      }
+      setContent("");
+      onFlash({ type: "ok", text: "Nota agregada." });
+      onRefresh();
+    } finally {
+      inFlightRef.current = false;
+      setSaving(false);
     }
-    setContent("");
-    onFlash({ type: "ok", text: "Nota agregada." });
-    onRefresh();
   };
+
   return (
     <div className="grid gap-4">
-      <div className="rounded-2xl border border-zinc-200 bg-white p-4">
-        <textarea className={`${inputClass} min-h-[100px]`} value={content} onChange={(e) => setContent(e.target.value)} />
-        <div className="mt-2 flex flex-wrap gap-2">
-          <select className={inputClass} value={type} onChange={(e) => setType(e.target.value)}>
+      <form
+        className="rounded-2xl border border-zinc-200 bg-white p-4"
+        onSubmit={(e) => void add(e)}
+      >
+        <textarea
+          className={`${inputClass} min-h-[100px]`}
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          placeholder="Escribí la nota…"
+          aria-label="Contenido de la nota"
+        />
+        <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+          <select
+            className={`${inputClass} sm:max-w-[200px]`}
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+            aria-label="Tipo de nota"
+          >
             <option value="general">general</option>
             <option value="meeting">meeting</option>
             <option value="billing">billing</option>
             <option value="onboarding">onboarding</option>
             <option value="warning">warning</option>
           </select>
-          <button type="button" onClick={() => void add()} className="rounded-xl bg-rose-300 px-4 py-2 text-xs font-semibold text-zinc-900">
-            Agregar nota
+          <button
+            type="submit"
+            disabled={saving || !content.trim()}
+            className="rounded-xl bg-rose-300 px-4 py-2.5 text-xs font-semibold text-zinc-900 disabled:opacity-50 sm:ml-auto"
+          >
+            {saving ? "Guardando…" : "Agregar nota"}
           </button>
         </div>
-      </div>
+      </form>
       <div className="grid gap-2">
         {rows.map((r) => (
           <article key={r.id} className="rounded-xl border border-zinc-200 bg-white p-3 text-sm">
@@ -860,8 +894,8 @@ function ActivityTab({
     <div className="grid gap-2">
       {rows.map((r) => (
         <div key={r.id} className="rounded-xl border border-zinc-200 bg-white p-3 text-sm">
-          <p className="text-xs font-semibold text-zinc-800">{String(r.action ?? "")}</p>
-          <p className="text-xs text-zinc-500">
+          <AdminActionBadge action={String(r.action ?? "")} />
+          <p className="mt-2 text-xs text-zinc-500">
             {String(r.createdAt ?? "").slice(0, 16)} · {userName(String(r.createdByUserId ?? ""))}
           </p>
           {r.message ? <p className="mt-1 text-zinc-700">{String(r.message)}</p> : null}

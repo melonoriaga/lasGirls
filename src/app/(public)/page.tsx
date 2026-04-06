@@ -10,13 +10,12 @@ import CurvedLoop from "@/components/CurvedLoop";
 import DecryptedText from "@/components/DecryptedText";
 import RotatingText from "@/components/RotatingText";
 import LiquidEther from "@/components/LiquidEther";
-import TextType from "@/components/TextType";
 import { ContactSection } from "@/components/sections/contact-section";
 import { MethodologyFeed } from "@/components/sections/methodology-feed";
+import { ServicesShowcaseSection } from "@/components/sections/services-showcase-section";
 import { HeroBrandMarquee } from "@/components/sections/hero-brand-marquee";
 import { HeroStickerMotion } from "@/components/sections/hero-sticker-motion";
 import { StickerWindows } from "@/components/sections/sticker-windows";
-import { homeContent, serviceCards } from "@/content/site/home";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -33,8 +32,6 @@ const heroRotatingWords = [
   "CONECTAN",
   "TIENEN SENTIDO",
 ];
-
-const SERVICE_ROW_COLORS = ["#ff6faf", "#ff9fcf", "#f8d4de", "#ffd6e8", "#fff0f8"];
 
 const impactStickerPoses = [
   { x: 0, y: 0, r: 0 },
@@ -422,71 +419,7 @@ export default function HomePage() {
 
       <MethodologyFeed />
 
-      <section id="servicios" className="vh-section relative overflow-hidden border-t-2 border-black bg-[#f4ede6]">
-        <div className="w-full max-w-none">
-          <div className="brutal-reveal relative z-[4] flex min-h-screen flex-col justify-center px-5 py-14 md:px-12">
-            <h2 className="relative z-[2] max-w-[14ch] font-display text-[13vw] uppercase leading-[0.84] text-black md:text-[6.5rem] lg:text-[8.5rem]">
-              LO QUE PODEMOS{" "}
-              <TextType
-                as="span"
-                text={["CONSTRUIR"]}
-                className="text-[#ff2f9d]"
-                typingSpeed={66}
-                deletingSpeed={44}
-                pauseDuration={2000}
-                initialDelay={250}
-                loop={false}
-                showCursor={false}
-                startOnVisible
-              />
-            </h2>
-            <p className="relative z-[2] mt-6 max-w-4xl text-sm leading-relaxed text-black/85 lg:text-xl">
-              <TextType
-                as="span"
-                text={[
-                  "Estos son algunos de los trabajos que realizamos junto a nuestra red de aliados estrategicos. Segun el proyecto, formamos el equipo necesario para disenar, desarrollar y lanzar productos reales.",
-                ]}
-                typingSpeed={14}
-                deletingSpeed={14}
-                pauseDuration={1800}
-                initialDelay={520}
-                loop={false}
-                showCursor={false}
-                startOnVisible
-              />
-            </p>
-            <div className="relative z-[2] mt-8 h-[3px] w-20 bg-[#ff2f9d]" />
-          </div>
-
-          <div className="relative z-[4] w-full border-t-[3px] border-black">
-            {serviceCards.slice(0, 10).map((service, index) => (
-              <article
-                key={service.title}
-                className="service-row group border-b border-black"
-                style={{ background: SERVICE_ROW_COLORS[index % SERVICE_ROW_COLORS.length] }}
-              >
-                <div className="flex items-start justify-between gap-4 px-0 pb-3 pt-7">
-                  <h3 className="font-display text-[10vw] uppercase leading-[0.86] tracking-[-0.03em] text-black md:text-[5.2rem] lg:text-[6.6rem]">
-                    <span className="mr-[0.18em]">{String(index + 1).padStart(2, "0")}.</span>
-                    {service.title}
-                  </h3>
-                  <span className="mt-2 inline-block h-3 w-3 shrink-0 rounded-full bg-black" />
-                </div>
-                <div className="grid transition-[grid-template-rows] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] grid-rows-[0fr] group-hover:grid-rows-[1fr] group-focus-within:grid-rows-[1fr]">
-                  <div className="min-h-0 overflow-hidden border-t border-black">
-                    <div className="flex items-start justify-between gap-5 px-0 py-5">
-                      <p className="text-sm uppercase leading-[1.65] tracking-[0.08em] text-black/90 lg:text-lg">
-                        {service.description}
-                      </p>
-                      <span className="mt-1 inline-block h-3 w-3 shrink-0 rounded-full bg-black" />
-                    </div>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
+      <ServicesShowcaseSection />
 
       <section id="equipo" className="brutal-section vh-section section-shell relative border-t-2 border-black bg-[#111] text-[#fff8f0]">
         <StickerWindows items={teamStickers} />
@@ -513,14 +446,14 @@ export default function HomePage() {
             <Link href="/team/jean" className="ally-card group block" aria-label="Ver perfil de Jean">
               <div className="ally-ring-wrap" aria-hidden>
                 <CircularText
-                  text="JEAN ✦ BRANDING ✦ ESTRATEGIA ✦ "
+                  text="JEAN ✦ JEAN ✦ JEAN ✦ JEAN ✦ JEAN ✦ JEAN ✦ "
                   spinDuration={16}
                   onHover="speedUp"
                   className="ally-ring"
                 />
               </div>
               <div className="ally-image-wrap">
-                <Image src="/brand/girls/jean.png" alt="Jean" fill className="ally-image object-contain object-bottom" />
+                <Image src="/brand/girls/jean.png" alt="Jean" fill unoptimized className="ally-image object-contain object-bottom" />
               </div>
               <div className="ally-tag">✦ ESTRATEGIA & ROADMAP</div>
               <div className="ally-overlay">
@@ -547,14 +480,14 @@ export default function HomePage() {
             <Link href="/team/mel" className="ally-card group block" aria-label="Ver perfil de Mel">
               <div className="ally-ring-wrap" aria-hidden>
                 <CircularText
-                  text="MEL ✦ DIRECCION CREATIVA ✦ BRANDING ✦ "
+                  text="MEL ✦ MEL ✦ MEL ✦ MEL ✦ MEL ✦ MEL ✦ "
                   spinDuration={14}
                   onHover="speedUp"
-                  className="ally-ring ally-ring--reverse"
+                  className="ally-ring"
                 />
               </div>
               <div className="ally-image-wrap">
-                <Image src="/brand/girls/mel.png" alt="Mel" fill className="ally-image object-contain object-bottom" />
+                <Image src="/brand/girls/mel.png" alt="Mel" fill unoptimized className="ally-image object-contain object-bottom" />
               </div>
               <div className="ally-tag">✦ BRANDING & DIRECCIÓN CREATIVA</div>
               <div className="ally-overlay">
