@@ -60,6 +60,7 @@ body {
 
 a {
   transition: color 0.2s ease;
+  cursor: pointer;
 }
 
 .font-display {
@@ -1070,5 +1071,38 @@ a {
   }
   html {
     @apply font-sans;
+  }
+
+  /* Controles interactivos: mano; deshabilitados: prohibido (sigue siendo feedback claro). */
+  button:not(:disabled),
+  input[type="button"]:not(:disabled),
+  input[type="submit"]:not(:disabled),
+  input[type="reset"]:not(:disabled),
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled),
+  input[type="file"]:not(:disabled),
+  input[type="range"]:not(:disabled),
+  input[type="image"]:not(:disabled),
+  label,
+  select:not(:disabled),
+  summary,
+  area[href],
+  [role="button"]:not([aria-disabled="true"]),
+  [role="link"][href],
+  [role="tab"]:not([aria-disabled="true"]),
+  [role="menuitem"]:not([aria-disabled="true"]),
+  [role="option"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  input[type="button"]:disabled,
+  input[type="submit"]:disabled,
+  input[type="reset"]:disabled,
+  [role="button"][aria-disabled="true"],
+  select:disabled,
+  textarea:disabled,
+  input:disabled {
+    cursor: not-allowed;
   }
 }

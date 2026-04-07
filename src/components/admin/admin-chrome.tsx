@@ -16,7 +16,9 @@ import {
   RiImageLine,
   RiMailLine,
   RiStackLine,
+  RiCloseLine,
   RiTeamLine,
+  RiWallet3Line,
 } from "@remixicon/react";
 import { AdminDesktopAlerts } from "@/components/admin/admin-desktop-alerts";
 import { firebaseAuth } from "@/lib/firebase/client";
@@ -25,6 +27,7 @@ const links: { href: string; label: string; Icon: RemixiconComponentType }[] = [
   { href: "/admin", label: "Dashboard", Icon: RiDashboardLine },
   { href: "/admin/leads", label: "Leads", Icon: RiStackLine },
   { href: "/admin/clients", label: "Clientes", Icon: RiTeamLine },
+  { href: "/admin/expenses", label: "Gastos compartidos", Icon: RiWallet3Line },
   { href: "/admin/blog", label: "Blog CMS", Icon: RiArticleLine },
   { href: "/admin/media", label: "Media", Icon: RiImageLine },
   { href: "/admin/users", label: "Equipo", Icon: RiGroupLine },
@@ -34,6 +37,7 @@ const links: { href: string; label: string; Icon: RemixiconComponentType }[] = [
 ];
 
 const SIDEBAR_COLLAPSED_KEY = "lg_admin_sidebar_collapsed";
+const USERNAME_BANNER_DISMISS_KEY = "lg_admin_username_banner_dismiss";
 
 export function AdminChrome({ children }: PropsWithChildren) {
   const pathname = usePathname();
@@ -45,6 +49,15 @@ export function AdminChrome({ children }: PropsWithChildren) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [notifHint, setNotifHint] = useState<string | null>(null);
   const [desktopCollapsed, setDesktopCollapsed] = useState(false);
+  const [usernameBannerDismissed, setUsernameBannerDismissed] = useState(false);
+
+  useEffect(() => {
+    try {
+      setUsernameBannerDismissed(sessionStorage.getItem(USERNAME_BANNER_DISMISS_KEY) === "1");
+    } catch {
+      setUsernameBannerDismissed(false);
+    }
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(firebaseAuth, (nextUser) => {
@@ -60,9 +73,10 @@ export function AdminChrome({ children }: PropsWithChildren) {
         | { ok: boolean; profile?: { fullName?: string; username?: string; photoURL?: string } }
         | null;
       if (json?.ok && json.profile) setProfile(json.profile);
+      else setProfile(null);
     };
     void loadProfile();
-  }, []);
+  }, [pathname]);
 
   useEffect(() => {
     setPendingPath(null);
@@ -92,6 +106,21 @@ export function AdminChrome({ children }: PropsWithChildren) {
       // noop
     }
   }, [desktopCollapsed]);
+
+  const showUsernameReminder =
+    Boolean(user) &&
+    profile != null &&
+    !usernameBannerDismissed &&
+    !(profile.username ?? "").trim();
+
+  const dismissUsernameBanner = () => {
+    try {
+      sessionStorage.setItem(USERNAME_BANNER_DISMISS_KEY, "1");
+    } catch {
+      // noop
+    }
+    setUsernameBannerDismissed(true);
+  };
 
   const isLinkActive = (href: string) => {
     const current = pendingPath ?? pathname;
@@ -180,6 +209,39 @@ export function AdminChrome({ children }: PropsWithChildren) {
 
   return (
     <div className="min-h-screen bg-zinc-100">
+      {showUsernameReminder ? (
+        <div
+          className="sticky top-0 z-40 border-b border-amber-500/35 bg-amber-100 px-3 py-2.5 text-amber-950 shadow-sm sm:px-4"
+          role="alert"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="min-w-0 flex-1 text-sm leading-snug">
+              <span className="font-semibold">Asignate un nombre de usuario en tu perfil.</span> Mejora cómo el equipo
+              te reconoce en <strong className="font-semibold">Gastos compartidos</strong> y en el resto del panel.
+            </p>
+            <div className="flex shrink-0 items-center gap-2">
+              <Link
+                href="/admin/profile"
+                prefetch
+                onClick={() => setPendingPath("/admin/profile")}
+                className="rounded-lg bg-amber-900 px-3 py-1.5 text-xs font-semibold text-amber-50 hover:bg-amber-800"
+              >
+                Ir a perfil
+              </Link>
+              <button
+                type="button"
+                onClick={dismissUsernameBanner}
+                className="rounded-lg p-1.5 text-amber-900/80 hover:bg-amber-200/80"
+                aria-label="Ocultar hasta la próxima sesión"
+                title="Ocultar hasta la próxima sesión"
+              >
+                <RiCloseLine className="size-5" aria-hidden />
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       <AdminDesktopAlerts />
 
       <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-zinc-200 bg-rose-100/95 px-4 py-3 backdrop-blur-sm lg:hidden">

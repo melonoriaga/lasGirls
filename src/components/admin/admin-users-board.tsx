@@ -214,7 +214,9 @@ function UserCard({
           title={photo ? "Ver foto en grande" : undefined}
           aria-label={photo ? "Ver foto en grande" : undefined}
           className={`relative mx-auto h-20 w-20 shrink-0 overflow-hidden rounded-full border-2 border-zinc-200 bg-zinc-100 sm:mx-0 ${
-            photo ? "cursor-pointer ring-offset-2 hover:ring-2 hover:ring-rose-300 focus:outline-none focus:ring-2 focus:ring-rose-400" : "cursor-default opacity-95"
+            photo
+              ? "cursor-pointer ring-offset-2 hover:ring-2 hover:ring-rose-300 focus:outline-none focus:ring-2 focus:ring-rose-400"
+              : "opacity-95"
           }`}
         >
           {photo ? (
@@ -382,7 +384,7 @@ export function AdminUsersBoard({ users, myUid }: Props) {
 
       {lightbox ? (
         <div
-          className="fixed inset-0 z-[130] flex items-center justify-center bg-black/70 p-4 backdrop-blur-[2px]"
+          className="fixed inset-0 z-[130] flex cursor-pointer items-center justify-center bg-black/70 p-4 backdrop-blur-[2px]"
           role="presentation"
           onClick={closeLightbox}
         >
@@ -390,7 +392,7 @@ export function AdminUsersBoard({ users, myUid }: Props) {
             role="dialog"
             aria-modal="true"
             aria-label={lightbox.alt}
-            className="relative max-h-[min(90vh,880px)] max-w-[min(92vw,720px)] overflow-hidden rounded-2xl border border-white/20 bg-zinc-950 shadow-2xl"
+            className="relative max-h-[min(90vh,880px)] max-w-[min(92vw,720px)] cursor-default overflow-hidden rounded-2xl border border-white/20 bg-zinc-950 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <button

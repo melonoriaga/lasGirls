@@ -34,7 +34,7 @@ export function ConfirmDialog({
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/45 p-4"
+      className="fixed inset-0 z-[60] flex cursor-pointer items-center justify-center bg-black/45 p-4"
       role="presentation"
       onClick={() => !loading && onCancel()}
     >
@@ -43,7 +43,7 @@ export function ConfirmDialog({
         aria-modal="true"
         aria-labelledby="confirm-dialog-title"
         aria-describedby={description ? "confirm-dialog-desc" : undefined}
-        className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-6 shadow-xl"
+        className="w-full max-w-md cursor-default rounded-2xl border border-zinc-200 bg-white p-6 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex gap-3">
