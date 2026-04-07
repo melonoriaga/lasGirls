@@ -90,6 +90,8 @@ export type Lead = {
   updatedAt: string;
   createdBy?: string;
   convertedToClientId?: string;
+  visibilityScope?: "team" | "private";
+  ownerUserId?: string;
   metadata: LeadMetadata;
 };
 

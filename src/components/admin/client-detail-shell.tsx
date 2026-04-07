@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AdminActionBadge } from "@/components/admin/admin-action-badge";
 import { useAdminToast } from "@/components/admin/admin-toast-provider";
+import { ConfirmDialog } from "@/components/admin/confirm-dialog";
+import { RowActionsMenu } from "@/components/admin/row-actions-menu";
 import { getClientDisplayName } from "@/types/client";
 
 type ClientDoc = Record<string, unknown> & { id: string };
@@ -116,12 +118,30 @@ export function ClientDetailShell({ clientId }: Props) {
       {client ? (
         <>
           <header className="rounded-2xl border border-zinc-200 bg-white p-5">
-            <h1 className="text-2xl font-semibold text-zinc-900">{name}</h1>
-            <p className="mt-1 text-sm text-zinc-600">{String(client.email ?? "")}</p>
-            <p className="mt-1 text-xs text-zinc-500">
-              Estado: <strong className="text-zinc-800">{String(client.status ?? "—")}</strong> · Alta{" "}
-              {String(client.createdAt ?? "").slice(0, 10)}
-            </p>
+            <div className="flex items-start gap-4">
+              {client.logoURL ? (
+                <img
+                  src={String(client.logoURL)}
+                  alt={`${name} logo`}
+                  className="h-14 w-14 rounded-md border border-zinc-200 object-cover"
+                />
+              ) : (
+                <div className="flex h-14 w-14 items-center justify-center rounded-md border border-dashed border-zinc-300 text-[10px] text-zinc-500">
+                  Sin logo
+                </div>
+              )}
+              <div>
+                <h1 className="text-2xl font-semibold text-zinc-900">{name}</h1>
+                <p className="mt-1 text-sm text-zinc-600">{String(client.email ?? "")}</p>
+                <p className="mt-1 text-sm text-zinc-600">
+                  Tel: <strong className="text-zinc-800">{String(client.phone ?? "—")}</strong>
+                </p>
+                <p className="mt-1 text-xs text-zinc-500">
+                  Estado: <strong className="text-zinc-800">{String(client.status ?? "—")}</strong> · Alta{" "}
+                  {String(client.createdAt ?? "").slice(0, 10)}
+                </p>
+              </div>
+            </div>
           </header>
 
           <nav className="flex flex-wrap gap-2 border-b border-zinc-200 pb-2">
@@ -171,7 +191,13 @@ export function ClientDetailShell({ clientId }: Props) {
           ) : null}
 
           {tab === "invoices" ? (
-            <InvoicesTab clientId={clientId} rows={invoices} onRefresh={() => void loadTabData()} onFlash={onFlash} />
+            <InvoicesTab
+              clientId={clientId}
+              rows={invoices}
+              users={users}
+              onRefresh={() => void loadTabData()}
+              onFlash={onFlash}
+            />
           ) : null}
 
           {tab === "payments" ? (
@@ -212,6 +238,7 @@ function ClientSummaryTab({
   onError: (t: string) => void;
 }) {
   const [saving, setSaving] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const [form, setForm] = useState({
     fullName: String(client.fullName ?? client.displayName ?? ""),
     email: String(client.email ?? ""),
@@ -272,9 +299,83 @@ function ClientSummaryTab({
     }
   };
 
+  const uploadLogo = async (file?: File) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      onError("Solo se permiten imágenes.");
+      return;
+    }
+    if (file.size > 1024 * 1024) {
+      onError("El logo supera 1MB.");
+      return;
+    }
+
+    const isSquare = await new Promise<boolean>((resolve) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        resolve(img.width === img.height);
+        URL.revokeObjectURL(url);
+      };
+      img.onerror = () => {
+        resolve(false);
+        URL.revokeObjectURL(url);
+      };
+      img.src = url;
+    });
+    if (!isSquare) {
+      onError("El logo debe ser formato 1:1.");
+      return;
+    }
+
+    setUploadingLogo(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch(`/api/admin/clients/${clientId}/logo`, {
+        method: "POST",
+        body: fd,
+      });
+      const j = (await res.json()) as { ok?: boolean; error?: string };
+      if (!res.ok || !j.ok) {
+        onError(j.error ?? "No se pudo subir el logo.");
+        return;
+      }
+      onSaved();
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
   return (
     <div className="grid gap-4 rounded-2xl border border-zinc-200 bg-white p-5">
       <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-zinc-700">Datos generales</h2>
+      <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-3">
+        <p className="mb-2 text-xs font-medium text-zinc-600">Logo del cliente (1:1, máx. 1MB)</p>
+        <div className="flex items-center gap-3">
+          {client.logoURL ? (
+            <img
+              src={String(client.logoURL)}
+              alt="Logo cliente"
+              className="h-14 w-14 rounded-md border border-zinc-200 object-cover"
+            />
+          ) : (
+            <div className="flex h-14 w-14 items-center justify-center rounded-md border border-dashed border-zinc-300 text-[10px] text-zinc-500">
+              Sin logo
+            </div>
+          )}
+          <label className="inline-flex cursor-pointer items-center rounded-xl border border-zinc-300 bg-white px-3 py-2 text-xs font-semibold text-zinc-800 hover:bg-zinc-100">
+            {uploadingLogo ? "Subiendo..." : "Subir logo"}
+            <input
+              type="file"
+              accept="image/*"
+              disabled={uploadingLogo}
+              className="hidden"
+              onChange={(e) => void uploadLogo(e.target.files?.[0])}
+            />
+          </label>
+        </div>
+      </div>
       <div className="grid gap-3 md:grid-cols-2">
         <label className="grid gap-1 text-xs font-medium text-zinc-600">
           Nombre
@@ -446,66 +547,283 @@ function LinksTab({
   const [url, setUrl] = useState("");
   const [category, setCategory] = useState("drive");
   const [description, setDescription] = useState("");
-  const add = async () => {
-    const res = await fetch(`/api/admin/clients/${clientId}/links`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, url, category, description }),
-    });
-    const j = (await res.json()) as { ok?: boolean; error?: string };
-    if (!res.ok || !j.ok) {
-      onFlash({ type: "err", text: j.error ?? "Error" });
-      return;
-    }
+  const [saving, setSaving] = useState(false);
+  const [editingLinkId, setEditingLinkId] = useState<string | null>(null);
+  const [togglingLinkId, setTogglingLinkId] = useState<string | null>(null);
+  const [deletingLinkId, setDeletingLinkId] = useState<string | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; title: string } | null>(null);
+
+  const resetForm = () => {
     setTitle("");
     setUrl("");
+    setCategory("drive");
     setDescription("");
-    onFlash({ type: "ok", text: "Link agregado." });
-    onRefresh();
+    setEditingLinkId(null);
   };
+
+  const startEdit = (r: Record<string, unknown> & { id: string }) => {
+    setEditingLinkId(r.id);
+    setTitle(String(r.title ?? ""));
+    setUrl(String(r.url ?? ""));
+    setCategory(String(r.category ?? "drive"));
+    setDescription(String(r.description ?? ""));
+  };
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (saving) return;
+    const trimmedTitle = title.trim();
+    const trimmedUrl = url.trim();
+    if (!trimmedTitle || !trimmedUrl) {
+      onFlash({ type: "err", text: "Completá título y URL." });
+      return;
+    }
+    let href = trimmedUrl;
+    if (!/^https?:\/\//i.test(href)) {
+      href = `https://${href}`;
+    }
+    setSaving(true);
+    try {
+      const payload = {
+        title: trimmedTitle,
+        url: href,
+        category,
+        description: description.trim() || "",
+      };
+      const endpoint = editingLinkId
+        ? `/api/admin/clients/${clientId}/links/${editingLinkId}`
+        : `/api/admin/clients/${clientId}/links`;
+      const method = editingLinkId ? "PATCH" : "POST";
+      const res = await fetch(endpoint, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const j = (await res.json()) as { ok?: boolean; error?: string };
+      if (!res.ok || !j.ok) {
+        onFlash({ type: "err", text: j.error ?? "No se pudo guardar el link." });
+        return;
+      }
+      const wasEdit = Boolean(editingLinkId);
+      resetForm();
+      onFlash({
+        type: "ok",
+        text: wasEdit ? "Link actualizado." : "Link agregado.",
+      });
+      onRefresh();
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const setActive = async (linkId: string, nextActive: boolean) => {
+    if (togglingLinkId) return;
+    setTogglingLinkId(linkId);
+    try {
+      const res = await fetch(`/api/admin/clients/${clientId}/links/${linkId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ active: nextActive }),
+      });
+      const j = (await res.json()) as { ok?: boolean; error?: string };
+      if (!res.ok || !j.ok) {
+        onFlash({ type: "err", text: j.error ?? "No se pudo actualizar el estado." });
+        return;
+      }
+      onFlash({
+        type: "ok",
+        text: nextActive ? "Link reactivado." : "Link desactivado.",
+      });
+      onRefresh();
+    } finally {
+      setTogglingLinkId(null);
+    }
+  };
+
+  const runDelete = async () => {
+    if (!deleteConfirm) return;
+    const { id: lid } = deleteConfirm;
+    setDeletingLinkId(lid);
+    try {
+      const res = await fetch(`/api/admin/clients/${clientId}/links/${lid}`, { method: "DELETE" });
+      const j = (await res.json()) as { ok?: boolean; error?: string };
+      if (!res.ok || !j.ok) {
+        onFlash({ type: "err", text: j.error ?? "No se pudo eliminar." });
+        return;
+      }
+      onFlash({ type: "ok", text: "Link eliminado." });
+      if (editingLinkId === lid) resetForm();
+      setDeleteConfirm(null);
+      onRefresh();
+    } finally {
+      setDeletingLinkId(null);
+    }
+  };
+
+  const selectLinkClass = `${inputClass} pr-8`;
+
   return (
     <div className="grid gap-4">
-      <div className="rounded-2xl border border-zinc-200 bg-white p-4">
-        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-600">Nuevo link</p>
+      <ConfirmDialog
+        open={Boolean(deleteConfirm)}
+        title="¿Eliminar este link?"
+        description={
+          deleteConfirm
+            ? `Se borrará «${deleteConfirm.title}» y se actualizará el contador del cliente.`
+            : undefined
+        }
+        confirmLabel="Sí, eliminar"
+        danger
+        loading={Boolean(deletingLinkId)}
+        onCancel={() => !deletingLinkId && setDeleteConfirm(null)}
+        onConfirm={() => void runDelete()}
+      />
+
+      <form
+        onSubmit={(e) => void submit(e)}
+        className="rounded-2xl border border-zinc-200 bg-white p-4"
+      >
+        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-600">
+          {editingLinkId ? "Editar link" : "Nuevo link"}
+        </p>
         <div className="mt-3 grid gap-2 md:grid-cols-2">
-          <input className={inputClass} placeholder="Título" value={title} onChange={(e) => setTitle(e.target.value)} />
-          <input className={inputClass} placeholder="https://..." value={url} onChange={(e) => setUrl(e.target.value)} />
-          <select className={inputClass} value={category} onChange={(e) => setCategory(e.target.value)}>
+          <input
+            className={inputClass}
+            placeholder="Título"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            disabled={saving}
+            autoComplete="off"
+          />
+          <input
+            className={inputClass}
+            placeholder="https://..."
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            disabled={saving}
+            autoComplete="off"
+          />
+          <select
+            className={selectLinkClass}
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            disabled={saving}
+          >
             {["drive", "slides", "sheets", "figma", "invoice", "brief", "assets", "other"].map((c) => (
               <option key={c} value={c}>
                 {c}
               </option>
             ))}
           </select>
-          <input className={inputClass} placeholder="Nota" value={description} onChange={(e) => setDescription(e.target.value)} />
+          <input
+            className={inputClass}
+            placeholder="Nota"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            disabled={saving}
+            autoComplete="off"
+          />
         </div>
-        <button type="button" onClick={() => void add()} className="mt-3 rounded-xl bg-rose-300 px-4 py-2 text-xs font-semibold text-zinc-900">
-          Agregar
-        </button>
-      </div>
-      <div className="overflow-x-auto rounded-2xl border border-zinc-200 bg-white">
-        <table className="w-full min-w-[720px] text-left text-sm">
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button
+            type="submit"
+            disabled={saving}
+            aria-busy={saving}
+            className="rounded-xl bg-rose-300 px-4 py-2 text-xs font-semibold text-zinc-900 disabled:opacity-60"
+          >
+            {saving ? (editingLinkId ? "Guardando..." : "Agregando...") : editingLinkId ? "Guardar cambios" : "Agregar"}
+          </button>
+          {editingLinkId ? (
+            <button
+              type="button"
+              disabled={saving}
+              onClick={() => resetForm()}
+              className="rounded-xl border border-zinc-300 bg-white px-4 py-2 text-xs font-semibold text-zinc-800 hover:bg-zinc-50 disabled:opacity-60"
+            >
+              Cancelar edición
+            </button>
+          ) : null}
+        </div>
+      </form>
+
+      <div className="rounded-2xl border border-zinc-200 bg-white">
+        <table className="w-full text-left text-sm">
           <thead className="border-b border-zinc-200 bg-zinc-50">
             <tr>
               <th className="p-3">Título</th>
               <th className="p-3">Categoría</th>
               <th className="p-3">URL</th>
+              <th className="p-3">Estado</th>
               <th className="p-3">Fecha</th>
+              <th className="p-3 w-12"> </th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((r) => (
-              <tr key={r.id} className="border-b border-zinc-100">
-                <td className="p-3">{String(r.title ?? "")}</td>
-                <td className="p-3">{String(r.category ?? "")}</td>
-                <td className="p-3">
-                  <a href={String(r.url ?? "#")} className="text-[#db2777] hover:underline" target="_blank" rel="noreferrer">
-                    abrir
-                  </a>
-                </td>
-                <td className="p-3 text-zinc-500">{String(r.createdAt ?? "").slice(0, 10)}</td>
-              </tr>
-            ))}
+            {rows.map((r) => {
+              const inactive = r.active === false;
+              const rowBusy = togglingLinkId === r.id;
+              const href = String(r.url ?? "#");
+              return (
+                <tr
+                  key={r.id}
+                  className={`border-b border-zinc-100 last:border-b-0 ${
+                    editingLinkId === r.id ? "bg-rose-100" : inactive ? "bg-zinc-50/90 text-zinc-600" : ""
+                  }`}
+                >
+                  <td className="p-3 font-medium">{String(r.title ?? "")}</td>
+                  <td className="p-3">{String(r.category ?? "")}</td>
+                  <td className="p-3">
+                    {inactive ? (
+                      <span className="text-zinc-500">—</span>
+                    ) : (
+                      <a
+                        href={href}
+                        className="cursor-pointer font-medium text-[#db2777] underline-offset-2 hover:underline"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Abrir
+                      </a>
+                    )}
+                  </td>
+                  <td className="p-3">
+                    {inactive ? (
+                      <span className="inline-flex rounded-full border border-zinc-200 bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-zinc-600">
+                        Desactivado
+                      </span>
+                    ) : (
+                      <span className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-800">
+                        Activo
+                      </span>
+                    )}
+                  </td>
+                  <td className="p-3 text-zinc-500">{String(r.createdAt ?? "").slice(0, 10)}</td>
+                  <td className="p-3">
+                    <RowActionsMenu
+                      items={[
+                        {
+                          label: "Editar",
+                          onClick: () => startEdit(r),
+                        },
+                        {
+                          label: inactive ? "Reactivar" : "Desactivar",
+                          onClick: () => void setActive(r.id, inactive),
+                        },
+                        {
+                          label: "Eliminar",
+                          danger: true,
+                          onClick: () =>
+                            setDeleteConfirm({ id: r.id, title: String(r.title ?? "Link") }),
+                        },
+                      ]}
+                    />
+                    {rowBusy ? (
+                      <span className="mt-1 block text-[10px] text-zinc-500">Actualizando…</span>
+                    ) : null}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -513,14 +831,17 @@ function LinksTab({
   );
 }
 
+
 function InvoicesTab({
   clientId,
   rows,
+  users,
   onRefresh,
   onFlash,
 }: {
   clientId: string;
   rows: Array<Record<string, unknown> & { id: string }>;
+  users: AdminUser[];
   onRefresh: () => void;
   onFlash: (f: { type: "ok" | "err"; text: string } | null) => void;
 }) {
@@ -529,28 +850,94 @@ function InvoicesTab({
   const [currency, setCurrency] = useState("USD");
   const [status, setStatus] = useState("draft");
   const [invoiceLink, setInvoiceLink] = useState("");
+  const [collectionEmailSent, setCollectionEmailSent] = useState(false);
+  const [invoiceEmailSent, setInvoiceEmailSent] = useState(false);
+  const [isPaid, setIsPaid] = useState(false);
+  const [receivedByUserId, setReceivedByUserId] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [editingInvoiceId, setEditingInvoiceId] = useState<string | null>(null);
+  const [deletingInvoiceId, setDeletingInvoiceId] = useState<string | null>(null);
+
+  const resetForm = () => {
+    setPeriodLabel("");
+    setAmount("");
+    setCurrency("USD");
+    setStatus("draft");
+    setInvoiceLink("");
+    setCollectionEmailSent(false);
+    setInvoiceEmailSent(false);
+    setIsPaid(false);
+    setReceivedByUserId("");
+    setEditingInvoiceId(null);
+  };
+
+  const startEdit = (row: Record<string, unknown> & { id: string }) => {
+    setEditingInvoiceId(row.id);
+    setPeriodLabel(String(row.periodLabel ?? ""));
+    setAmount(String(row.amount ?? ""));
+    setCurrency(String(row.currency ?? "USD"));
+    setStatus(String(row.status ?? "draft"));
+    setInvoiceLink(String(row.invoiceLink ?? ""));
+    setCollectionEmailSent(Boolean(row.collectionEmailSent));
+    setInvoiceEmailSent(Boolean(row.invoiceEmailSent));
+    setIsPaid(Boolean(row.isPaid));
+    setReceivedByUserId(String(row.receivedByUserId ?? ""));
+  };
+
+  const remove = async (invoiceId: string) => {
+    setDeletingInvoiceId(invoiceId);
+    try {
+      const res = await fetch(`/api/admin/clients/${clientId}/invoices/${invoiceId}`, {
+        method: "DELETE",
+      });
+      const j = (await res.json()) as { ok?: boolean; error?: string };
+      if (!res.ok || !j.ok) {
+        onFlash({ type: "err", text: j.error ?? "No se pudo eliminar." });
+        return;
+      }
+      onFlash({ type: "ok", text: "Factura eliminada." });
+      if (editingInvoiceId === invoiceId) resetForm();
+      onRefresh();
+    } finally {
+      setDeletingInvoiceId(null);
+    }
+  };
+
   const add = async () => {
-    const res = await fetch(`/api/admin/clients/${clientId}/invoices`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    if (saving) return;
+    setSaving(true);
+    try {
+      const payload = {
         periodLabel,
         amount: Number(amount) || 0,
         currency,
         status,
         invoiceLink: invoiceLink || undefined,
-      }),
-    });
-    const j = (await res.json()) as { ok?: boolean; error?: string };
-    if (!res.ok || !j.ok) {
-      onFlash({ type: "err", text: j.error ?? "Error" });
-      return;
+        collectionEmailSent,
+        invoiceEmailSent,
+        isPaid,
+        receivedByUserId: receivedByUserId || undefined,
+      };
+      const endpoint = editingInvoiceId
+        ? `/api/admin/clients/${clientId}/invoices/${editingInvoiceId}`
+        : `/api/admin/clients/${clientId}/invoices`;
+      const method = editingInvoiceId ? "PATCH" : "POST";
+      const res = await fetch(endpoint, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const j = (await res.json()) as { ok?: boolean; error?: string };
+      if (!res.ok || !j.ok) {
+        onFlash({ type: "err", text: j.error ?? "Error" });
+        return;
+      }
+      resetForm();
+      onFlash({ type: "ok", text: editingInvoiceId ? "Factura actualizada." : "Factura registrada." });
+      onRefresh();
+    } finally {
+      setSaving(false);
     }
-    setPeriodLabel("");
-    setAmount("");
-    setInvoiceLink("");
-    onFlash({ type: "ok", text: "Factura registrada." });
-    onRefresh();
   };
   return (
     <div className="grid gap-4">
@@ -571,31 +958,81 @@ function InvoicesTab({
             <option value="cancelled">cancelled</option>
           </select>
           <input className={`${inputClass} md:col-span-2`} placeholder="Link factura (opcional)" value={invoiceLink} onChange={(e) => setInvoiceLink(e.target.value)} />
+          <label className="inline-flex items-center gap-2 text-xs text-zinc-700">
+            <input type="checkbox" checked={collectionEmailSent} onChange={(e) => setCollectionEmailSent(e.target.checked)} />
+            Mail de cobro enviado
+          </label>
+          <label className="inline-flex items-center gap-2 text-xs text-zinc-700">
+            <input type="checkbox" checked={invoiceEmailSent} onChange={(e) => setInvoiceEmailSent(e.target.checked)} />
+            Factura enviada
+          </label>
+          <label className="inline-flex items-center gap-2 text-xs text-zinc-700">
+            <input type="checkbox" checked={isPaid} onChange={(e) => setIsPaid(e.target.checked)} />
+            Pagado
+          </label>
+          {isPaid ? (
+            <select
+              className={inputClass}
+              value={receivedByUserId}
+              onChange={(e) => setReceivedByUserId(e.target.value)}
+            >
+              <option value="">Quién recibió el pago</option>
+              {users.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.fullName || u.email}
+                </option>
+              ))}
+            </select>
+          ) : null}
         </div>
-        <button type="button" onClick={() => void add()} className="mt-3 rounded-xl bg-rose-300 px-4 py-2 text-xs font-semibold text-zinc-900">
-          Guardar
+        <button
+          type="button"
+          disabled={saving || !periodLabel.trim()}
+          onClick={() => void add()}
+          className="mt-3 rounded-xl bg-rose-300 px-4 py-2 text-xs font-semibold text-zinc-900 disabled:opacity-60"
+        >
+          {saving ? "Guardando..." : editingInvoiceId ? "Guardar cambios" : "Guardar"}
         </button>
+        {editingInvoiceId ? (
+          <button
+            type="button"
+            onClick={resetForm}
+            className="ml-2 mt-3 rounded-xl border border-zinc-300 bg-white px-4 py-2 text-xs font-semibold text-zinc-800"
+          >
+            Cancelar edición
+          </button>
+        ) : null}
       </div>
-      <div className="overflow-x-auto rounded-2xl border border-zinc-200 bg-white">
-        <table className="w-full min-w-[900px] text-left text-sm">
+      <div className="rounded-2xl border border-zinc-200 bg-white">
+        <table className="w-full text-left text-sm">
           <thead className="border-b border-zinc-200 bg-zinc-50">
             <tr>
               <th className="p-3">Período</th>
               <th className="p-3">Monto</th>
               <th className="p-3">Estado</th>
               <th className="p-3">Enviada</th>
+              <th className="p-3">Mail cobro</th>
+              <th className="p-3">Factura env.</th>
+              <th className="p-3">Pagado</th>
               <th className="p-3">Link</th>
+              <th className="p-3">Acciones</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((r) => (
-              <tr key={r.id} className="border-b border-zinc-100">
+              <tr
+                key={r.id}
+                className={`border-b border-zinc-100 ${editingInvoiceId === r.id ? "bg-rose-100" : ""}`}
+              >
                 <td className="p-3">{String(r.periodLabel ?? "")}</td>
                 <td className="p-3">
                   {String(r.currency ?? "")} {String(r.amount ?? "")}
                 </td>
                 <td className="p-3">{String(r.status ?? "")}</td>
                 <td className="p-3 text-zinc-500">{String(r.sentAt ?? "").slice(0, 10)}</td>
+                <td className="p-3 text-zinc-700">{Boolean(r.collectionEmailSent) ? "si" : "no"}</td>
+                <td className="p-3 text-zinc-700">{Boolean(r.invoiceEmailSent) ? "si" : "no"}</td>
+                <td className="p-3 text-zinc-700">{Boolean(r.isPaid) ? "si" : "no"}</td>
                 <td className="p-3">
                   {r.invoiceLink ? (
                     <a href={String(r.invoiceLink)} className="text-[#db2777] hover:underline" target="_blank" rel="noreferrer">
@@ -604,6 +1041,25 @@ function InvoicesTab({
                   ) : (
                     "—"
                   )}
+                </td>
+                <td className="p-3">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => startEdit(r)}
+                      className="rounded border border-zinc-300 bg-white px-2 py-1 text-xs font-semibold text-zinc-700"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      type="button"
+                      disabled={deletingInvoiceId === r.id}
+                      onClick={() => void remove(r.id)}
+                      className="rounded border border-red-300 bg-red-50 px-2 py-1 text-xs font-semibold text-red-700 disabled:opacity-60"
+                    >
+                      {deletingInvoiceId === r.id ? "Eliminando..." : "Eliminar"}
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -759,8 +1215,8 @@ function PaymentsTab({
           Registrar pago
         </button>
       </div>
-      <div className="overflow-x-auto rounded-2xl border border-zinc-200 bg-white">
-        <table className="w-full min-w-[800px] text-left text-sm">
+      <div className="rounded-2xl border border-zinc-200 bg-white">
+        <table className="w-full text-left text-sm">
           <thead className="border-b border-zinc-200 bg-zinc-50">
             <tr>
               <th className="p-3">Fecha</th>

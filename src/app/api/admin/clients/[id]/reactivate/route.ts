@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSessionActor } from "@/lib/api/admin-session";
+import { canAccessRecord } from "@/lib/admin/record-visibility";
 import { logAdminActivity } from "@/lib/activity/log";
 import { adminDb } from "@/lib/firebase/admin";
 import { logClientActivity } from "@/lib/clients/activity";
@@ -17,6 +18,9 @@ export async function POST(request: Request, context: Context) {
   const snap = await ref.get();
   if (!snap.exists) {
     return NextResponse.json({ ok: false, error: "Cliente inexistente." }, { status: 404 });
+  }
+  if (!canAccessRecord(snap.data() ?? {}, actor.uid)) {
+    return NextResponse.json({ ok: false, error: "Sin permisos para este cliente." }, { status: 403 });
   }
 
   const now = new Date().toISOString();

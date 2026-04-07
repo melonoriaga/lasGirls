@@ -25,6 +25,7 @@ export function CreateLeadForm({ onSuccess, onError, hideHeader = false, classNa
   const [serviceInterest, setServiceInterest] = useState("");
   const [tags, setTags] = useState("");
   const [inquiryType, setInquiryType] = useState("consulta_general");
+  const [visibilityScope, setVisibilityScope] = useState("team");
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -54,6 +55,7 @@ export function CreateLeadForm({ onSuccess, onError, hideHeader = false, classNa
             .map((item) => item.trim())
             .filter(Boolean),
           inquiryType,
+          visibilityScope,
           message,
           source: "admin-manual",
           preferredContactMethod: "email",
@@ -76,6 +78,7 @@ export function CreateLeadForm({ onSuccess, onError, hideHeader = false, classNa
       setServiceInterest("");
       setTags("");
       setInquiryType("consulta_general");
+      setVisibilityScope("team");
       setMessage("");
       onSuccess?.();
       router.refresh();
@@ -160,6 +163,13 @@ export function CreateLeadForm({ onSuccess, onError, hideHeader = false, classNa
         <label className="grid gap-1">
           <span className="text-xs font-medium text-zinc-600">Tags (coma separada)</span>
           <input className={inputClassName} value={tags} onChange={(event) => setTags(event.target.value)} />
+        </label>
+        <label className="grid gap-1">
+          <span className="text-xs font-medium text-zinc-600">Visibilidad</span>
+          <select className={inputClassName} value={visibilityScope} onChange={(event) => setVisibilityScope(event.target.value)}>
+            <option value="team">Todo el equipo</option>
+            <option value="private">Solo yo (mi usuario)</option>
+          </select>
         </label>
         <label className="grid gap-1 md:col-span-3">
           <span className="text-xs font-medium text-zinc-600">Mensaje</span>

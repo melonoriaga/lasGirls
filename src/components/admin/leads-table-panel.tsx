@@ -3,9 +3,7 @@
 import Link from "next/link";
 import {
   RiAddLine,
-  RiArrowRightSLine,
   RiCloseLine,
-  RiDeleteBinLine,
   RiRefreshLine,
 } from "@remixicon/react";
 import { useMemo, useState } from "react";
@@ -13,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { ConfirmDialog } from "@/components/admin/confirm-dialog";
 import { useAdminToast } from "@/components/admin/admin-toast-provider";
 import { CreateLeadForm } from "@/components/admin/create-lead-form";
+import { RowActionsMenu } from "@/components/admin/row-actions-menu";
 import { leadBudgetStatusLabel, leadPipelineStatusLabel } from "@/lib/admin/lead-statuses";
 
 type LeadRow = {
@@ -28,11 +27,14 @@ type LeadRow = {
   assignedTo?: string;
   assignedToUserId?: string;
   convertedToClientId?: string;
+  visibilityScope?: "team" | "private";
+  ownerUserId?: string;
   createdAt?: string;
 };
 
 type Props = {
   leads: LeadRow[];
+  actorUid: string;
 };
 
 const getStatusClassName = (status?: string) => {
@@ -73,7 +75,7 @@ function serviceLabel(lead: LeadRow) {
   return lead.inquiryType ?? "—";
 }
 
-export function LeadsTablePanel({ leads }: Props) {
+export function LeadsTablePanel({ leads, actorUid }: Props) {
   const router = useRouter();
   const toast = useAdminToast();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -82,6 +84,9 @@ export function LeadsTablePanel({ leads }: Props) {
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
+  const [scopeFilter, setScopeFilter] = useState<"all" | "mine">("all");
+  const [pageSize, setPageSize] = useState(10);
+  const [page, setPage] = useState(1);
 
   const statuses = useMemo(
     () => Array.from(new Set(leads.map((lead) => String(lead.status ?? "new")))).sort(),
@@ -109,10 +114,30 @@ export function LeadsTablePanel({ leads }: Props) {
         type.toLowerCase().includes(normalizedQuery);
       const matchesStatus = statusFilter === "all" || status === statusFilter;
       const matchesType = typeFilter === "all" || type === typeFilter;
+      const isMine = String(lead.ownerUserId ?? "") === actorUid;
+      const matchesScope = scopeFilter === "all" || isMine;
 
-      return matchesQuery && matchesStatus && matchesType;
+      return matchesQuery && matchesStatus && matchesType && matchesScope;
     });
-  }, [leads, query, statusFilter, typeFilter]);
+  }, [actorUid, leads, query, scopeFilter, statusFilter, typeFilter]);
+  const totalItems = filteredLeads.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const safePage = Math.min(page, totalPages);
+  const startIdx = (safePage - 1) * pageSize;
+  const pageRows = filteredLeads.slice(startIdx, startIdx + pageSize);
+  const hasPrev = safePage > 1;
+  const hasNext = safePage < totalPages;
+  const startCount = totalItems === 0 ? 0 : (safePage - 1) * pageSize + 1;
+  const endCount = Math.min(safePage * pageSize, totalItems);
+
+  const pageButtons = (() => {
+    const span = 2;
+    const from = Math.max(1, safePage - span);
+    const to = Math.min(totalPages, safePage + span);
+    const pages: number[] = [];
+    for (let n = from; n <= to; n += 1) pages.push(n);
+    return pages;
+  })();
 
   const deleteLeadDisplay = deleteTarget
     ? String(deleteTarget.fullName || deleteTarget.email || deleteTarget.id)
@@ -143,40 +168,24 @@ export function LeadsTablePanel({ leads }: Props) {
 
   return (
     <>
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setIsModalOpen(true)}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-rose-300 px-4 py-2 text-xs font-semibold text-zinc-900 transition hover:bg-rose-400"
-          >
-            <RiAddLine className="size-4 shrink-0" aria-hidden />
-            Nuevo lead manual
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              router.refresh();
-              toast.success("Tabla actualizada manualmente.");
-            }}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-4 py-2 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-100"
-          >
-            <RiRefreshLine className="size-4 shrink-0" aria-hidden />
-            Actualizar tabla
-          </button>
-        </div>
-
+      <div className="mt-4 flex flex-wrap items-end justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
           <input
             value={query}
-            onChange={(event) => setQuery(event.target.value)}
+            onChange={(event) => {
+              setQuery(event.target.value);
+              setPage(1);
+            }}
             placeholder="Buscar nombre, email, empresa..."
             className="w-[220px] rounded-lg border border-zinc-300 bg-zinc-50 px-3 py-2.5 text-xs text-zinc-800 focus:border-rose-300 focus:ring-rose-300"
           />
           <select
             value={statusFilter}
-            onChange={(event) => setStatusFilter(event.target.value)}
-            className="rounded-lg border border-zinc-300 bg-zinc-50 px-3 py-2.5 text-xs text-zinc-800 focus:border-rose-300 focus:ring-rose-300"
+            onChange={(event) => {
+              setStatusFilter(event.target.value);
+              setPage(1);
+            }}
+            className="rounded-lg border border-zinc-300 bg-zinc-50 px-3 py-2.5 pr-8 text-xs text-zinc-800 focus:border-rose-300 focus:ring-rose-300"
           >
             <option value="all">Todos los estados</option>
             {statuses.map((status) => (
@@ -187,8 +196,11 @@ export function LeadsTablePanel({ leads }: Props) {
           </select>
           <select
             value={typeFilter}
-            onChange={(event) => setTypeFilter(event.target.value)}
-            className="rounded-lg border border-zinc-300 bg-zinc-50 px-3 py-2.5 text-xs text-zinc-800 focus:border-rose-300 focus:ring-rose-300"
+            onChange={(event) => {
+              setTypeFilter(event.target.value);
+              setPage(1);
+            }}
+            className="rounded-lg border border-zinc-300 bg-zinc-50 px-3 py-2.5 pr-8 text-xs text-zinc-800 focus:border-rose-300 focus:ring-rose-300"
           >
             <option value="all">Todos los tipos</option>
             {inquiryTypes.map((type) => (
@@ -197,11 +209,43 @@ export function LeadsTablePanel({ leads }: Props) {
               </option>
             ))}
           </select>
+          <select
+            value={scopeFilter}
+            onChange={(event) => {
+              setScopeFilter(event.target.value as "all" | "mine");
+              setPage(1);
+            }}
+            className="rounded-lg border border-zinc-300 bg-zinc-50 px-3 py-2.5 pr-8 text-xs text-zinc-800 focus:border-rose-300 focus:ring-rose-300"
+          >
+            <option value="all">Todos visibles</option>
+            <option value="mine">Solo míos</option>
+          </select>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIsModalOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-xl bg-rose-300 px-4 py-2 text-xs font-semibold text-zinc-900 transition hover:bg-rose-400"
+          >
+            <RiAddLine className="size-4 shrink-0" aria-hidden />
+            Agregar
+          </button>
+          <button
+            type="button"
+            aria-label="Actualizar tabla"
+            onClick={() => {
+              router.refresh();
+              toast.success("Tabla actualizada.");
+            }}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-100"
+          >
+            <RiRefreshLine className="size-4 shrink-0" aria-hidden />
+          </button>
         </div>
       </div>
 
-      <div className="mt-4 overflow-x-auto rounded-2xl border border-zinc-200 bg-white">
-        <table className="w-full min-w-[1200px] text-left text-sm">
+      <div className="mt-4 rounded-2xl border border-zinc-200 bg-white">
+        <table className="w-full text-left text-sm">
           <thead className="border-b border-zinc-200 bg-zinc-50">
             <tr>
               <th className="p-3 font-medium text-zinc-600">Nombre</th>
@@ -217,14 +261,14 @@ export function LeadsTablePanel({ leads }: Props) {
             </tr>
           </thead>
           <tbody>
-            {filteredLeads.length === 0 ? (
+            {pageRows.length === 0 ? (
               <tr>
                 <td className="p-8 text-center text-sm text-zinc-600" colSpan={10}>
                   No hay resultados para los filtros seleccionados.
                 </td>
               </tr>
             ) : (
-              filteredLeads.map((lead) => (
+              pageRows.map((lead) => (
                 <tr key={lead.id} className="border-b border-zinc-100/90 transition hover:bg-zinc-50/70 last:border-b-0">
                   <td className="p-3 font-medium text-zinc-900">{lead.fullName}</td>
                   <td className="p-3 text-zinc-700">{lead.email ?? "—"}</td>
@@ -254,31 +298,21 @@ export function LeadsTablePanel({ leads }: Props) {
                   </td>
                   <td className="p-3 text-zinc-600">{String(lead.createdAt ?? "").slice(0, 10)}</td>
                   <td className="p-3">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Link
-                        href={`/admin/leads/${lead.id}`}
-                        className="inline-flex items-center gap-0.5 font-medium text-[#db2777] hover:underline"
-                      >
-                        Ver
-                        <RiArrowRightSLine className="size-3.5" aria-hidden />
-                      </Link>
-                      {String(lead.status ?? "") === "converted" && lead.convertedToClientId ? (
-                        <Link
-                          href={`/admin/clients/${lead.convertedToClientId}`}
-                          className="inline-flex items-center gap-0.5 text-xs font-semibold text-emerald-700 hover:text-emerald-900 hover:underline"
-                        >
-                          Ver cliente
-                          <RiArrowRightSLine className="size-3.5" aria-hidden />
-                        </Link>
+                    <div className="flex items-center justify-end gap-2">
+                      {lead.visibilityScope === "private" ? (
+                        <span className="rounded-full border border-violet-200 bg-violet-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-800">
+                          privado
+                        </span>
                       ) : null}
-                      <button
-                        type="button"
-                        onClick={() => setDeleteTarget(lead)}
-                        className="inline-flex items-center gap-0.5 text-xs font-semibold text-red-700 hover:text-red-900 hover:underline"
-                      >
-                        <RiDeleteBinLine className="size-3.5" aria-hidden />
-                        Eliminar
-                      </button>
+                      <RowActionsMenu
+                        items={[
+                          { label: "Ver", href: `/admin/leads/${lead.id}` },
+                          ...(String(lead.status ?? "") === "converted" && lead.convertedToClientId
+                            ? [{ label: "Ver cliente", href: `/admin/clients/${lead.convertedToClientId}` }]
+                            : []),
+                          { label: "Eliminar", onClick: () => setDeleteTarget(lead), danger: true },
+                        ]}
+                      />
                     </div>
                   </td>
                 </tr>
@@ -287,6 +321,72 @@ export function LeadsTablePanel({ leads }: Props) {
           </tbody>
         </table>
       </div>
+
+      {totalItems > 0 ? (
+        <nav aria-label="Paginación de leads" className="mt-4 flex flex-wrap items-center justify-between gap-3">
+          <p className="text-xs text-zinc-600">
+            Mostrando <strong>{startCount}</strong> a <strong>{endCount}</strong> de <strong>{totalItems}</strong> leads
+          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <ul className="flex -space-x-px text-sm">
+              <li>
+                <button
+                  type="button"
+                  disabled={!hasPrev}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  className="flex h-9 items-center justify-center rounded-s-lg border border-zinc-300 bg-zinc-100 px-3 text-sm text-zinc-700 hover:bg-zinc-200 disabled:opacity-50"
+                >
+                  Previous
+                </button>
+              </li>
+              {pageButtons.map((n) => (
+                <li key={n}>
+                  <button
+                    type="button"
+                    aria-current={n === safePage ? "page" : undefined}
+                    onClick={() => setPage(n)}
+                    className={
+                      n === safePage
+                        ? "flex h-9 w-9 items-center justify-center border border-zinc-300 bg-zinc-200 text-sm font-semibold text-zinc-900"
+                        : "flex h-9 w-9 items-center justify-center border border-zinc-300 bg-zinc-100 text-sm text-zinc-700 hover:bg-zinc-200"
+                    }
+                  >
+                    {n}
+                  </button>
+                </li>
+              ))}
+              <li>
+                <button
+                  type="button"
+                  disabled={!hasNext}
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  className="flex h-9 items-center justify-center rounded-e-lg border border-zinc-300 bg-zinc-100 px-3 text-sm text-zinc-700 hover:bg-zinc-200 disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </li>
+            </ul>
+            <form className="w-32">
+              <label htmlFor="leads-per-page" className="sr-only">
+                Items por página
+              </label>
+              <select
+                id="leads-per-page"
+                className="block w-full rounded-lg border border-zinc-300 bg-zinc-100 px-3 py-2.5 text-sm text-zinc-800"
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setPage(1);
+                }}
+              >
+                <option value={10}>10 per page</option>
+                <option value={20}>20 per page</option>
+                <option value={50}>50 per page</option>
+              </select>
+            </form>
+          </div>
+        </nav>
+      ) : null}
 
       <ConfirmDialog
         open={Boolean(deleteTarget)}

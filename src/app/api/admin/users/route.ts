@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
+import { listMergedTeamUsers } from "@/lib/admin/team-users";
 import { getSessionActor } from "@/lib/api/admin-session";
-import { adminDb } from "@/lib/firebase/admin";
 
 export async function GET() {
   const actor = await getSessionActor();
@@ -8,16 +8,13 @@ export async function GET() {
     return NextResponse.json({ ok: false, error: "No autorizado." }, { status: 401 });
   }
 
-  const snapshot = await adminDb.collection("users").orderBy("createdAt", "desc").limit(200).get();
-  const users = snapshot.docs.map((doc) => {
-    const data = doc.data() as { fullName?: string; email?: string; username?: string };
-    return {
-      id: doc.id,
-      fullName: data.fullName ?? "",
-      email: data.email ?? "",
-      username: data.username ?? "",
-    };
-  });
+  const merged = await listMergedTeamUsers();
+  const users = merged.map((u) => ({
+    id: u.id,
+    fullName: u.fullName ?? "",
+    email: u.email ?? "",
+    username: u.username ?? "",
+  }));
 
   return NextResponse.json({ ok: true, users });
 }

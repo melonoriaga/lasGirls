@@ -24,6 +24,7 @@ const schema = z.object({
   preferredContactMethod: z.string().optional().default("email"),
   assignedTo: z.string().optional().default(""),
   tags: z.array(z.string()).optional().default([]),
+  visibilityScope: z.enum(["team", "private"]).optional().default("team"),
 });
 
 export async function POST(request: Request) {
@@ -36,6 +37,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const parsed = schema.parse(body);
     const now = new Date().toISOString();
+    const isPrivate = parsed.visibilityScope === "private";
 
     const ref = await adminDb.collection("leads").add({
       ...parsed,
@@ -55,6 +57,8 @@ export async function POST(request: Request) {
       createdAt: now,
       updatedAt: now,
       createdBy: actor.uid,
+      visibilityScope: parsed.visibilityScope,
+      ownerUserId: isPrivate ? actor.uid : "",
     });
 
     await logAdminActivity({

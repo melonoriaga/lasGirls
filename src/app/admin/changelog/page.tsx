@@ -30,7 +30,7 @@ const formatDate = (value?: string) => {
   }).format(date);
 };
 
-const PAGE_SIZE = 10;
+const DEFAULT_PAGE_SIZE = 10;
 
 function singleParam(v: string | string[] | undefined): string | undefined {
   if (v === undefined) return undefined;
@@ -41,6 +41,7 @@ function singleParam(v: string | string[] | undefined): string | undefined {
 export default async function AdminChangelogPage({ searchParams }: Props) {
   const raw = (await searchParams) ?? {};
   const page = Math.max(1, Number(singleParam(raw.page) ?? "1") || 1);
+  const pageSize = Math.min(Math.max(Number(singleParam(raw.pageSize) ?? String(DEFAULT_PAGE_SIZE)) || DEFAULT_PAGE_SIZE, 1), 50);
   const filters: ChangelogFiltersInput = {
     action: singleParam(raw.action),
     actorUid: singleParam(raw.actor),
@@ -73,11 +74,11 @@ export default async function AdminChangelogPage({ searchParams }: Props) {
     const baseQuery = buildActivityLogsQuery(filters);
     const countSnap = await baseQuery.count().get();
     total = countSnap.data().count;
-    totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+    totalPages = Math.max(1, Math.ceil(total / pageSize));
     const safePage = Math.min(page, totalPages);
-    const offset = (safePage - 1) * PAGE_SIZE;
+    const offset = (safePage - 1) * pageSize;
 
-    const snapshot = await baseQuery.offset(offset).limit(PAGE_SIZE).get();
+    const snapshot = await baseQuery.offset(offset).limit(pageSize).get();
     logs = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as LogRow[];
   } catch (error) {
     queryError = error instanceof Error ? error.message : "Error al consultar el changelog.";
@@ -122,8 +123,8 @@ export default async function AdminChangelogPage({ searchParams }: Props) {
         </div>
       ) : null}
 
-      <div className="mt-6 overflow-x-auto rounded-xl border border-zinc-200 bg-white shadow-sm">
-        <table className="w-full min-w-[860px] text-left text-sm">
+      <div className="mt-6 rounded-xl border border-zinc-200 bg-white shadow-sm">
+        <table className="w-full text-left text-sm">
           <thead className="border-b border-zinc-200 bg-zinc-50">
             <tr>
               <th className="p-3 font-medium text-zinc-600">Usuario</th>
@@ -186,7 +187,7 @@ export default async function AdminChangelogPage({ searchParams }: Props) {
         <p className="text-xs text-zinc-500">
           Página {displayPage} de {totalPages} · {total} movimiento{total === 1 ? "" : "s"}
         </p>
-        <ChangelogPagination page={displayPage} totalPages={totalPages} filters={filters} />
+        <ChangelogPagination page={displayPage} totalPages={totalPages} filters={filters} pageSize={pageSize} />
       </div>
     </section>
   );

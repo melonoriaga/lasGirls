@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { canAccessRecord } from "@/lib/admin/record-visibility";
 import { getSessionActor } from "@/lib/api/admin-session";
 import { adminDb } from "@/lib/firebase/admin";
 
@@ -10,6 +11,13 @@ export async function GET(_request: Request, context: Context) {
     return NextResponse.json({ ok: false, error: "No autorizado." }, { status: 401 });
   }
   const { id } = await context.params;
+  const clientSnap = await adminDb.collection("clients").doc(id).get();
+  if (!clientSnap.exists) {
+    return NextResponse.json({ ok: false, error: "Cliente inexistente." }, { status: 404 });
+  }
+  if (!canAccessRecord(clientSnap.data() ?? {}, actor.uid)) {
+    return NextResponse.json({ ok: false, error: "Sin permisos para este cliente." }, { status: 403 });
+  }
   const snap = await adminDb
     .collection("clients")
     .doc(id)

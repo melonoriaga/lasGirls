@@ -30,6 +30,8 @@ export async function POST(request: Request) {
       currency: "USD",
       createdAt: now,
       updatedAt: now,
+      visibilityScope: "team",
+      ownerUserId: "",
       metadata: {
         userAgent: request.headers.get("user-agent") ?? "",
         landingPage: request.headers.get("referer") ?? "",

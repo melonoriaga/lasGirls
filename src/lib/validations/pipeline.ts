@@ -148,6 +148,10 @@ export const clientLinkCreateSchema = z.object({
   description: z.string().optional().or(z.literal("")),
 });
 
+export const clientLinkPatchSchema = clientLinkCreateSchema.partial().extend({
+  active: z.boolean().optional(),
+});
+
 export const clientInvoiceCreateSchema = z.object({
   periodLabel: z.string().min(1),
   invoiceNumber: z.string().optional().or(z.literal("")),
@@ -159,6 +163,12 @@ export const clientInvoiceCreateSchema = z.object({
   paidAt: z.string().optional().or(z.literal("")),
   invoiceLink: z.union([z.string().url(), z.literal("")]).optional(),
   notes: z.string().optional().or(z.literal("")),
+  collectionEmailSent: z.boolean().optional().default(false),
+  collectionEmailSentAt: z.string().optional().or(z.literal("")),
+  invoiceEmailSent: z.boolean().optional().default(false),
+  invoiceEmailSentAt: z.string().optional().or(z.literal("")),
+  isPaid: z.boolean().optional().default(false),
+  receivedByUserId: z.string().optional().or(z.literal("")),
 });
 
 export const clientNoteCreateSchema = z.object({

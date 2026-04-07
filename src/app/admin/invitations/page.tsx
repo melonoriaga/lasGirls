@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { RiAddLine, RiRefreshLine, RiSearchLine } from "@remixicon/react";
+import { RowActionsMenu } from "@/components/admin/row-actions-menu";
 import { Button } from "@/components/ui/button";
 
 type InvitationRow = {
@@ -34,8 +36,36 @@ export default function InvitationsPage() {
   const [nowMs, setNowMs] = useState(Date.now());
   const [deleteTarget, setDeleteTarget] = useState<InvitationRow | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [pageSize, setPageSize] = useState(10);
+  const [page, setPage] = useState(1);
 
   const pendingCount = useMemo(() => invitations.filter((inv) => inv.status === "pending").length, [invitations]);
+  const filteredInvitations = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    return invitations.filter((inv) => {
+      const matchesQuery = !needle || inv.email.toLowerCase().includes(needle) || inv.role.toLowerCase().includes(needle);
+      const matchesStatus = statusFilter === "all" || inv.status === statusFilter;
+      return matchesQuery && matchesStatus;
+    });
+  }, [invitations, query, statusFilter]);
+  const totalItems = filteredInvitations.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const safePage = Math.min(page, totalPages);
+  const pageRows = filteredInvitations.slice((safePage - 1) * pageSize, safePage * pageSize);
+  const hasPrev = safePage > 1;
+  const hasNext = safePage < totalPages;
+  const startCount = totalItems === 0 ? 0 : (safePage - 1) * pageSize + 1;
+  const endCount = Math.min(safePage * pageSize, totalItems);
+  const pageButtons = (() => {
+    const span = 2;
+    const from = Math.max(1, safePage - span);
+    const to = Math.min(totalPages, safePage + span);
+    const pages: number[] = [];
+    for (let n = from; n <= to; n += 1) pages.push(n);
+    return pages;
+  })();
 
   const loadInvitations = async () => {
     setLoadingTable(true);
@@ -119,7 +149,7 @@ export default function InvitationsPage() {
           <label className="grid gap-1.5">
             <span className="text-xs font-medium uppercase tracking-[0.12em] text-zinc-500">Rol</span>
             <select
-              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none ring-0 transition focus:border-[#ff5faf] focus:ring-2 focus:ring-[#ff5faf]/25"
+              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 pr-8 text-sm text-zinc-900 outline-none ring-0 transition focus:border-[#ff5faf] focus:ring-2 focus:ring-[#ff5faf]/25"
               value={role}
               onChange={(e) => setRole(e.target.value)}
             >
@@ -130,15 +160,9 @@ export default function InvitationsPage() {
           </label>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <button
-            type="button"
-            onClick={() => void loadInvitations()}
-            className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-100"
-          >
-            Refrescar tabla
-          </button>
+        <div className="flex justify-end">
           <Button type="button" onClick={invite} disabled={loading}>
+            <RiAddLine className="size-4" aria-hidden />
             {loading ? "Generando..." : "Generar invitación"}
           </Button>
         </div>
@@ -167,8 +191,53 @@ export default function InvitationsPage() {
         )}
       </div>
 
-      <div className="mt-6 overflow-x-auto rounded-2xl border border-zinc-200 bg-white shadow-sm">
-        <table className="w-full min-w-[920px] text-left text-sm">
+      <div className="mt-6 flex flex-wrap items-end justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="grid gap-1 text-xs text-zinc-600">
+            Buscar
+            <div className="relative">
+              <RiSearchLine className="pointer-events-none absolute left-2 top-2.5 size-4 text-zinc-400" aria-hidden />
+              <input
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setPage(1);
+                }}
+                placeholder="Buscar email o rol..."
+                className="w-[240px] rounded-lg border border-zinc-300 bg-zinc-50 py-2.5 pl-8 pr-3 text-xs text-zinc-800 focus:border-rose-300 focus:ring-rose-300"
+              />
+            </div>
+          </label>
+          <label className="grid gap-1 text-xs text-zinc-600">
+            Estado
+            <select
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setPage(1);
+              }}
+              className="rounded-lg border border-zinc-300 bg-zinc-50 px-3 py-2.5 pr-8 text-xs text-zinc-800"
+            >
+              <option value="all">Todos</option>
+              <option value="pending">pending</option>
+              <option value="accepted">accepted</option>
+              <option value="revoked">revoked</option>
+              <option value="expired">expired</option>
+            </select>
+          </label>
+        </div>
+        <button
+          type="button"
+          aria-label="Actualizar tabla"
+          onClick={() => void loadInvitations()}
+          className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-100"
+        >
+          <RiRefreshLine className="size-4" aria-hidden />
+        </button>
+      </div>
+
+      <div className="mt-6 rounded-2xl border border-zinc-200 bg-white shadow-sm">
+        <table className="w-full text-left text-sm">
           <thead className="border-b border-zinc-200 bg-zinc-50">
             <tr>
               <th className="p-3 font-medium text-zinc-600">Email</th>
@@ -187,14 +256,14 @@ export default function InvitationsPage() {
                   Cargando invitaciones...
                 </td>
               </tr>
-            ) : invitations.length === 0 ? (
+            ) : pageRows.length === 0 ? (
               <tr>
                 <td className="p-6 text-center text-zinc-500" colSpan={7}>
                   Aún no hay invitaciones creadas.
                 </td>
               </tr>
             ) : (
-              invitations.map((item) => (
+              pageRows.map((item) => (
                 <tr key={item.id} className="border-b border-zinc-100 last:border-b-0">
                   <td className="p-3 text-zinc-900">{item.email}</td>
                   <td className="p-3 capitalize text-zinc-700">{item.role}</td>
@@ -215,43 +284,35 @@ export default function InvitationsPage() {
                   <td className="p-3 text-zinc-600">{formatDate(item.expiresAt)}</td>
                   <td className="p-3 text-zinc-700">{getRemainingLabel(item.expiresAt, item.status)}</td>
                   <td className="p-3">
-                    <div className="flex w-full items-center justify-between gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setDeleteTarget(item)}
-                        className="rounded-md border border-zinc-300 bg-zinc-50 px-2.5 py-1 text-xs font-semibold text-zinc-600 hover:bg-zinc-100"
-                      >
-                        Eliminar
-                      </button>
-                      <div className="ml-auto flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            await navigator.clipboard.writeText(item.inviteUrl);
-                            setCopyState(`Copiado: ${item.email}`);
-                            setTimeout(() => setCopyState(""), 1400);
-                          }}
-                          className="rounded-md border border-[#ff5faf]/40 bg-[#ff5faf]/10 px-2.5 py-1 text-xs font-semibold text-[#9d174d] hover:bg-[#ff5faf]/20"
-                        >
-                          Copiar
-                        </button>
-                        {item.status === "pending" && (
-                          <button
-                            type="button"
-                            onClick={async () => {
-                              await fetch("/api/invites", {
-                                method: "DELETE",
-                                headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({ invitationId: item.id, action: "revoke" }),
-                              });
-                              await loadInvitations();
-                            }}
-                            className="rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 hover:bg-amber-100"
-                          >
-                            Revocar
-                          </button>
-                        )}
-                      </div>
+                    <div className="flex justify-end">
+                      <RowActionsMenu
+                        items={[
+                          {
+                            label: "Copiar link",
+                            onClick: async () => {
+                              await navigator.clipboard.writeText(item.inviteUrl);
+                              setCopyState(`Copiado: ${item.email}`);
+                              setTimeout(() => setCopyState(""), 1400);
+                            },
+                          },
+                          ...(item.status === "pending"
+                            ? [
+                                {
+                                  label: "Revocar",
+                                  onClick: async () => {
+                                    await fetch("/api/invites", {
+                                      method: "DELETE",
+                                      headers: { "Content-Type": "application/json" },
+                                      body: JSON.stringify({ invitationId: item.id, action: "revoke" }),
+                                    });
+                                    await loadInvitations();
+                                  },
+                                },
+                              ]
+                            : []),
+                          { label: "Eliminar", onClick: () => setDeleteTarget(item), danger: true },
+                        ]}
+                      />
                     </div>
                   </td>
                 </tr>
@@ -260,6 +321,72 @@ export default function InvitationsPage() {
           </tbody>
         </table>
       </div>
+
+      {!loadingTable && totalItems > 0 ? (
+        <nav aria-label="Paginación de invitaciones" className="mt-4 flex flex-wrap items-center justify-between gap-3">
+          <p className="text-xs text-zinc-600">
+            Mostrando <strong>{startCount}</strong> a <strong>{endCount}</strong> de <strong>{totalItems}</strong> invitaciones
+          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <ul className="flex -space-x-px text-sm">
+              <li>
+                <button
+                  type="button"
+                  disabled={!hasPrev}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  className="flex h-9 items-center justify-center rounded-s-lg border border-zinc-300 bg-zinc-100 px-3 text-sm text-zinc-700 hover:bg-zinc-200 disabled:opacity-50"
+                >
+                  Previous
+                </button>
+              </li>
+              {pageButtons.map((n) => (
+                <li key={n}>
+                  <button
+                    type="button"
+                    aria-current={n === safePage ? "page" : undefined}
+                    onClick={() => setPage(n)}
+                    className={
+                      n === safePage
+                        ? "flex h-9 w-9 items-center justify-center border border-zinc-300 bg-zinc-200 text-sm font-semibold text-zinc-900"
+                        : "flex h-9 w-9 items-center justify-center border border-zinc-300 bg-zinc-100 text-sm text-zinc-700 hover:bg-zinc-200"
+                    }
+                  >
+                    {n}
+                  </button>
+                </li>
+              ))}
+              <li>
+                <button
+                  type="button"
+                  disabled={!hasNext}
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  className="flex h-9 items-center justify-center rounded-e-lg border border-zinc-300 bg-zinc-100 px-3 text-sm text-zinc-700 hover:bg-zinc-200 disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </li>
+            </ul>
+            <form className="w-32">
+              <label htmlFor="invites-per-page" className="sr-only">
+                Items por página
+              </label>
+              <select
+                id="invites-per-page"
+                className="block w-full rounded-lg border border-zinc-300 bg-zinc-100 px-3 py-2.5 pr-8 text-sm text-zinc-800"
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setPage(1);
+                }}
+              >
+                <option value={10}>10 per page</option>
+                <option value={20}>20 per page</option>
+                <option value={50}>50 per page</option>
+              </select>
+            </form>
+          </div>
+        </nav>
+      ) : null}
 
       {deleteTarget && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-zinc-950/35 p-4">

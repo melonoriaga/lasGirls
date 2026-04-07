@@ -1,6 +1,7 @@
 import type { CollectionReference } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
 import { getSessionActor } from "@/lib/api/admin-session";
+import { canAccessRecord } from "@/lib/admin/record-visibility";
 import { logAdminActivity } from "@/lib/activity/log";
 import { adminDb } from "@/lib/firebase/admin";
 import { logClientActivity } from "@/lib/clients/activity";
@@ -35,6 +36,9 @@ export async function GET(_request: Request, context: Context) {
   if (!snapshot.exists) {
     return NextResponse.json({ ok: false, error: "Cliente inexistente." }, { status: 404 });
   }
+  if (!canAccessRecord(snapshot.data() ?? {}, actor.uid)) {
+    return NextResponse.json({ ok: false, error: "Sin permisos para este cliente." }, { status: 403 });
+  }
 
   return NextResponse.json({
     ok: true,
@@ -50,6 +54,13 @@ export async function PATCH(request: Request, context: Context) {
 
   try {
     const { id } = await context.params;
+    const snapshot = await adminDb.collection("clients").doc(id).get();
+    if (!snapshot.exists) {
+      return NextResponse.json({ ok: false, error: "Cliente inexistente." }, { status: 404 });
+    }
+    if (!canAccessRecord(snapshot.data() ?? {}, actor.uid)) {
+      return NextResponse.json({ ok: false, error: "Sin permisos para este cliente." }, { status: 403 });
+    }
     const body = await request.json();
     const parsed = clientPatchSchema.parse(body);
 
@@ -132,6 +143,9 @@ export async function DELETE(request: Request, context: Context) {
   const snapshot = await clientRef.get();
   if (!snapshot.exists) {
     return NextResponse.json({ ok: false, error: "Cliente inexistente." }, { status: 404 });
+  }
+  if (!canAccessRecord(snapshot.data() ?? {}, actor.uid)) {
+    return NextResponse.json({ ok: false, error: "Sin permisos para este cliente." }, { status: 403 });
   }
 
   const data = snapshot.data() as { fullName?: string; displayName?: string; email?: string };

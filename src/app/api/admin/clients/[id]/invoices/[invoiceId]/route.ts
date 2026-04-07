@@ -5,7 +5,7 @@ import { adminDb } from "@/lib/firebase/admin";
 import { incrementClientCounter, logClientActivity } from "@/lib/clients/activity";
 import { clientInvoiceCreateSchema } from "@/lib/validations/pipeline";
 
-type Context = { params: Promise<{ id: string }> };
+type Context = { params: Promise<{ id: string; invoiceId: string }> };
 
 async function assertClientAccess(id: string, uid: string) {
   const snap = await adminDb.collection("clients").doc(id).get();
@@ -97,34 +97,16 @@ async function upsertAutoPaymentFromInvoice(params: {
   });
 }
 
-export async function GET(_request: Request, context: Context) {
-  const actor = await getSessionActor();
-  if (!actor?.uid) {
-    return NextResponse.json({ ok: false, error: "No autorizado." }, { status: 401 });
-  }
-  const { id } = await context.params;
-  const access = await assertClientAccess(id, actor.uid);
-  if (!access.ok) return NextResponse.json({ ok: false, error: access.error }, { status: access.status });
-  const snap = await adminDb
-    .collection("clients")
-    .doc(id)
-    .collection("invoices")
-    .orderBy("createdAt", "desc")
-    .limit(200)
-    .get();
-  const items = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-  return NextResponse.json({ ok: true, items });
-}
-
-export async function POST(request: Request, context: Context) {
+export async function PATCH(request: Request, context: Context) {
   const actor = await getSessionActor();
   if (!actor?.uid) {
     return NextResponse.json({ ok: false, error: "No autorizado." }, { status: 401 });
   }
   try {
-    const { id } = await context.params;
+    const { id, invoiceId } = await context.params;
     const access = await assertClientAccess(id, actor.uid);
     if (!access.ok) return NextResponse.json({ ok: false, error: access.error }, { status: access.status });
+
     const body = await request.json();
     const parsed = clientInvoiceCreateSchema.parse(body);
     const now = new Date().toISOString();
@@ -132,31 +114,39 @@ export async function POST(request: Request, context: Context) {
     const invoiceEmailSentAt = parsed.invoiceEmailSentAt || (parsed.invoiceEmailSent ? now : null);
     const paidAt = parsed.paidAt || (parsed.isPaid ? now : null);
     const normalizedStatus =
-      parsed.status === "paid" || parsed.isPaid ? "paid" : parsed.invoiceEmailSent || parsed.status === "sent" ? "sent" : parsed.status;
-    const ref = await adminDb
+      parsed.status === "paid" || parsed.isPaid
+        ? "paid"
+        : parsed.invoiceEmailSent || parsed.status === "sent"
+          ? "sent"
+          : parsed.status;
+
+    await adminDb
       .collection("clients")
       .doc(id)
       .collection("invoices")
-      .add({
-        ...parsed,
-        sentAt: parsed.sentAt || invoiceEmailSentAt,
-        dueDate: parsed.dueDate || null,
-        paidAt,
-        invoiceLink: parsed.invoiceLink || null,
-        collectionEmailSent: Boolean(parsed.collectionEmailSent),
-        collectionEmailSentAt,
-        invoiceEmailSent: Boolean(parsed.invoiceEmailSent),
-        invoiceEmailSentAt,
-        isPaid: Boolean(parsed.isPaid || normalizedStatus === "paid"),
-        status: normalizedStatus,
-        createdAt: now,
-        updatedAt: now,
-        createdByUserId: actor.uid,
-      });
+      .doc(invoiceId)
+      .set(
+        {
+          ...parsed,
+          sentAt: parsed.sentAt || invoiceEmailSentAt,
+          dueDate: parsed.dueDate || null,
+          paidAt,
+          invoiceLink: parsed.invoiceLink || null,
+          collectionEmailSent: Boolean(parsed.collectionEmailSent),
+          collectionEmailSentAt,
+          invoiceEmailSent: Boolean(parsed.invoiceEmailSent),
+          invoiceEmailSentAt,
+          isPaid: Boolean(parsed.isPaid || normalizedStatus === "paid"),
+          status: normalizedStatus,
+          updatedAt: now,
+          updatedByUserId: actor.uid,
+        },
+        { merge: true },
+      );
 
     await upsertAutoPaymentFromInvoice({
       clientId: id,
-      invoiceId: ref.id,
+      invoiceId,
       actorUid: actor.uid,
       client: access.client,
       periodLabel: parsed.periodLabel,
@@ -167,25 +157,63 @@ export async function POST(request: Request, context: Context) {
       receivedByUserId: String(parsed.receivedByUserId ?? ""),
     });
 
-    const clientUpdates: Record<string, unknown> = {
-      updatedAt: now,
-      lastInvoiceSentAt: parsed.sentAt || invoiceEmailSentAt || now,
-    };
-    if (parsed.invoiceLink) clientUpdates.lastInvoiceLink = parsed.invoiceLink;
-    if (normalizedStatus === "sent" || normalizedStatus === "paid") {
-      clientUpdates.invoiceStatus = normalizedStatus === "paid" ? "paid" : "sent";
-    }
-    await adminDb.collection("clients").doc(id).set(clientUpdates, { merge: true });
+    await adminDb.collection("clients").doc(id).set(
+      {
+        updatedAt: now,
+        lastInvoiceSentAt: parsed.sentAt || invoiceEmailSentAt || now,
+        lastInvoiceLink: parsed.invoiceLink || null,
+        invoiceStatus: normalizedStatus === "paid" ? "paid" : normalizedStatus === "sent" ? "sent" : "draft",
+      },
+      { merge: true },
+    );
 
-    await incrementClientCounter(id, "invoicesCount", 1);
     await logClientActivity({
       clientId: id,
-      action: "invoice_created",
+      action: "invoice_updated",
       createdByUserId: actor.uid,
       message: parsed.periodLabel,
-      metadata: { invoiceId: ref.id, amount: parsed.amount, status: normalizedStatus },
+      metadata: { invoiceId, amount: parsed.amount, status: normalizedStatus },
     });
-    return NextResponse.json({ ok: true, invoiceId: ref.id });
+
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    return NextResponse.json({ ok: false, error: (error as Error).message }, { status: 400 });
+  }
+}
+
+export async function DELETE(_request: Request, context: Context) {
+  const actor = await getSessionActor();
+  if (!actor?.uid) {
+    return NextResponse.json({ ok: false, error: "No autorizado." }, { status: 401 });
+  }
+  try {
+    const { id, invoiceId } = await context.params;
+    const access = await assertClientAccess(id, actor.uid);
+    if (!access.ok) return NextResponse.json({ ok: false, error: access.error }, { status: access.status });
+
+    const paymentsSnap = await adminDb
+      .collection("clients")
+      .doc(id)
+      .collection("payments")
+      .where("relatedInvoiceId", "==", invoiceId)
+      .get();
+    for (const doc of paymentsSnap.docs) {
+      const data = doc.data() as { autoFromInvoice?: boolean };
+      if (!data.autoFromInvoice) continue;
+      await doc.ref.delete();
+      await incrementClientCounter(id, "paymentsCount", -1);
+    }
+
+    await adminDb.collection("clients").doc(id).collection("invoices").doc(invoiceId).delete();
+    await incrementClientCounter(id, "invoicesCount", -1);
+    await logClientActivity({
+      clientId: id,
+      action: "invoice_updated",
+      createdByUserId: actor.uid,
+      message: "Factura eliminada",
+      metadata: { invoiceId, deleted: true },
+    });
+    return NextResponse.json({ ok: true });
   } catch (error) {
     return NextResponse.json({ ok: false, error: (error as Error).message }, { status: 400 });
   }

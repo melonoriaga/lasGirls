@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSessionActor } from "@/lib/api/admin-session";
+import { canAccessRecord, readVisibilityScope } from "@/lib/admin/record-visibility";
 import { logAdminActivity } from "@/lib/activity/log";
 import { adminDb } from "@/lib/firebase/admin";
 import { logClientActivity } from "@/lib/clients/activity";
@@ -29,6 +30,9 @@ export async function POST(request: Request, context: Context) {
     }
 
     const lead = leadSnapshot.data() as Record<string, unknown>;
+    if (!canAccessRecord(lead, actor.uid)) {
+      return NextResponse.json({ ok: false, error: "Sin permisos para este lead." }, { status: 403 });
+    }
     const currentStatus = String(lead.status ?? "new");
     if (currentStatus === "converted" && lead.convertedToClientId) {
       return NextResponse.json(
@@ -60,6 +64,12 @@ export async function POST(request: Request, context: Context) {
       ? (lead.serviceInterest as string[])
       : [];
     const tags = Array.isArray(lead.tags) ? (lead.tags as string[]) : [];
+
+    const visibilityScope = readVisibilityScope(lead);
+    const ownerUserId =
+      visibilityScope === "private"
+        ? String(lead.ownerUserId ?? lead.createdBy ?? actor.uid)
+        : "";
 
     const clientRef = await adminDb.collection("clients").add({
       leadId: id,
@@ -102,6 +112,8 @@ export async function POST(request: Request, context: Context) {
       createdAt: now,
       updatedAt: now,
       createdByUserId: actor.uid,
+      visibilityScope,
+      ownerUserId,
     });
 
     await leadRef.set(

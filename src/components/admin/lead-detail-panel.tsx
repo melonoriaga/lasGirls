@@ -443,8 +443,8 @@ export function LeadDetailPanel({ leadId }: Props) {
         >
           {bSaving ? "Guardando..." : "Agregar presupuesto al historial"}
         </button>
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full min-w-[640px] text-left text-sm">
+        <div className="mt-4">
+          <table className="w-full text-left text-sm">
             <thead className="border-b border-zinc-200 bg-zinc-50">
               <tr>
                 <th className="p-2">Título</th>

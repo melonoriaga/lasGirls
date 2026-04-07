@@ -73,9 +73,12 @@ export type Client = {
   endDate?: string;
   nextBillingDate?: string;
   documents?: string[];
+  logoURL?: string;
   createdAt: string;
   updatedAt: string;
   createdByUserId?: string;
+  visibilityScope?: "team" | "private";
+  ownerUserId?: string;
 };
 
 export type ClientLinkCategory =
@@ -94,6 +97,7 @@ export type ClientLink = {
   url: string;
   category: ClientLinkCategory | string;
   description?: string;
+  active?: boolean;
   createdAt: string;
   updatedAt: string;
   createdByUserId?: string;
@@ -111,6 +115,11 @@ export type ClientInvoice = {
   paidAt?: string | null;
   invoiceLink?: string | null;
   notes?: string;
+  collectionEmailSent?: boolean;
+  collectionEmailSentAt?: string | null;
+  invoiceEmailSent?: boolean;
+  invoiceEmailSentAt?: string | null;
+  isPaid?: boolean;
   createdAt: string;
   updatedAt: string;
   createdByUserId?: string;

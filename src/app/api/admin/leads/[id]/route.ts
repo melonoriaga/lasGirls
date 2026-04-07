@@ -1,6 +1,7 @@
 import type { CollectionReference } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
 import { logAdminActivity } from "@/lib/activity/log";
+import { canAccessRecord } from "@/lib/admin/record-visibility";
 import { getSessionActor } from "@/lib/api/admin-session";
 import { adminDb } from "@/lib/firebase/admin";
 import { budgetStatusSchema } from "@/lib/validations/pipeline";
@@ -33,6 +34,9 @@ export async function DELETE(request: Request, context: Context) {
   const snapshot = await leadRef.get();
   if (!snapshot.exists) {
     return NextResponse.json({ ok: false, error: "Lead inexistente." }, { status: 404 });
+  }
+  if (!canAccessRecord(snapshot.data() ?? {}, actor.uid)) {
+    return NextResponse.json({ ok: false, error: "Sin permisos para este lead." }, { status: 403 });
   }
 
   const data = snapshot.data() as { fullName?: string; email?: string };
@@ -72,6 +76,9 @@ export async function GET(_request: Request, context: Context) {
   if (!snapshot.exists) {
     return NextResponse.json({ ok: false, error: "Lead inexistente." }, { status: 404 });
   }
+  if (!canAccessRecord(snapshot.data() ?? {}, actor.uid)) {
+    return NextResponse.json({ ok: false, error: "Sin permisos para este lead." }, { status: 403 });
+  }
 
   const [notesSnapshot, budgetsSnapshot] = await Promise.all([
     adminDb
@@ -109,6 +116,13 @@ export async function PATCH(request: Request, context: Context) {
   try {
     const { id } = await context.params;
     const body = (await request.json()) as Record<string, unknown>;
+    const leadSnapshot = await adminDb.collection("leads").doc(id).get();
+    if (!leadSnapshot.exists) {
+      return NextResponse.json({ ok: false, error: "Lead inexistente." }, { status: 404 });
+    }
+    if (!canAccessRecord(leadSnapshot.data() ?? {}, actor.uid)) {
+      return NextResponse.json({ ok: false, error: "Sin permisos para este lead." }, { status: 403 });
+    }
 
     const updates: Record<string, unknown> = {
       updatedAt: new Date().toISOString(),

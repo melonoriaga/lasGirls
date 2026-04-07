@@ -2,17 +2,15 @@
 
 import Link from "next/link";
 import {
-  RiArrowLeftSLine,
-  RiArrowRightSLine,
+  RiAddLine,
   RiCloseCircleLine,
-  RiDeleteBinLine,
-  RiPauseCircleLine,
-  RiPlayCircleLine,
+  RiRefreshLine,
   RiSearchLine,
 } from "@remixicon/react";
 import { useEffect, useState } from "react";
 import { ConfirmDialog } from "@/components/admin/confirm-dialog";
 import { useAdminToast } from "@/components/admin/admin-toast-provider";
+import { RowActionsMenu } from "@/components/admin/row-actions-menu";
 import { getClientDisplayName } from "@/types/client";
 
 type ClientRow = Record<string, unknown> & { id: string };
@@ -22,6 +20,9 @@ type ListResponse = {
   items?: ClientRow[];
   hasNext?: boolean;
   hasPrev?: boolean;
+  page?: number;
+  totalPages?: number;
+  totalItems?: number;
   nextStartAfterId?: string | null;
   firstId?: string | null;
   lastId?: string | null;
@@ -66,7 +67,7 @@ function isClientInactive(row: ClientRow) {
 
 type ConfirmAction = "deactivate" | "reactivate" | "delete";
 
-export function ClientsTablePanel() {
+export function ClientsTablePanel({ actorUid: _actorUid }: { actorUid: string }) {
   const toast = useAdminToast();
   const [pageSize, setPageSize] = useState(10);
   const [q, setQ] = useState("");
@@ -76,23 +77,24 @@ export function ClientsTablePanel() {
   const [items, setItems] = useState<ClientRow[]>([]);
   const [hasNext, setHasNext] = useState(false);
   const [hasPrev, setHasPrev] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const [searchMode, setSearchMode] = useState(false);
   const [scanCapped, setScanCapped] = useState(false);
-  const [lastId, setLastId] = useState<string | null>(null);
-  const [firstId, setFirstId] = useState<string | null>(null);
-  const [backStack, setBackStack] = useState<string[]>([]);
   const [confirm, setConfirm] = useState<{ action: ConfirmAction; row: ClientRow } | null>(null);
   const [confirmLoading, setConfirmLoading] = useState(false);
+  const [scopeFilter, setScopeFilter] = useState<"all" | "mine">("all");
 
-  const fetchList = async (opts: { startAfterId?: string; endBeforeId?: string; searchQuery?: string } = {}) => {
+  const fetchList = async (opts: { searchQuery?: string; page?: number } = {}) => {
     setLoading(true);
     setError("");
     const params = new URLSearchParams();
     params.set("limit", String(pageSize));
     const query = opts.searchQuery !== undefined ? opts.searchQuery : q;
+    params.set("page", String(opts.page ?? page));
     if (query.trim()) params.set("q", query.trim());
-    if (opts.startAfterId) params.set("startAfterId", opts.startAfterId);
-    if (opts.endBeforeId) params.set("endBeforeId", opts.endBeforeId);
+    params.set("scope", scopeFilter);
     try {
       const res = await fetch(`/api/admin/clients?${params.toString()}`, { cache: "no-store" });
       const data = (await res.json()) as ListResponse;
@@ -106,28 +108,28 @@ export function ClientsTablePanel() {
       setHasPrev(Boolean(data.hasPrev));
       setSearchMode(Boolean(data.searchMode));
       setScanCapped(Boolean(data.scanCapped));
-      const f = data.firstId ? String(data.firstId) : null;
-      setLastId(data.lastId ? String(data.lastId) : null);
-      setFirstId(f);
-      return { firstId: f };
+      setPage(Number(data.page ?? 1));
+      setTotalPages(Math.max(1, Number(data.totalPages ?? 1)));
+      setTotalItems(Math.max(0, Number(data.totalItems ?? 0)));
+      return true;
     } catch {
       setError("Error de red al cargar clientes.");
       setItems([]);
-      return null;
+      return false;
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    setBackStack([]);
-    void fetchList({ searchQuery: q });
+    setPage(1);
+    void fetchList({ searchQuery: q, page: 1 });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- refetch list when page size or active search changes
-  }, [pageSize, q]);
+  }, [pageSize, q, scopeFilter]);
 
   const refreshFirstPage = () => {
-    setBackStack([]);
-    void fetchList({ searchQuery: q });
+    setPage(1);
+    void fetchList({ searchQuery: q, page: 1 });
   };
 
   const runConfirmedAction = async () => {
@@ -167,33 +169,58 @@ export function ClientsTablePanel() {
   };
 
   const applySearch = () => {
+    setPage(1);
     setQ(qInput);
-    setBackStack([]);
   };
 
   const clearSearch = () => {
     setQInput("");
+    setPage(1);
     setQ("");
-    setBackStack([]);
   };
 
-  const goNext = async () => {
-    if (!lastId || searchMode) return;
-    const res = await fetchList({ startAfterId: lastId });
-    const fid = res?.firstId;
-    if (fid) setBackStack((s) => [...s, fid]);
+  const goToPage = (nextPage: number) => {
+    const safe = Math.min(Math.max(nextPage, 1), totalPages);
+    if (safe === page) return;
+    setPage(safe);
+    void fetchList({ page: safe });
+  };
+
+  const goNext = () => {
+    if (!hasNext) return;
+    goToPage(page + 1);
   };
 
   const goPrev = () => {
-    if (searchMode || backStack.length === 0) return;
-    const anchor = backStack[backStack.length - 1];
-    setBackStack((s) => s.slice(0, -1));
-    void fetchList({ endBeforeId: anchor });
+    if (!hasPrev) return;
+    goToPage(page - 1);
   };
+
+  const pageButtons = (() => {
+    const span = 2;
+    const from = Math.max(1, page - span);
+    const to = Math.min(totalPages, page + span);
+    const pages: number[] = [];
+    for (let n = from; n <= to; n += 1) pages.push(n);
+    return pages;
+  })();
+
+  const startCount = totalItems === 0 ? 0 : (page - 1) * pageSize + 1;
+  const endCount = Math.min(page * pageSize, totalItems);
+  const paginationBtn =
+    "flex items-center justify-center border border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200 hover:text-zinc-900 text-sm h-9 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50";
+  const paginationPageBtn =
+    "flex items-center justify-center border border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200 hover:text-zinc-900 text-sm font-medium w-9 h-9 focus:outline-none";
+  const paginationPageBtnActive =
+    "flex items-center justify-center border border-zinc-300 bg-zinc-200 text-zinc-900 text-sm font-semibold w-9 h-9 focus:outline-none";
+  const paginationEdgeBtn = `${paginationBtn} px-3`;
+  const perPageClass =
+    "block w-full rounded-lg border border-zinc-300 bg-zinc-100 px-3 py-2.5 text-sm text-zinc-800 shadow-sm focus:border-rose-300 focus:ring-rose-300";
 
   return (
     <div className="mt-4">
-      <div className="flex flex-wrap items-end gap-2">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div className="flex flex-wrap items-end gap-2">
         <label className="grid gap-1 text-xs text-zinc-600">
           Buscar
           <input
@@ -223,20 +250,36 @@ export function ClientsTablePanel() {
           </button>
         ) : null}
         <label className="grid gap-1 text-xs text-zinc-600">
-          Por página
+          Visibilidad
           <select
-            className={inputClass}
-            value={pageSize}
+            className={`${inputClass} pr-8`}
+            value={scopeFilter}
             onChange={(e) => {
-              setPageSize(Number(e.target.value));
-              setBackStack([]);
+              setScopeFilter(e.target.value as "all" | "mine");
             }}
           >
-            <option value={10}>10</option>
-            <option value={20}>20</option>
-            <option value={50}>50</option>
+            <option value="all">Todos visibles</option>
+            <option value="mine">Solo míos</option>
           </select>
         </label>
+        </div>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/admin/leads"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-rose-300 px-4 py-2.5 text-xs font-semibold text-zinc-900 hover:bg-rose-400"
+          >
+            <RiAddLine className="size-4 shrink-0" aria-hidden />
+            Agregar
+          </Link>
+          <button
+            type="button"
+            aria-label="Actualizar tabla"
+            onClick={refreshFirstPage}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-100"
+          >
+            <RiRefreshLine className="size-4 shrink-0" aria-hidden />
+          </button>
+        </div>
       </div>
 
       {searchMode && scanCapped ? (
@@ -278,13 +321,13 @@ export function ClientsTablePanel() {
         onConfirm={() => void runConfirmedAction()}
       />
 
-      <div className="mt-4 overflow-x-auto rounded-2xl border border-zinc-200 bg-white">
+      <div className="mt-4 rounded-2xl border border-zinc-200 bg-white">
         {loading ? (
           <div className="p-10 text-center text-sm text-zinc-500">Cargando clientes...</div>
         ) : items.length === 0 ? (
           <div className="p-10 text-center text-sm text-zinc-600">No hay clientes para mostrar.</div>
         ) : (
-          <table className="w-full min-w-[1100px] text-left text-sm">
+          <table className="w-full text-left text-sm">
             <thead className="border-b border-zinc-200 bg-zinc-50">
               <tr>
                 <th className="p-3 font-medium text-zinc-600">Cliente</th>
@@ -310,7 +353,21 @@ export function ClientsTablePanel() {
                   }`}
                 >
                   <td className={`p-3 font-medium ${inactive ? "text-zinc-600" : "text-zinc-900"}`}>
-                    {getClientDisplayName(row)}
+                    <div className="flex items-center gap-2">
+                      {row.logoURL ? (
+                        <img
+                          src={String(row.logoURL)}
+                          alt={getClientDisplayName(row)}
+                          className="h-8 w-8 rounded-md border border-zinc-200 object-cover"
+                        />
+                      ) : null}
+                      <span>{getClientDisplayName(row)}</span>
+                      {String(row.visibilityScope ?? "team") === "private" ? (
+                        <span className="ml-1 rounded-full border border-violet-200 bg-violet-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-800">
+                          privado
+                        </span>
+                      ) : null}
+                    </div>
                   </td>
                   <td className="p-3 text-zinc-700">{String(row.email ?? "—")}</td>
                   <td className="p-3 text-zinc-600">{String(row.brandName || row.company || "—")}</td>
@@ -329,41 +386,16 @@ export function ClientsTablePanel() {
                   <td className="p-3 text-zinc-600">{String(row.invoiceStatus ?? "—")}</td>
                   <td className="p-3 text-zinc-500">{String(row.createdAt ?? "").slice(0, 10)}</td>
                   <td className="p-3">
-                    <div className="flex flex-col gap-1.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2">
-                      <Link
-                        href={`/admin/clients/${row.id}`}
-                        className="inline-flex items-center gap-0.5 font-medium text-[#db2777] hover:underline"
-                      >
-                        Ver
-                        <RiArrowRightSLine className="size-3.5" aria-hidden />
-                      </Link>
-                      {inactive ? (
-                        <button
-                          type="button"
-                          onClick={() => setConfirm({ action: "reactivate", row })}
-                          className="inline-flex items-center gap-0.5 text-left text-xs font-semibold text-emerald-800 hover:underline"
-                        >
-                          <RiPlayCircleLine className="size-3.5 shrink-0" aria-hidden />
-                          Reactivar
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => setConfirm({ action: "deactivate", row })}
-                          className="inline-flex items-center gap-0.5 text-left text-xs font-semibold text-amber-800 hover:underline"
-                        >
-                          <RiPauseCircleLine className="size-3.5 shrink-0" aria-hidden />
-                          Desactivar
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => setConfirm({ action: "delete", row })}
-                        className="inline-flex items-center gap-0.5 text-left text-xs font-semibold text-red-700 hover:underline"
-                      >
-                        <RiDeleteBinLine className="size-3.5 shrink-0" aria-hidden />
-                        Eliminar
-                      </button>
+                    <div className="flex justify-end">
+                      <RowActionsMenu
+                        items={[
+                          { label: "Ver", href: `/admin/clients/${row.id}` },
+                          inactive
+                            ? { label: "Reactivar", onClick: () => setConfirm({ action: "reactivate", row }) }
+                            : { label: "Desactivar", onClick: () => setConfirm({ action: "deactivate", row }) },
+                          { label: "Eliminar", onClick: () => setConfirm({ action: "delete", row }), danger: true },
+                        ]}
+                      />
                     </div>
                   </td>
                 </tr>
@@ -374,27 +406,56 @@ export function ClientsTablePanel() {
         )}
       </div>
 
-      {!searchMode && !loading && items.length > 0 ? (
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            disabled={!hasPrev}
-            onClick={goPrev}
-            className="inline-flex items-center gap-1 rounded-xl border border-zinc-200 bg-white px-4 py-2 text-xs font-semibold text-zinc-700 disabled:opacity-40 hover:bg-zinc-100"
-          >
-            <RiArrowLeftSLine className="size-4 shrink-0" aria-hidden />
-            Anterior
-          </button>
-          <button
-            type="button"
-            disabled={!hasNext}
-            onClick={goNext}
-            className="inline-flex items-center gap-1 rounded-xl border border-zinc-200 bg-white px-4 py-2 text-xs font-semibold text-zinc-700 disabled:opacity-40 hover:bg-zinc-100"
-          >
-            Siguiente
-            <RiArrowRightSLine className="size-4 shrink-0" aria-hidden />
-          </button>
-        </div>
+      {!loading && items.length > 0 ? (
+        <nav aria-label="Paginación de clientes" className="mt-4 flex flex-wrap items-center justify-between gap-3">
+          <p className="text-xs text-zinc-600">
+            Mostrando <strong>{startCount}</strong> a <strong>{endCount}</strong> de <strong>{totalItems}</strong> clientes
+          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <ul className="flex -space-x-px text-sm">
+              <li>
+                <button type="button" disabled={!hasPrev} onClick={goPrev} className={`${paginationEdgeBtn} rounded-s-lg`}>
+                  Previous
+                </button>
+              </li>
+              {pageButtons.map((n) => (
+                <li key={n}>
+                  <button
+                    type="button"
+                    aria-current={n === page ? "page" : undefined}
+                    onClick={() => goToPage(n)}
+                    className={n === page ? paginationPageBtnActive : paginationPageBtn}
+                  >
+                    {n}
+                  </button>
+                </li>
+              ))}
+              <li>
+                <button type="button" disabled={!hasNext} onClick={goNext} className={`${paginationEdgeBtn} rounded-e-lg`}>
+                  Next
+                </button>
+              </li>
+            </ul>
+            <form className="w-32">
+              <label htmlFor="clients-per-page" className="sr-only">
+                Items por página
+              </label>
+              <select
+                id="clients-per-page"
+                className={perPageClass}
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setPage(1);
+                }}
+              >
+                <option value={10}>10 per page</option>
+                <option value={20}>20 per page</option>
+                <option value={50}>50 per page</option>
+              </select>
+            </form>
+          </div>
+        </nav>
       ) : null}
     </div>
   );
