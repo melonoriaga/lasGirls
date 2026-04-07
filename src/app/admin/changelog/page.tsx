@@ -1,5 +1,9 @@
 import Image from "next/image";
-import Link from "next/link";
+import { ChangelogFilterForm } from "@/components/admin/changelog-filter-form";
+import { AdminActionBadge } from "@/components/admin/admin-action-badge";
+import { ChangelogPagination } from "@/components/admin/changelog-pagination";
+import type { ChangelogFiltersInput } from "@/lib/admin/changelog-filters";
+import { buildActivityLogsQuery } from "@/lib/admin/changelog-query";
 import { adminDb } from "@/lib/firebase/admin";
 
 type LogRow = {
@@ -13,7 +17,7 @@ type LogRow = {
 };
 
 type Props = {
-  searchParams?: Promise<{ page?: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
 const formatDate = (value?: string) => {
@@ -26,47 +30,68 @@ const formatDate = (value?: string) => {
   }).format(date);
 };
 
-const PAGE_SIZE = 10;
+const DEFAULT_PAGE_SIZE = 10;
 
-const ACTION_TONES = [
-  "border-[#f9a8d4] bg-[#fdf2f8] text-[#9d174d]",
-  "border-[#f472b6] bg-[#fce7f3] text-[#be185d]",
-  "border-[#ec4899] bg-[#fdf2f8] text-[#831843]",
-  "border-[#fbcfe8] bg-[#fff1f7] text-[#a21caf]",
-  "border-[#f5a9d0] bg-[#fff5fb] text-[#9d174d]",
-  "border-[#fda4cf] bg-[#fff0f6] text-[#be123c]",
-  "border-[#f9a8d4] bg-[#fff3f8] text-[#86198f]",
-  "border-[#f472b6] bg-[#fff4fa] text-[#9f1239]",
-  "border-[#ec4899] bg-[#fff2f7] text-[#7e22ce]",
-  "border-[#fbcfe8] bg-[#fff7fb] text-[#a21caf]",
-];
+function singleParam(v: string | string[] | undefined): string | undefined {
+  if (v === undefined) return undefined;
+  const s = Array.isArray(v) ? v[0] : v;
+  return typeof s === "string" ? s : undefined;
+}
 
 export default async function AdminChangelogPage({ searchParams }: Props) {
-  const params = (await searchParams) ?? {};
-  const page = Math.max(1, Number(params.page ?? "1") || 1);
-  const offset = (page - 1) * PAGE_SIZE;
+  const raw = (await searchParams) ?? {};
+  const page = Math.max(1, Number(singleParam(raw.page) ?? "1") || 1);
+  const pageSize = Math.min(Math.max(Number(singleParam(raw.pageSize) ?? String(DEFAULT_PAGE_SIZE)) || DEFAULT_PAGE_SIZE, 1), 50);
+  const filters: ChangelogFiltersInput = {
+    action: singleParam(raw.action),
+    actorUid: singleParam(raw.actor),
+    from: singleParam(raw.from),
+    to: singleParam(raw.to),
+  };
 
-  const totalSnapshot = await adminDb.collection("activityLogs").count().get();
-  const total = totalSnapshot.data().count;
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const usersSnap = await adminDb.collection("users").limit(200).get();
+  const usersForForm = usersSnap.docs
+    .map((doc) => {
+      const d = doc.data() as { fullName?: string; email?: string };
+      return {
+        id: doc.id,
+        fullName: String(d.fullName ?? "").trim(),
+        email: String(d.email ?? "").trim(),
+      };
+    })
+    .sort((a, b) => {
+      const na = (a.fullName || a.email).toLowerCase();
+      const nb = (b.fullName || b.email).toLowerCase();
+      return na.localeCompare(nb, "es");
+    });
 
-  const snapshot = await adminDb
-    .collection("activityLogs")
-    .orderBy("createdAt", "desc")
-    .offset(offset)
-    .limit(PAGE_SIZE)
-    .get();
-  const logs = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as LogRow[];
-  const uniqueActions = Array.from(new Set(logs.map((row) => row.action || "sin acción")));
-  const actionToneByName = new Map(
-    uniqueActions.map((action, index) => [action, ACTION_TONES[index % ACTION_TONES.length]]),
-  );
+  let logs: LogRow[] = [];
+  let total = 0;
+  let totalPages = 1;
+  let queryError: string | null = null;
+
+  try {
+    const baseQuery = buildActivityLogsQuery(filters);
+    const countSnap = await baseQuery.count().get();
+    total = countSnap.data().count;
+    totalPages = Math.max(1, Math.ceil(total / pageSize));
+    const safePage = Math.min(page, totalPages);
+    const offset = (safePage - 1) * pageSize;
+
+    const snapshot = await baseQuery.offset(offset).limit(pageSize).get();
+    logs = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as LogRow[];
+  } catch (error) {
+    queryError = error instanceof Error ? error.message : "Error al consultar el changelog.";
+    logs = [];
+    total = 0;
+    totalPages = 1;
+  }
+
+  const displayPage = Math.min(page, totalPages);
 
   const actorUids = Array.from(
     new Set(
-      logs
-        .map((row) => row.actorUid)
-        .filter((uid): uid is string => Boolean(uid)),
+      logs.map((row) => row.actorUid).filter((uid): uid is string => Boolean(uid)),
     ),
   );
   const userSnapshots = await Promise.all(actorUids.map((uid) => adminDb.collection("users").doc(uid).get()));
@@ -78,14 +103,28 @@ export default async function AdminChangelogPage({ searchParams }: Props) {
   }
 
   return (
-    <section>
-      <h1 className="text-3xl font-semibold tracking-tight text-zinc-900">Changelog</h1>
+    <section className="mx-auto max-w-5xl">
+      <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl">Changelog</h1>
       <p className="mt-2 text-sm text-zinc-600">
-        Registro de actividad del panel por usuario, fecha, ubicación y acción.
+        Registro de actividad del panel por usuario, fecha, ubicación y acción. Podés filtrar por tipo de acción,
+        persona y fechas.
       </p>
 
-      <div className="mt-6 overflow-x-auto rounded-xl border border-zinc-200 bg-white shadow-sm">
-        <table className="w-full min-w-[860px] text-left text-sm">
+      <ChangelogFilterForm users={usersForForm} current={filters} />
+
+      {queryError ? (
+        <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+          <p className="font-medium">No se pudo aplicar el filtro</p>
+          <p className="mt-1 text-xs text-amber-900/90">{queryError}</p>
+          <p className="mt-2 text-xs text-amber-900/80">
+            Si el error menciona un índice, desplegá los índices:{" "}
+            <code className="rounded bg-white/80 px-1">firebase deploy --only firestore:indexes</code>
+          </p>
+        </div>
+      ) : null}
+
+      <div className="mt-6 rounded-xl border border-zinc-200 bg-white shadow-sm">
+        <table className="w-full text-left text-sm">
           <thead className="border-b border-zinc-200 bg-zinc-50">
             <tr>
               <th className="p-3 font-medium text-zinc-600">Usuario</th>
@@ -95,10 +134,16 @@ export default async function AdminChangelogPage({ searchParams }: Props) {
             </tr>
           </thead>
           <tbody>
-            {logs.length === 0 ? (
+            {!queryError && logs.length === 0 ? (
               <tr>
                 <td className="p-8 text-center text-sm text-zinc-600" colSpan={4}>
-                  Todavía no hay actividad registrada.
+                  No hay movimientos con estos filtros.
+                </td>
+              </tr>
+            ) : queryError ? (
+              <tr>
+                <td className="p-8 text-center text-sm text-zinc-600" colSpan={4}>
+                  Corregí los filtros o los índices para ver resultados.
                 </td>
               </tr>
             ) : (
@@ -129,13 +174,7 @@ export default async function AdminChangelogPage({ searchParams }: Props) {
                   <td className="p-3">{formatDate(row.createdAt)}</td>
                   <td className="p-3">{row.location || "Unknown"}</td>
                   <td className="p-3">
-                    <span
-                      className={`inline-block rounded-full border px-2 py-1 text-xs uppercase tracking-[0.08em] ${
-                        actionToneByName.get(row.action || "sin acción") || ACTION_TONES[0]
-                      }`}
-                    >
-                      {row.action || "sin acción"}
-                    </span>
+                    <AdminActionBadge action={row.action} />
                   </td>
                 </tr>
               ))
@@ -144,32 +183,11 @@ export default async function AdminChangelogPage({ searchParams }: Props) {
         </table>
       </div>
 
-      <div className="mt-4 flex items-center justify-between">
+      <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs text-zinc-500">
-          Página {page} de {totalPages} · {total} movimientos
+          Página {displayPage} de {totalPages} · {total} movimiento{total === 1 ? "" : "s"}
         </p>
-        <div className="flex items-center gap-2">
-          <Link
-            href={`/admin/changelog?page=${Math.max(1, page - 1)}`}
-            className={`rounded-lg border px-3 py-1.5 text-xs font-semibold ${
-              page <= 1
-                ? "pointer-events-none border-zinc-200 bg-zinc-100 text-zinc-400"
-                : "border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
-            }`}
-          >
-            Anterior
-          </Link>
-          <Link
-            href={`/admin/changelog?page=${Math.min(totalPages, page + 1)}`}
-            className={`rounded-lg border px-3 py-1.5 text-xs font-semibold ${
-              page >= totalPages
-                ? "pointer-events-none border-zinc-200 bg-zinc-100 text-zinc-400"
-                : "border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
-            }`}
-          >
-            Siguiente
-          </Link>
-        </div>
+        <ChangelogPagination page={displayPage} totalPages={totalPages} filters={filters} pageSize={pageSize} />
       </div>
     </section>
   );

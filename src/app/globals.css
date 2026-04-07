@@ -60,6 +60,7 @@ body {
 
 a {
   transition: color 0.2s ease;
+  cursor: pointer;
 }
 
 .font-display {
@@ -712,7 +713,8 @@ a {
   font-weight: 700;
 }
 
-.lg-circular-text {
+/* Beat default `.circular-text` 200×200 from React Bits component */
+.circular-text.lg-circular-text {
   width: 92px;
   height: 92px;
   color: #111;
@@ -720,7 +722,7 @@ a {
   background: rgba(255, 213, 235, 0.65);
 }
 
-.lg-circular-text span {
+.circular-text.lg-circular-text span {
   font-size: 9px;
   font-family: var(--font-display), sans-serif;
   letter-spacing: 0.05em;
@@ -748,6 +750,53 @@ a {
   color: #ff5faf;
 }
 
+/* Hero split: figura izquierda + panel de copy derecha (sin overlay) */
+.hero-split .hero-rotating-shell {
+  width: 100%;
+  max-width: none;
+}
+
+.hero-split .hero-rotating-main,
+.hero-split .hero-rotating-word {
+  justify-content: flex-start;
+}
+
+/* Mismo escalado que los H1 del hero (SOLUCIONES, DIGITALES QUE, FUNCIONAN, ESTAN BIEN PENSADAS, etc.) */
+.hero-split .hero-rotating-char {
+  font-size: clamp(4.3rem, 12.3vw, 6rem);
+  font-weight: 800;
+  letter-spacing: -0.012em;
+}
+
+@media (min-width: 768px) {
+  .hero-split .hero-rotating-char {
+    font-size: clamp(4.9rem, 10.5vw, 7rem);
+    letter-spacing: -0.01em;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero-split .hero-rotating-char {
+    font-size: clamp(5.4rem, 10.8vw, 7.9rem);
+  }
+}
+
+.lgs-hero-marquee__track {
+  animation: lgs-hero-marquee-scroll 26s linear infinite;
+}
+
+@keyframes lgs-hero-marquee-scroll {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lgs-hero-marquee__track {
+    animation: none;
+  }
+}
+
 .psychedelic-card {
   background:
     linear-gradient(135deg, rgba(255, 79, 169, 0.14), transparent 35%),
@@ -772,14 +821,21 @@ a {
   position: relative;
   overflow: hidden;
   border: 3px solid #111;
-  background: #f4ede6;
+  background: #ffe6f2;
   min-height: clamp(420px, 50vw, 620px);
+  border-radius: 22px;
+  transform-origin: center bottom;
+  transition:
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.45s ease;
+  box-shadow: 0 12px 28px rgba(17, 17, 17, 0.18);
 }
 
 .ally-image-wrap {
   position: absolute;
   inset: 0;
-  z-index: 2;
+  z-index: 1;
   overflow: hidden;
 }
 
@@ -793,35 +849,41 @@ a {
 
 .ally-ring-wrap {
   position: absolute;
-  inset: 0;
-  z-index: 1;
-  display: grid;
-  place-items: center;
+  left: 50%;
+  top: clamp(4%, 6vw, 9%);
+  transform: translateX(-50%);
+  z-index: 0;
+  width: min(138%, 720px);
+  aspect-ratio: 1;
+  max-width: none;
+  pointer-events: none;
 }
 
-.ally-ring {
-  width: clamp(180px, 22vw, 300px);
-  height: clamp(180px, 22vw, 300px);
+/* Fill ring wrapper; overrides React Bits default 200×200 */
+.ally-card .circular-text.ally-ring {
+  width: 100%;
+  height: 100%;
+  cursor: default;
   color: #ff5faf;
   border: 0;
   background: transparent;
+  opacity: 0.98;
+  transition: opacity 0.45s ease, filter 0.45s ease;
 }
 
-.ally-ring span {
-  font-size: clamp(0.6rem, 0.9vw, 0.8rem);
+.ally-card .circular-text.ally-ring span {
+  font-size: clamp(0.72rem, 1.35vw, 1.05rem);
   font-family: var(--font-display), sans-serif;
-  letter-spacing: 0.18em;
-}
-
-.ally-ring--reverse {
-  transform: rotate(180deg);
+  letter-spacing: 0.24em;
+  font-weight: 800;
+  color: #ff5faf;
 }
 
 .ally-tag {
   position: absolute;
   top: 1rem;
   left: 1rem;
-  z-index: 4;
+  z-index: 5;
   background: #111;
   color: #ff5faf;
   padding: 0.22rem 0.65rem;
@@ -838,9 +900,10 @@ a {
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: 3;
+  z-index: 4;
   background: linear-gradient(to top, rgba(15, 8, 8, 0.92) 0%, rgba(15, 8, 8, 0.66) 50%, transparent 100%);
   padding: clamp(2rem, 4vw, 3rem) clamp(0.9rem, 1.5vw, 1.2rem) clamp(0.9rem, 1.5vw, 1.2rem);
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .ally-name {
@@ -877,6 +940,33 @@ a {
   letter-spacing: 0.08em;
   border: 1px solid rgba(244, 237, 230, 0.3);
   padding: 0.12rem 0.38rem;
+}
+
+@media (min-width: 1024px) {
+  .allies-grid:hover .ally-card {
+    transform: scale(0.92);
+    opacity: 0.65;
+  }
+
+  .allies-grid .ally-card:hover {
+    z-index: 20;
+    transform: scale(1.1);
+    opacity: 1;
+    box-shadow: 0 24px 48px rgba(17, 17, 17, 0.28);
+  }
+
+  .allies-grid .ally-card:hover .ally-image {
+    transform: scale(1.1) translateY(-4px);
+  }
+
+  .allies-grid .ally-card:hover .circular-text.ally-ring {
+    opacity: 1;
+    filter: brightness(1.06);
+  }
+
+  .allies-grid .ally-card:hover .ally-overlay {
+    transform: translateY(-3px);
+  }
 }
 
 @media (max-width: 960px) {
@@ -981,5 +1071,38 @@ a {
   }
   html {
     @apply font-sans;
+  }
+
+  /* Controles interactivos: mano; deshabilitados: prohibido (sigue siendo feedback claro). */
+  button:not(:disabled),
+  input[type="button"]:not(:disabled),
+  input[type="submit"]:not(:disabled),
+  input[type="reset"]:not(:disabled),
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled),
+  input[type="file"]:not(:disabled),
+  input[type="range"]:not(:disabled),
+  input[type="image"]:not(:disabled),
+  label,
+  select:not(:disabled),
+  summary,
+  area[href],
+  [role="button"]:not([aria-disabled="true"]),
+  [role="link"][href],
+  [role="tab"]:not([aria-disabled="true"]),
+  [role="menuitem"]:not([aria-disabled="true"]),
+  [role="option"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  input[type="button"]:disabled,
+  input[type="submit"]:disabled,
+  input[type="reset"]:disabled,
+  [role="button"][aria-disabled="true"],
+  select:disabled,
+  textarea:disabled,
+  input:disabled {
+    cursor: not-allowed;
   }
 }

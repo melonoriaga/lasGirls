@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
+/** Must stay in sync with `SESSION_COOKIE_NAME` in `@/lib/auth/session`. */
 const SESSION_COOKIE_NAME = "lg_admin_session";
 
 export function proxy(request: NextRequest) {
@@ -15,6 +16,7 @@ export function proxy(request: NextRequest) {
   const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME)?.value;
   if (!sessionCookie) {
     const loginUrl = new URL("/admin/login", request.url);
+    loginUrl.searchParams.set("next", pathname + request.nextUrl.search);
     return NextResponse.redirect(loginUrl);
   }
 

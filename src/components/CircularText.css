@@ -1,10 +1,10 @@
+/* Base layout from React Bits Circular Text — size overridden where needed (hero, ally cards). */
 .circular-text {
   margin: 0 auto;
   border-radius: 50%;
   width: 200px;
   height: 200px;
-  font-weight: bold;
-  color: #fff;
+  position: relative;
   font-weight: 900;
   text-align: center;
   cursor: pointer;
@@ -20,5 +20,5 @@
   top: 0;
   bottom: 0;
   font-size: 24px;
-  transition: all 0.5s cubic-bezier(0, 0, 0, 1);
+  transition: all 0.5s cubic-bezier(0, 0, 1, 1);
 }

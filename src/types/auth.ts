@@ -21,6 +21,9 @@ export type AdminUser = {
   username?: string;
   photoURL?: string;
   contactPhone?: string;
+  timeZone?: string;
+  workdays?: number[];
+  workingHoursIntervals?: Array<{ start: string; end: string }>;
   workingHours?: string;
   usefulLinks?: string;
   internalNotes?: string;

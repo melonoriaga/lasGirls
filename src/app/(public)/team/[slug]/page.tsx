@@ -22,6 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: `${member.fullName} | Las Girls+`,
     description: member.tagline,
     path: `/team/${slug}`,
+    image: member.image,
   });
 }
 

@@ -17,6 +17,8 @@ const prettyLabel = (pathname: string) => {
 export function PublicBreadcrumb() {
   const pathname = usePathname();
   if (!pathname || pathname === "/") return null;
+  // Herramientas: cada vista trae su propia barra (Inicio/Volver + migas). Evita dos headers pegados.
+  if (pathname.startsWith("/herramientas")) return null;
 
   return (
     <div className="border-b border-black/20 bg-[#f4ede6]/95 px-4 py-3 backdrop-blur md:px-8">

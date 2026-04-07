@@ -1,5 +1,5 @@
-import Image from "next/image";
 import { ContactForm } from "@/components/forms/contact-form";
+import { ContactDecorationSticker } from "@/components/sections/contact-decoration-sticker";
 import { contactPageContent } from "@/content/site/contact";
 
 type ContactSectionProps = {
@@ -38,14 +38,7 @@ export function ContactSection({ id }: ContactSectionProps) {
 
       <div className="pointer-events-none absolute inset-0 z-0">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_72%,rgba(255,111,175,0.16),transparent_45%)]" />
-        <div className="absolute -bottom-8 right-0 h-[48vh] w-[46vw] min-w-[300px] max-w-[560px] opacity-90 md:bottom-0 md:right-4">
-          <Image
-            src="/brand/stickers/STICKER10.png"
-            alt="Decoración contacto"
-            fill
-            className="object-contain object-bottom-right"
-          />
-        </div>
+        <ContactDecorationSticker />
       </div>
     </section>
   );

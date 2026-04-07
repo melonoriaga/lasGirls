@@ -1,25 +1,72 @@
+import type { CollectionReference } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { logAdminActivity } from "@/lib/activity/log";
-import { adminAuth, adminDb } from "@/lib/firebase/admin";
-import { SESSION_COOKIE_NAME } from "@/lib/auth/session";
+import { canAccessRecord } from "@/lib/admin/record-visibility";
+import { getSessionActor } from "@/lib/api/admin-session";
+import { adminDb } from "@/lib/firebase/admin";
+import { budgetStatusSchema } from "@/lib/validations/pipeline";
 import { leadStatusSchema } from "@/lib/validations/lead";
 
 type Context = { params: Promise<{ id: string }> };
 
-const getActor = async () => {
-  const store = await cookies();
-  const sessionCookie = store.get(SESSION_COOKIE_NAME)?.value;
-  if (!sessionCookie) return null;
-  try {
-    return await adminAuth.verifySessionCookie(sessionCookie, true);
-  } catch {
-    return null;
+const BATCH = 400;
+
+async function deleteQueryInBatches(collectionRef: CollectionReference) {
+  while (true) {
+    const snap = await collectionRef.limit(BATCH).get();
+    if (snap.empty) break;
+    const batch = adminDb.batch();
+    for (const doc of snap.docs) {
+      batch.delete(doc.ref);
+    }
+    await batch.commit();
   }
-};
+}
+
+export async function DELETE(request: Request, context: Context) {
+  const actor = await getSessionActor();
+  if (!actor?.uid) {
+    return NextResponse.json({ ok: false, error: "No autorizado." }, { status: 401 });
+  }
+
+  const { id } = await context.params;
+  const leadRef = adminDb.collection("leads").doc(id);
+  const snapshot = await leadRef.get();
+  if (!snapshot.exists) {
+    return NextResponse.json({ ok: false, error: "Lead inexistente." }, { status: 404 });
+  }
+  if (!canAccessRecord(snapshot.data() ?? {}, actor.uid)) {
+    return NextResponse.json({ ok: false, error: "Sin permisos para este lead." }, { status: 403 });
+  }
+
+  const data = snapshot.data() as { fullName?: string; email?: string };
+
+  try {
+    await deleteQueryInBatches(leadRef.collection("notes"));
+    await deleteQueryInBatches(leadRef.collection("budgets"));
+    await leadRef.delete();
+
+    await logAdminActivity({
+      request,
+      action: "lead_deleted",
+      targetType: "lead",
+      targetId: id,
+      metadata: { fullName: data.fullName ?? "", email: data.email ?? "" },
+      fallbackActor: { uid: actor.uid, email: actor.email ?? "" },
+    });
+
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "No se pudo eliminar el lead.";
+    return NextResponse.json(
+      { ok: false, error: process.env.NODE_ENV === "development" ? message : "No se pudo eliminar el lead." },
+      { status: 500 },
+    );
+  }
+}
 
 export async function GET(_request: Request, context: Context) {
-  const actor = await getActor();
+  const actor = await getSessionActor();
   if (!actor?.uid) {
     return NextResponse.json({ ok: false, error: "No autorizado." }, { status: 401 });
   }
@@ -29,25 +76,39 @@ export async function GET(_request: Request, context: Context) {
   if (!snapshot.exists) {
     return NextResponse.json({ ok: false, error: "Lead inexistente." }, { status: 404 });
   }
+  if (!canAccessRecord(snapshot.data() ?? {}, actor.uid)) {
+    return NextResponse.json({ ok: false, error: "Sin permisos para este lead." }, { status: 403 });
+  }
 
-  const notesSnapshot = await adminDb
-    .collection("leads")
-    .doc(id)
-    .collection("notes")
-    .orderBy("createdAt", "desc")
-    .limit(100)
-    .get();
+  const [notesSnapshot, budgetsSnapshot] = await Promise.all([
+    adminDb
+      .collection("leads")
+      .doc(id)
+      .collection("notes")
+      .orderBy("createdAt", "desc")
+      .limit(100)
+      .get(),
+    adminDb
+      .collection("leads")
+      .doc(id)
+      .collection("budgets")
+      .orderBy("sentAt", "desc")
+      .limit(100)
+      .get(),
+  ]);
   const notes = notesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  const budgets = budgetsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 
   return NextResponse.json({
     ok: true,
     lead: { id: snapshot.id, ...snapshot.data() },
     notes,
+    budgets,
   });
 }
 
 export async function PATCH(request: Request, context: Context) {
-  const actor = await getActor();
+  const actor = await getSessionActor();
   if (!actor?.uid) {
     return NextResponse.json({ ok: false, error: "No autorizado." }, { status: 401 });
   }
@@ -55,6 +116,13 @@ export async function PATCH(request: Request, context: Context) {
   try {
     const { id } = await context.params;
     const body = (await request.json()) as Record<string, unknown>;
+    const leadSnapshot = await adminDb.collection("leads").doc(id).get();
+    if (!leadSnapshot.exists) {
+      return NextResponse.json({ ok: false, error: "Lead inexistente." }, { status: 404 });
+    }
+    if (!canAccessRecord(leadSnapshot.data() ?? {}, actor.uid)) {
+      return NextResponse.json({ ok: false, error: "Sin permisos para este lead." }, { status: 403 });
+    }
 
     const updates: Record<string, unknown> = {
       updatedAt: new Date().toISOString(),
@@ -72,6 +140,15 @@ export async function PATCH(request: Request, context: Context) {
     if (typeof body.budgetRange === "string") updates.budgetRange = body.budgetRange.trim();
     if (typeof body.message === "string") updates.message = body.message.trim();
     if (typeof body.assignedTo === "string") updates.assignedTo = body.assignedTo.trim();
+    if (typeof body.assignedToUserId === "string") updates.assignedToUserId = body.assignedToUserId.trim();
+    if (typeof body.internalNotes === "string") updates.internalNotes = body.internalNotes;
+    if (typeof body.latestBudgetLink === "string") updates.latestBudgetLink = body.latestBudgetLink.trim();
+    if (typeof body.latestBudgetSentAt === "string") updates.latestBudgetSentAt = body.latestBudgetSentAt.trim();
+    if (typeof body.latestBudgetAmount === "number") updates.latestBudgetAmount = body.latestBudgetAmount;
+    if (typeof body.currency === "string") updates.currency = body.currency.trim();
+    if (typeof body.budgetStatus === "string") updates.budgetStatus = budgetStatusSchema.parse(body.budgetStatus);
+    if (Array.isArray(body.missingDocuments))
+      updates.missingDocuments = body.missingDocuments.filter((item) => typeof item === "string");
     if (Array.isArray(body.tags)) updates.tags = body.tags.filter((tag) => typeof tag === "string");
     if (Array.isArray(body.serviceInterest))
       updates.serviceInterest = body.serviceInterest.filter((item) => typeof item === "string");

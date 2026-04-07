@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { logAdminActivity } from "@/lib/activity/log";
+import { canAccessRecord } from "@/lib/admin/record-visibility";
 import { adminAuth, adminDb } from "@/lib/firebase/admin";
 import { SESSION_COOKIE_NAME } from "@/lib/auth/session";
 
@@ -25,6 +26,13 @@ export async function POST(request: Request, context: Context) {
 
   try {
     const { id } = await context.params;
+    const leadSnap = await adminDb.collection("leads").doc(id).get();
+    if (!leadSnap.exists) {
+      return NextResponse.json({ ok: false, error: "Lead inexistente." }, { status: 404 });
+    }
+    if (!canAccessRecord(leadSnap.data() ?? {}, actor.uid)) {
+      return NextResponse.json({ ok: false, error: "Sin permisos para este lead." }, { status: 403 });
+    }
     const body = (await request.json()) as { content?: string; type?: string; pinned?: boolean };
     const content = String(body.content ?? "").trim();
     const type = String(body.type ?? "internal_note").trim();

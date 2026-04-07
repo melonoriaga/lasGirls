@@ -4,6 +4,17 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { sendPasswordResetEmail, signOut, updatePassword } from "firebase/auth";
+import { TimeZonePicker } from "@/components/admin/time-zone-picker";
+import {
+  type IntervalRow,
+  WorkingHoursScheduleEditor,
+} from "@/components/admin/working-hours-schedule-editor";
+import {
+  formatMinutesAsHm,
+  normalizeWorkdaysArray,
+  parseHmToMinutes,
+  parseWorkingHoursField,
+} from "@/lib/admin/working-hours";
 import { firebaseAuth } from "@/lib/firebase/client";
 
 const inputClassName =
@@ -15,6 +26,9 @@ type Profile = {
   email?: string;
   photoURL?: string;
   contactPhone?: string;
+  timeZone?: string;
+  workdays?: number[];
+  workingHoursIntervals?: IntervalRow[];
   workingHours?: string;
   usefulLinks?: string;
   internalNotes?: string;
@@ -33,7 +47,9 @@ export default function AdminProfilePage() {
   const [username, setUsername] = useState("");
   const [photoURL, setPhotoURL] = useState("");
   const [contactPhone, setContactPhone] = useState("");
-  const [workingHours, setWorkingHours] = useState("");
+  const [timeZone, setTimeZone] = useState("");
+  const [workdays, setWorkdays] = useState<number[]>([1, 2, 3, 4, 5]);
+  const [scheduleIntervals, setScheduleIntervals] = useState<IntervalRow[]>([{ start: "09:00", end: "18:00" }]);
   const [usefulLinks, setUsefulLinks] = useState("");
   const [internalNotes, setInternalNotes] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -60,7 +76,44 @@ export default function AdminProfilePage() {
       setUsername(next.username ?? "");
       setPhotoURL(next.photoURL ?? "");
       setContactPhone(next.contactPhone ?? "");
-      setWorkingHours(next.workingHours ?? "");
+      setTimeZone(
+        next.timeZone?.trim() ||
+          (typeof Intl !== "undefined" ? Intl.DateTimeFormat().resolvedOptions().timeZone : "") ||
+          "",
+      );
+
+      if (Array.isArray(next.workingHoursIntervals) && next.workingHoursIntervals.length > 0) {
+        const rows: IntervalRow[] = [];
+        for (const r of next.workingHoursIntervals) {
+          if (!r || typeof r !== "object") continue;
+          const s = typeof r.start === "string" ? r.start : "";
+          const e = typeof r.end === "string" ? r.end : "";
+          if (!s || !e) continue;
+          const sm = parseHmToMinutes(s);
+          const em = parseHmToMinutes(e);
+          rows.push({
+            start: sm !== null ? formatMinutesAsHm(sm) : s,
+            end: em !== null ? formatMinutesAsHm(em) : e,
+          });
+        }
+        setScheduleIntervals(rows.length ? rows : [{ start: "09:00", end: "18:00" }]);
+        setWorkdays(normalizeWorkdaysArray(next.workdays));
+      } else {
+        const legacy = parseWorkingHoursField(next.workingHours ?? "");
+        if (legacy && legacy.intervals[0]) {
+          const iv = legacy.intervals[0];
+          setScheduleIntervals([
+            {
+              start: formatMinutesAsHm(iv.startMinutes),
+              end: formatMinutesAsHm(iv.endMinutes),
+            },
+          ]);
+          setWorkdays([...legacy.workdays].sort((a, b) => a - b));
+        } else {
+          setScheduleIntervals([{ start: "09:00", end: "18:00" }]);
+          setWorkdays(normalizeWorkdaysArray(next.workdays));
+        }
+      }
       setUsefulLinks(next.usefulLinks ?? "");
       setInternalNotes(next.internalNotes ?? "");
     };
@@ -102,6 +155,28 @@ export default function AdminProfilePage() {
   };
 
   const save = async () => {
+    const completeIntervals = scheduleIntervals.filter((r) => r.start.trim() && r.end.trim());
+    if (completeIntervals.length === 0) {
+      setError("Agregá al menos un intervalo con hora de inicio y fin.");
+      return;
+    }
+    for (const r of completeIntervals) {
+      const a = parseHmToMinutes(r.start);
+      const b = parseHmToMinutes(r.end);
+      if (a === null || b === null) {
+        setError("Revisá que todas las horas estén en formato válido (selector de hora).");
+        return;
+      }
+      if (b <= a) {
+        setError("En cada intervalo, la hora de fin tiene que ser mayor que la de inicio.");
+        return;
+      }
+    }
+    if (workdays.length === 0) {
+      setError("Elegí al menos un día laboral.");
+      return;
+    }
+
     try {
       setSaving(true);
       setError("");
@@ -114,7 +189,12 @@ export default function AdminProfilePage() {
           username,
           photoURL,
           contactPhone,
-          workingHours,
+          timeZone,
+          workdays,
+          workingHoursIntervals: completeIntervals.map((r) => ({
+            start: formatMinutesAsHm(parseHmToMinutes(r.start)!),
+            end: formatMinutesAsHm(parseHmToMinutes(r.end)!),
+          })),
           usefulLinks,
           internalNotes,
         }),
@@ -196,11 +276,8 @@ export default function AdminProfilePage() {
   return (
     <section>
       <h1 className="text-3xl font-semibold tracking-tight text-zinc-900">Mi perfil</h1>
-      <p className="mt-2 max-w-3xl text-sm text-zinc-600">
-        Definí cómo te ven dentro del admin: username, foto, teléfono, horarios, links útiles y notas internas.
-      </p>
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-[240px_1fr]">
+      <div className="mt-4 grid gap-6 xl:grid-cols-[240px_1fr]">
         <aside className="rounded-2xl border border-zinc-200 bg-white p-4">
           <p className="text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">Configuración</p>
           <div className="mt-3 grid gap-2">
@@ -209,11 +286,10 @@ export default function AdminProfilePage() {
                 key={step.id}
                 type="button"
                 onClick={() => setActiveStep(step.id)}
-                className={`flex items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition ${
-                  activeStep === step.id
-                    ? "bg-rose-100 text-zinc-900"
-                    : "text-zinc-600 hover:bg-zinc-100"
-                }`}
+                className={`flex items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition ${activeStep === step.id
+                  ? "bg-rose-100 text-zinc-900"
+                  : "text-zinc-600 hover:bg-zinc-100"
+                  }`}
               >
                 <span className="grid h-5 w-5 place-items-center rounded-full border border-zinc-300 text-[11px] font-semibold">
                   {index + 1}
@@ -302,15 +378,24 @@ export default function AdminProfilePage() {
                     placeholder="+54 ..."
                   />
                 </label>
-                <label className="grid gap-1">
+                <div className="grid gap-1">
+                  <span className="text-xs uppercase tracking-[0.12em] text-zinc-500">Zona horaria</span>
+                  <p className="text-[11px] leading-snug text-zinc-500">
+                    Se usa para calcular si estás «en horario» en las tarjetas del equipo. Podés elegir una lista
+                    estándar (IANA) o usar la del dispositivo.
+                  </p>
+                  <TimeZonePicker id="profile-timezone" value={timeZone} onChange={setTimeZone} disabled={saving} />
+                </div>
+                <div className="grid gap-1">
                   <span className="text-xs uppercase tracking-[0.12em] text-zinc-500">Horario habitual</span>
-                  <input
-                    className={inputClassName}
-                    value={workingHours}
-                    onChange={(e) => setWorkingHours(e.target.value)}
-                    placeholder="Lun-Vie 9 a 18"
+                  <WorkingHoursScheduleEditor
+                    workdays={workdays}
+                    onWorkdaysChange={setWorkdays}
+                    intervals={scheduleIntervals}
+                    onIntervalsChange={setScheduleIntervals}
+                    disabled={saving}
                   />
-                </label>
+                </div>
                 <label className="grid gap-1">
                   <span className="text-xs uppercase tracking-[0.12em] text-zinc-500">Links útiles</span>
                   <textarea

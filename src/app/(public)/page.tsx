@@ -10,16 +10,14 @@ import CurvedLoop from "@/components/CurvedLoop";
 import DecryptedText from "@/components/DecryptedText";
 import RotatingText from "@/components/RotatingText";
 import LiquidEther from "@/components/LiquidEther";
-import TextType from "@/components/TextType";
 import { ContactSection } from "@/components/sections/contact-section";
+import { MethodologyFeed } from "@/components/sections/methodology-feed";
+import { ServicesShowcaseSection } from "@/components/sections/services-showcase-section";
+import { HeroBrandMarquee } from "@/components/sections/hero-brand-marquee";
+import { HeroStickerMotion } from "@/components/sections/hero-sticker-motion";
 import { StickerWindows } from "@/components/sections/sticker-windows";
-import { homeContent, serviceCards } from "@/content/site/home";
 
 gsap.registerPlugin(ScrollTrigger);
-
-const heroStickers = [
-  { id: "h1", src: "/brand/stickers/sticker-1.png", x: 84, y: 74, w: 380, rotate: -9, delay: 0.18 },
-];
 
 const teamStickers = [
   { id: "t1", src: "/brand/stickers/STICKER7.png", x: 15, y: 68, w: 400, rotate: 7, delay: 0.18 },
@@ -27,16 +25,13 @@ const teamStickers = [
 
 const heroRotatingWords = [
   "FUNCIONAN",
-  "CONVIERTEN",
   "VENDEN",
+  "CRECEN",
   "ESCALAN",
+  "SE USAN",
+  "CONECTAN",
   "TIENEN SENTIDO",
-  "SE PUEDEN USAR",
-  "NO SON HUMO",
-  "ESTAN BIEN PENSADAS",
 ];
-
-const SERVICE_ROW_COLORS = ["#ff6faf", "#ff9fcf", "#f8d4de", "#ffd6e8", "#fff0f8"];
 
 const impactStickerPoses = [
   { x: 0, y: 0, r: 0 },
@@ -226,7 +221,7 @@ export default function HomePage() {
       <section
         id="hero"
         ref={heroScopeRef}
-        className="vh-section relative isolate min-h-screen overflow-hidden border-y-2 border-black bg-[#f4ede6]"
+        className="relative isolate flex min-h-[100dvh] flex-col overflow-x-hidden border-y-2 border-black bg-[#f4ede6]"
       >
         <div className="absolute inset-0 z-0">
           <LiquidEther
@@ -248,60 +243,83 @@ export default function HomePage() {
           />
         </div>
         <div className="absolute inset-0 z-[1] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-15 mix-blend-multiply" />
-        <StickerWindows items={heroStickers} />
 
-        <div className="relative z-10 mx-auto flex min-h-screen max-w-[1080px] flex-col items-center justify-center px-4 pb-14 pt-24 text-center md:pt-28">
-          <p className="hero-soft-line inline-flex rotate-[-1.4deg] items-center gap-2 rounded-full bg-black px-4 py-1 text-[10px] uppercase tracking-[0.2em] text-[#f4ede6]">
-            <span>◆</span>
-            LAS GIRLS+ · BRANDING · TECH · ESTRATEGIA
-            <span>◆</span>
-          </p>
+        <div className="hero-split relative z-10 flex min-h-0 flex-1 flex-col items-center justify-center px-4 pb-10 pt-0 sm:px-5 md:px-6 md:pb-12 lg:px-10">
+          {/* Figura: 100dvh/svh; copy ancho completo en móvil, ~50–58vw en laptop para no aplastar la figura. */}
+          <div className="hero-split__stage mx-auto w-full max-w-full md:max-w-[min(1600px,100%)]">
+            <div className="grid grid-cols-1 items-stretch gap-y-8 sm:gap-y-10 md:grid-cols-[minmax(10rem,1fr)_min(54vw,36rem)] md:gap-x-5 lg:grid-cols-[minmax(12rem,1fr)_min(56vw,40rem)] lg:gap-x-7 xl:grid-cols-[minmax(14rem,1fr)_58vw] xl:gap-x-10">
+              <div className="hero-split__figure-area relative z-0 flex w-full min-h-[min(100svh,100dvh)] min-w-0 flex-col items-center justify-end md:min-h-[100dvh] md:w-full md:shrink-0 md:items-end md:justify-end">
+                <div className="relative z-0 mx-auto w-full min-w-0 md:mx-0 md:max-w-none">
+                  <HeroStickerMotion />
+                </div>
+              </div>
 
-          <h1 className="hero-main-line mt-8 w-full font-display text-[16vw] uppercase leading-[0.84] text-black md:text-[8.6rem] lg:text-[10.5rem]">
-            SOLUCIONES
-          </h1>
-          <h1 className="hero-main-line w-full font-display text-[16vw] uppercase leading-[0.84] text-black md:text-[8.6rem] lg:text-[10.5rem]">
-            DIGITALES QUE
-          </h1>
-          <div className="hero-rotating-reveal mt-1 flex w-full items-center justify-center bg-black py-1">
-            <div className="hero-rotating-shell flex min-h-[0.9em] items-center justify-center overflow-hidden">
-              <RotatingText
-                texts={heroRotatingWords}
-                rotationInterval={1850}
-                auto
-                loop
-                splitBy="words"
-                transition={{ type: "spring", damping: 24, stiffness: 310 }}
-                initial={{ y: "100%", opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: "-120%", opacity: 0 }}
-                mainClassName="hero-rotating-main"
-                splitLevelClassName="hero-rotating-word"
-                elementLevelClassName="hero-rotating-char"
-              />
+              <div className="hero-split__copy-area relative z-30 mx-auto flex w-full max-w-full min-w-0 flex-col items-start justify-center self-center pt-[max(4.25rem,env(safe-area-inset-top,0px)+3.25rem)] text-left md:w-auto md:max-w-none md:shrink-0 md:self-center md:pt-20 md:pl-1 lg:pt-24 lg:pl-2">
+                <HeroBrandMarquee />
+
+                <h1 className="hero-main-line mt-6 w-full font-display font-black uppercase leading-[1] tracking-[-0.015em] text-black md:mt-8
+                  text-[clamp(4.3rem,12.3vw,6rem)]
+                  md:max-w-none md:text-[clamp(4.9rem,10.5vw,7rem)]
+                  lg:text-[clamp(5.4rem,10.8vw,7.9rem)]">
+                  SOLUCIONES <br /> DIGITALES QUE
+                </h1>
+
+                <div className="hero-rotating-reveal mt-1 flex w-full min-w-0 max-w-full items-stretch justify-start bg-black py-1.5 pl-0 pr-2 md:py-2">
+                  <div className="hero-rotating-shell flex min-h-[0.9em] w-full min-w-0 items-center justify-start">
+                    <RotatingText
+                      texts={heroRotatingWords}
+                      rotationInterval={1850}
+                      auto
+                      loop
+                      splitBy="words"
+                      transition={{ type: "spring", damping: 24, stiffness: 310 }}
+                      initial={{ y: "100%", opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      exit={{ y: "-120%", opacity: 0 }}
+                      mainClassName="hero-rotating-main"
+                      splitLevelClassName="hero-rotating-word"
+                      elementLevelClassName="hero-rotating-char"
+                    />
+                  </div>
+                </div>
+
+                <p className="hero-soft-line mt-4 font-accent font-medium leading-[1.05] text-black
+                  text-[clamp(2.7rem,6.2vw,3.9rem)]
+                  sm:text-[clamp(2.8rem,5.8vw,4.2rem)]
+                  md:text-[clamp(2rem,5vw,3rem)]
+                  lg:text-[clamp(3rem,3vw,4rem)]">
+                  no para mostrar — para que pase algo
+                </p>
+
+                <div className="hero-soft-line mt-8 h-[3px] w-full max-w-full bg-black md:max-w-[52ch]" />
+                <div className="hero-soft-line mt-5 w-full max-w-full space-y-4 text-base font-medium normal-case leading-snug tracking-wide text-black/85 md:max-w-[52ch] lg:text-lg">
+                  <p>
+                    No necesitás tener todo claro. Si tenés una idea —aunque esté en cero— nos metemos con vos en el proceso
+                    para bajarla, ordenarla y convertirla en un producto digital real.
+                  </p>
+                  <p>
+                    Diseñamos, desarrollamos y acompañamos cada etapa para que funcione, conecte y crezca.
+                  </p>
+                </div>
+
+                <div className="hero-soft-line relative z-20 mt-7 flex flex-wrap items-center justify-start gap-3">
+                  <Link href="#contacto" className="hero-cta hero-cta--dark">
+                    BAJAR MI IDEA
+                  </Link>
+                  <Link href="#servicios" className="hero-cta hero-cta--light">
+                    CÓMO TRABAJAMOS
+                  </Link>
+                </div>
+
+                <div className="hero-soft-line relative z-20 mt-7 flex w-full max-w-full flex-col gap-1 text-sm text-black/72 sm:flex-row sm:flex-wrap sm:items-baseline sm:gap-x-2 sm:gap-y-1 md:max-w-[52ch]">
+                  <span className="font-medium text-black/80">Primera consulta sin costo</span>
+                  <span className="hidden sm:inline" aria-hidden>
+                    ·
+                  </span>
+                  <span>Primero entendemos tu idea. Después vemos qué necesitás.</span>
+                </div>
+              </div>
             </div>
-          </div>
-          <p className="hero-soft-line mt-3 font-accent text-5xl text-black lg:text-7xl">no que decoran</p>
-
-          <div className="hero-soft-line mt-8 h-[2px] w-full max-w-[520px] bg-black" />
-          <p className="hero-soft-line mt-5 max-w-[620px] text-sm leading-relaxed text-black/80 lg:text-base">
-            No necesitás tener todo claro. Si tenés una idea -aunque esté en cero- te ayudamos a bajarla, ordenarla y
-            convertirla en algo que funcione de verdad.
-          </p>
-
-          <div className="hero-soft-line mt-7 flex flex-wrap items-center justify-center gap-3">
-            <Link href="/contact" className="hero-cta hero-cta--dark">
-              EMPEZAR AHORA
-            </Link>
-            <Link href="#servicios" className="hero-cta hero-cta--light">
-              VER SERVICIOS
-            </Link>
-          </div>
-
-          <div className="hero-soft-line mt-7 inline-flex flex-wrap items-center justify-center gap-2 text-xs text-black/72">
-            <span>Primera consulta sin costo</span>
-            <span>·</span>
-            <span>Te ayudamos a entender qué necesitás antes de venderte algo</span>
           </div>
         </div>
         <div className="absolute right-5 top-20 z-[12] hidden lg:block">
@@ -399,115 +417,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section
-        id="metodologia"
-        className="vh-section relative overflow-hidden border-t-2 border-black bg-[#ff6faf] px-5 py-20 lg:px-10"
-      >
-        <div className="mx-auto w-full max-w-[1200px]">
-          <div className="meth-header relative z-[4] mb-14">
-            <h2 className="font-display text-6xl uppercase leading-[0.95] text-black lg:text-[5.5rem]">
-              TRABAJAR CON NOSOTRAS
-            </h2>
-            <p className="font-accent text-5xl text-black lg:text-[3.2rem]">es asi de simple.</p>
-          </div>
+      <MethodologyFeed />
 
-          <div className="process-grid-rows relative z-[4] grid border-t-2 border-black lg:grid-cols-3">
-            {homeContent.methodology.blocks.slice(0, 3).map((block, index) => (
-              <article
-                key={block.title}
-                className="meth-col process-col relative overflow-hidden border-l-0 border-black px-6 py-10 lg:border-l-2 lg:first:border-l-0"
-              >
-                <span className="meth-index pointer-events-none absolute left-2 top-0 font-display text-[clamp(9rem,30vw,24rem)] leading-[0.7] text-[#ffb8d9] opacity-60">
-                  {index + 1}
-                </span>
-
-                <div className="relative z-10 flex min-h-[280px] flex-col justify-between">
-                  <h3 className="font-display text-[clamp(2.1rem,5.5vw,5.8rem)] uppercase leading-[1.02] tracking-[-0.02em] text-black">
-                    <DecryptedText
-                      text={block.title.toUpperCase()}
-                      speed={32}
-                      maxIterations={12}
-                      sequential
-                      animateOn="view"
-                      className="inline-block"
-                      encryptedClassName="inline-block text-black/70"
-                    />
-                  </h3>
-                  <p className="max-w-[30ch] font-body text-[clamp(1.02rem,2.2vw,1.35rem)] uppercase leading-[1.6] tracking-[-0.01em] text-black/90">
-                    {block.description}
-                  </p>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section id="servicios" className="vh-section relative overflow-hidden border-t-2 border-black bg-[#f4ede6]">
-        <div className="w-full max-w-none">
-          <div className="brutal-reveal relative z-[4] flex min-h-screen flex-col justify-center px-5 py-14 md:px-12">
-            <h2 className="relative z-[2] max-w-[14ch] font-display text-[13vw] uppercase leading-[0.84] text-black md:text-[6.5rem] lg:text-[8.5rem]">
-              LO QUE PODEMOS{" "}
-              <TextType
-                as="span"
-                text={["CONSTRUIR"]}
-                className="text-[#ff2f9d]"
-                typingSpeed={66}
-                deletingSpeed={44}
-                pauseDuration={2000}
-                initialDelay={250}
-                loop={false}
-                showCursor={false}
-                startOnVisible
-              />
-            </h2>
-            <p className="relative z-[2] mt-6 max-w-4xl text-sm leading-relaxed text-black/85 lg:text-xl">
-              <TextType
-                as="span"
-                text={[
-                  "Estos son algunos de los trabajos que realizamos junto a nuestra red de aliados estrategicos. Segun el proyecto, formamos el equipo necesario para disenar, desarrollar y lanzar productos reales.",
-                ]}
-                typingSpeed={14}
-                deletingSpeed={14}
-                pauseDuration={1800}
-                initialDelay={520}
-                loop={false}
-                showCursor={false}
-                startOnVisible
-              />
-            </p>
-            <div className="relative z-[2] mt-8 h-[3px] w-20 bg-[#ff2f9d]" />
-          </div>
-
-          <div className="relative z-[4] w-full border-t-[3px] border-black">
-            {serviceCards.slice(0, 10).map((service, index) => (
-              <article
-                key={service.title}
-                className="service-row group border-b border-black"
-                style={{ background: SERVICE_ROW_COLORS[index % SERVICE_ROW_COLORS.length] }}
-              >
-                <div className="flex items-start justify-between gap-4 px-0 pb-3 pt-7">
-                  <h3 className="font-display text-[10vw] uppercase leading-[0.86] tracking-[-0.03em] text-black md:text-[5.2rem] lg:text-[6.6rem]">
-                    <span className="mr-[0.18em]">{String(index + 1).padStart(2, "0")}.</span>
-                    {service.title}
-                  </h3>
-                  <span className="mt-2 inline-block h-3 w-3 shrink-0 rounded-full bg-black" />
-                </div>
-                <div className="grid transition-[grid-template-rows] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] grid-rows-[0fr] group-hover:grid-rows-[1fr] group-focus-within:grid-rows-[1fr]">
-                  <div className="min-h-0 overflow-hidden border-t border-black">
-                    <div className="flex items-start justify-between gap-5 px-0 py-5">
-                      <p className="text-sm uppercase leading-[1.65] tracking-[0.08em] text-black/90 lg:text-lg">
-                        {service.description}
-                      </p>
-                      <span className="mt-1 inline-block h-3 w-3 shrink-0 rounded-full bg-black" />
-                    </div>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
+      <ServicesShowcaseSection />
 
       <section id="equipo" className="brutal-section vh-section section-shell relative border-t-2 border-black bg-[#111] text-[#fff8f0]">
         <StickerWindows items={teamStickers} />
@@ -534,14 +446,14 @@ export default function HomePage() {
             <Link href="/team/jean" className="ally-card group block" aria-label="Ver perfil de Jean">
               <div className="ally-ring-wrap" aria-hidden>
                 <CircularText
-                  text="JEAN ✦ BRANDING ✦ ESTRATEGIA ✦ "
+                  text="JEAN ✦ JEAN ✦ JEAN ✦ JEAN ✦ JEAN ✦ JEAN ✦ "
                   spinDuration={16}
                   onHover="speedUp"
                   className="ally-ring"
                 />
               </div>
               <div className="ally-image-wrap">
-                <Image src="/brand/girls/jean.png" alt="Jean" fill className="ally-image object-contain object-bottom" />
+                <Image src="/brand/girls/jean.png" alt="Jean" fill unoptimized className="ally-image object-contain object-bottom" />
               </div>
               <div className="ally-tag">✦ ESTRATEGIA & ROADMAP</div>
               <div className="ally-overlay">
@@ -568,14 +480,14 @@ export default function HomePage() {
             <Link href="/team/mel" className="ally-card group block" aria-label="Ver perfil de Mel">
               <div className="ally-ring-wrap" aria-hidden>
                 <CircularText
-                  text="MEL ✦ DIRECCION CREATIVA ✦ BRANDING ✦ "
+                  text="MEL ✦ MEL ✦ MEL ✦ MEL ✦ MEL ✦ MEL ✦ "
                   spinDuration={14}
                   onHover="speedUp"
-                  className="ally-ring ally-ring--reverse"
+                  className="ally-ring"
                 />
               </div>
               <div className="ally-image-wrap">
-                <Image src="/brand/girls/mel.png" alt="Mel" fill className="ally-image object-contain object-bottom" />
+                <Image src="/brand/girls/mel.png" alt="Mel" fill unoptimized className="ally-image object-contain object-bottom" />
               </div>
               <div className="ally-tag">✦ BRANDING & DIRECCIÓN CREATIVA</div>
               <div className="ally-overlay">

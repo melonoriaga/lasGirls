@@ -3,6 +3,14 @@ import { cookies } from "next/headers";
 import { adminAuth, adminDb } from "@/lib/firebase/admin";
 import { SESSION_COOKIE_NAME } from "@/lib/auth/session";
 import { logAdminActivity } from "@/lib/activity/log";
+import {
+  formatMinutesAsHm,
+  formatScheduleSummary,
+  getWallClockInIanaTimeZone,
+  normalizeWorkdaysArray,
+  parseHmToMinutes,
+  type WorkingHoursIntervalStored,
+} from "@/lib/admin/working-hours";
 
 const getActor = async () => {
   const store = await cookies();
@@ -34,6 +42,9 @@ export async function PATCH(request: Request) {
     username?: string;
     photoURL?: string;
     contactPhone?: string;
+    timeZone?: string;
+    workdays?: number[];
+    workingHoursIntervals?: Array<{ start?: string; end?: string }>;
     workingHours?: string;
     usefulLinks?: string;
     internalNotes?: string;
@@ -52,7 +63,49 @@ export async function PATCH(request: Request) {
   }
   if (typeof body.photoURL === "string") updates.photoURL = body.photoURL;
   if (typeof body.contactPhone === "string") updates.contactPhone = body.contactPhone.trim();
-  if (typeof body.workingHours === "string") updates.workingHours = body.workingHours.trim();
+  if (typeof body.timeZone === "string") {
+    const tz = body.timeZone.trim();
+    if (tz && getWallClockInIanaTimeZone(new Date(), tz) === null) {
+      return NextResponse.json({ ok: false, error: "Zona horaria no reconocida." }, { status: 400 });
+    }
+    updates.timeZone = tz;
+  }
+  if (body.workingHoursIntervals !== undefined) {
+    if (!Array.isArray(body.workingHoursIntervals)) {
+      return NextResponse.json({ ok: false, error: "Intervalos inválidos." }, { status: 400 });
+    }
+    if (body.workingHoursIntervals.length > 16) {
+      return NextResponse.json({ ok: false, error: "Máximo 16 intervalos." }, { status: 400 });
+    }
+    const normalized: WorkingHoursIntervalStored[] = [];
+    for (const row of body.workingHoursIntervals) {
+      if (!row || typeof row !== "object") continue;
+      const rawStart = String(row.start ?? "").trim();
+      const rawEnd = String(row.end ?? "").trim();
+      if (!rawStart || !rawEnd) continue;
+      const startM = parseHmToMinutes(rawStart);
+      const endM = parseHmToMinutes(rawEnd);
+      if (startM === null || endM === null) {
+        return NextResponse.json({ ok: false, error: "Usá horas en formato HH:MM." }, { status: 400 });
+      }
+      if (endM <= startM) {
+        return NextResponse.json(
+          { ok: false, error: "En cada intervalo, la hora de fin tiene que ser mayor que la de inicio." },
+          { status: 400 },
+        );
+      }
+      normalized.push({
+        start: formatMinutesAsHm(startM),
+        end: formatMinutesAsHm(endM),
+      });
+    }
+    const wd = normalizeWorkdaysArray(body.workdays);
+    updates.workingHoursIntervals = normalized;
+    updates.workdays = wd;
+    updates.workingHours = normalized.length ? formatScheduleSummary(wd, normalized) : "";
+  } else if (typeof body.workingHours === "string") {
+    updates.workingHours = body.workingHours.trim();
+  }
   if (typeof body.usefulLinks === "string") updates.usefulLinks = body.usefulLinks.trim();
   if (typeof body.internalNotes === "string") updates.internalNotes = body.internalNotes.trim();
 

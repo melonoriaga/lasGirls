@@ -20,9 +20,12 @@ export function CreateLeadForm({ onSuccess, onError, hideHeader = false, classNa
   const [phone, setPhone] = useState("");
   const [projectStage, setProjectStage] = useState("solo_idea");
   const [budgetRange, setBudgetRange] = useState("");
+  const [budgetCurrency, setBudgetCurrency] = useState("USD");
+  const [budgetPaymentType, setBudgetPaymentType] = useState("one_time");
   const [serviceInterest, setServiceInterest] = useState("");
   const [tags, setTags] = useState("");
   const [inquiryType, setInquiryType] = useState("consulta_general");
+  const [visibilityScope, setVisibilityScope] = useState("team");
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -41,6 +44,8 @@ export function CreateLeadForm({ onSuccess, onError, hideHeader = false, classNa
           phone,
           projectStage,
           budgetRange,
+          budgetCurrency,
+          budgetPaymentType,
           tags: tags
             .split(",")
             .map((item) => item.trim())
@@ -50,6 +55,7 @@ export function CreateLeadForm({ onSuccess, onError, hideHeader = false, classNa
             .map((item) => item.trim())
             .filter(Boolean),
           inquiryType,
+          visibilityScope,
           message,
           source: "admin-manual",
           preferredContactMethod: "email",
@@ -67,9 +73,12 @@ export function CreateLeadForm({ onSuccess, onError, hideHeader = false, classNa
       setPhone("");
       setProjectStage("solo_idea");
       setBudgetRange("");
+      setBudgetCurrency("USD");
+      setBudgetPaymentType("one_time");
       setServiceInterest("");
       setTags("");
       setInquiryType("consulta_general");
+      setVisibilityScope("team");
       setMessage("");
       onSuccess?.();
       router.refresh();
@@ -94,7 +103,13 @@ export function CreateLeadForm({ onSuccess, onError, hideHeader = false, classNa
         </label>
         <label className="grid gap-1">
           <span className="text-xs font-medium text-zinc-600">Email</span>
-          <input className={inputClassName} type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
+          <input
+            className={inputClassName}
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder="Opcional"
+          />
         </label>
         <label className="grid gap-1">
           <span className="text-xs font-medium text-zinc-600">Teléfono / WhatsApp</span>
@@ -127,12 +142,34 @@ export function CreateLeadForm({ onSuccess, onError, hideHeader = false, classNa
           <input className={inputClassName} value={budgetRange} onChange={(event) => setBudgetRange(event.target.value)} />
         </label>
         <label className="grid gap-1">
+          <span className="text-xs font-medium text-zinc-600">Divisa</span>
+          <select className={inputClassName} value={budgetCurrency} onChange={(event) => setBudgetCurrency(event.target.value)}>
+            <option value="USD">USD - Dolar</option>
+            <option value="ARS">ARS - Peso</option>
+            <option value="EUR">EUR - Euro</option>
+          </select>
+        </label>
+        <label className="grid gap-1">
+          <span className="text-xs font-medium text-zinc-600">Tipo de presupuesto</span>
+          <select className={inputClassName} value={budgetPaymentType} onChange={(event) => setBudgetPaymentType(event.target.value)}>
+            <option value="one_time">Unico</option>
+            <option value="retainer">Abono</option>
+          </select>
+        </label>
+        <label className="grid gap-1">
           <span className="text-xs font-medium text-zinc-600">Servicios (coma separada)</span>
           <input className={inputClassName} value={serviceInterest} onChange={(event) => setServiceInterest(event.target.value)} />
         </label>
         <label className="grid gap-1">
           <span className="text-xs font-medium text-zinc-600">Tags (coma separada)</span>
           <input className={inputClassName} value={tags} onChange={(event) => setTags(event.target.value)} />
+        </label>
+        <label className="grid gap-1">
+          <span className="text-xs font-medium text-zinc-600">Visibilidad</span>
+          <select className={inputClassName} value={visibilityScope} onChange={(event) => setVisibilityScope(event.target.value)}>
+            <option value="team">Todo el equipo</option>
+            <option value="private">Solo yo (mi usuario)</option>
+          </select>
         </label>
         <label className="grid gap-1 md:col-span-3">
           <span className="text-xs font-medium text-zinc-600">Mensaje</span>

@@ -1,13 +1,8 @@
 import { z } from "zod";
+import { leadPipelineStatusSchema } from "@/lib/validations/pipeline";
 
-export const leadStatusSchema = z.enum([
-  "new",
-  "contacted",
-  "in_followup",
-  "qualified",
-  "archived",
-  "converted",
-]);
+/** Estados del lead en admin (pipeline + legado). */
+export const leadStatusSchema = leadPipelineStatusSchema;
 
 export const leadSchema = z.object({
   fullName: z

@@ -1,4 +1,3 @@
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { adminAuth } from "@/lib/firebase/admin";
 import { SESSION_COOKIE_NAME } from "@/lib/auth/session";
@@ -15,12 +14,13 @@ export async function POST(request: Request) {
     const expiresIn = Math.min(Math.max(requested, MIN_SESSION_MS), MAX_SESSION_MS);
     const sessionCookie = await adminAuth.createSessionCookie(idToken, { expiresIn });
     const decoded = await adminAuth.verifyIdToken(idToken);
-    const store = await cookies();
-    store.set(SESSION_COOKIE_NAME, sessionCookie, {
+    const maxAgeSeconds = Math.floor(expiresIn / 1000);
+    const response = NextResponse.json({ ok: true });
+    response.cookies.set(SESSION_COOKIE_NAME, sessionCookie, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: expiresIn / 1000,
+      maxAge: maxAgeSeconds,
       path: "/",
     });
     await logAdminActivity({
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
       fallbackActor: { uid: decoded.uid, email: decoded.email ?? "" },
       metadata: { remember: Boolean(remember) },
     });
-    return NextResponse.json({ ok: true });
+    return response;
   } catch (error) {
     const message = error instanceof Error ? error.message : "No se pudo crear la sesion de admin.";
     return NextResponse.json(
@@ -50,7 +50,13 @@ export async function DELETE(request: Request) {
     action: "logout",
     targetType: "user",
   });
-  const store = await cookies();
-  store.delete(SESSION_COOKIE_NAME);
-  return NextResponse.json({ ok: true });
+  const response = NextResponse.json({ ok: true });
+  response.cookies.set(SESSION_COOKIE_NAME, "", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 0,
+    path: "/",
+  });
+  return response;
 }
