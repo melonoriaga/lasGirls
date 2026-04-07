@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { AdminActionBadge } from "@/components/admin/admin-action-badge";
 import { leadPipelineStatusLabel } from "@/lib/admin/lead-statuses";
+import { userHasWorkingScheduleData } from "@/lib/admin/working-hours";
 import { adminDb } from "@/lib/firebase/admin";
+import { getServerSession } from "@/lib/auth/session";
 
 const leadStatusClass = (status?: string) => {
   const value = String(status ?? "new");
@@ -39,6 +41,17 @@ type LogRow = {
 };
 
 export default async function AdminDashboardPage() {
+  const session = await getServerSession();
+  let showScheduleReminder = false;
+  if (session?.uid) {
+    const me = await adminDb.collection("users").doc(session.uid).get();
+    if (me.exists) {
+      const d = me.data() as Record<string, unknown>;
+      const tz = String(d.timeZone ?? "").trim();
+      showScheduleReminder = !tz || !userHasWorkingScheduleData(d);
+    }
+  }
+
   const [leadsTotal, clientsTotal, postsTotal, newLeadsCount, convertedLeadsCount, recentLeadsSnap] =
     await Promise.all([
       countCollection("leads"),
@@ -94,6 +107,22 @@ export default async function AdminDashboardPage() {
       <p className="mt-2 max-w-2xl text-sm text-zinc-600">
         Resumen del pipeline, contenidos y última actividad del equipo en el admin.
       </p>
+
+      {showScheduleReminder ? (
+        <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-950 shadow-sm">
+          <p className="text-sm font-semibold">Completá tu zona horaria y horario habitual</p>
+          <p className="mt-1 text-xs leading-relaxed text-amber-900/90">
+            Sin esos datos el equipo no ve bien cuándo estás disponible y el estado «en horario» en las tarjetas no se
+            puede calcular para vos.
+          </p>
+          <Link
+            href="/admin/profile"
+            className="mt-2 inline-flex text-xs font-semibold text-amber-950 underline decoration-amber-700/60 underline-offset-2 hover:decoration-amber-950"
+          >
+            Ir a mi perfil → Contacto y notas
+          </Link>
+        </div>
+      ) : null}
 
       <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {cards.map((card) => (

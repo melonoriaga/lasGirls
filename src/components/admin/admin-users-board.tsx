@@ -12,9 +12,12 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAdminToast } from "@/components/admin/admin-toast-provider";
 import { ConfirmDialog } from "@/components/admin/confirm-dialog";
+import { formatTimeZoneForDisplay } from "@/lib/admin/time-zones";
 import {
-  isNowWithinWorkingHours,
-  parseWorkingHoursField,
+  formatScheduleSummary,
+  isNowWithinWorkingHoursInTimeZone,
+  normalizeWorkdaysArray,
+  parseUserWorkingSchedule,
   type ParsedWorkingHours,
 } from "@/lib/admin/working-hours";
 import type { MergedTeamUser } from "@/lib/admin/team-users";
@@ -45,8 +48,8 @@ function linkHref(line: string): string | null {
   return null;
 }
 
-function WorkingHoursBlock({ text }: { text: string }) {
-  const trimmed = text.trim();
+function WorkingHoursBlock({ user, timeZone }: { user: MergedTeamUser; timeZone?: string | null }) {
+  const tz = String(timeZone ?? "").trim();
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
@@ -54,14 +57,30 @@ function WorkingHoursBlock({ text }: { text: string }) {
     return () => window.clearInterval(id);
   }, []);
 
-  const parsed: ParsedWorkingHours | null = useMemo(() => parseWorkingHoursField(trimmed), [trimmed]);
+  const scheduleSummary = useMemo(() => {
+    const intervals = user.workingHoursIntervals;
+    if (Array.isArray(intervals) && intervals.length > 0) {
+      const rows = intervals.filter(
+        (r): r is { start: string; end: string } =>
+          Boolean(r && typeof r === "object" && typeof r.start === "string" && typeof r.end === "string"),
+      );
+      if (rows.length) return formatScheduleSummary(normalizeWorkdaysArray(user.workdays), rows);
+    }
+    return String(user.workingHours ?? "").trim();
+  }, [user.workingHours, user.workingHoursIntervals, user.workdays]);
+
+  const parsed: ParsedWorkingHours | null = useMemo(() => parseUserWorkingSchedule(user), [
+    user.workingHours,
+    user.workingHoursIntervals,
+    user.workdays,
+  ]);
 
   const within = useMemo(() => {
     if (!parsed) return null;
-    return isNowWithinWorkingHours(parsed, new Date());
-  }, [parsed, tick]);
+    return isNowWithinWorkingHoursInTimeZone(parsed, tz || null, new Date());
+  }, [parsed, tz, tick]);
 
-  if (!trimmed) return <p className="text-xs text-zinc-400">Sin horario cargado</p>;
+  if (!scheduleSummary) return <p className="text-xs text-zinc-400">Sin horario cargado</p>;
 
   return (
     <div className="rounded-xl border border-zinc-200 bg-zinc-50/80 p-3">
@@ -69,10 +88,25 @@ function WorkingHoursBlock({ text }: { text: string }) {
         <RiTimeLine className="mt-0.5 size-4 shrink-0 text-zinc-500" aria-hidden />
         <div className="min-w-0 flex-1">
           <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500">Horario habitual</p>
-          <p className="mt-1 text-sm text-zinc-800">{trimmed}</p>
+          {tz ? (
+            <p className="mt-1 text-[11px] text-zinc-600">
+              <span className="font-medium text-zinc-500">Zona:</span> {formatTimeZoneForDisplay(tz)}
+            </p>
+          ) : (
+            <p className="mt-1 text-[11px] text-amber-800">
+              Sin zona horaria en el perfil: el estado abajo no puede calcularse con precisión.
+            </p>
+          )}
+          <p className="mt-1 text-sm text-zinc-800">{scheduleSummary}</p>
+          {parsed && !tz ? (
+            <p className="mt-2 text-[10px] leading-snug text-zinc-500">
+              Pedile a esta persona que cargue su zona en{" "}
+              <span className="font-medium text-zinc-700">Perfil → Contacto y notas</span> (o vos si sos vos).
+            </p>
+          ) : null}
           {within !== null ? (
             <p
-              className={`mt-2 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+              className={`mt-2 inline-flex flex-wrap items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
                 within
                   ? "bg-emerald-100 text-emerald-900 ring-1 ring-emerald-200/80"
                   : "bg-zinc-200/80 text-zinc-600 ring-1 ring-zinc-300/60"
@@ -82,11 +116,11 @@ function WorkingHoursBlock({ text }: { text: string }) {
                 className={`size-2 shrink-0 rounded-full ${within ? "bg-emerald-500 shadow-[0_0_0_2px_rgba(16,185,129,0.35)]" : "bg-zinc-400"}`}
                 aria-hidden
               />
-              {within ? "En horario (hora local de tu navegador)" : "Fuera de horario"}
+              {within ? `En horario (según su zona: ${tz})` : "Fuera de horario (según su zona)"}
             </p>
-          ) : (
+          ) : parsed ? null : (
             <p className="mt-2 text-[10px] leading-snug text-zinc-500">
-              No pudimos interpretar el horario automáticamente; mostrá el texto de arriba como referencia.
+              No pudimos interpretar el horario; revisá el perfil o el texto guardado.
             </p>
           )}
         </div>
@@ -222,6 +256,10 @@ function UserCard({
           <p className="mt-1 truncate text-sm text-zinc-600" title={user.email}>
             {user.email || "Sin email"}
           </p>
+          <p className="mt-1 line-clamp-2 text-[11px] text-zinc-500">
+            <span className="font-medium text-zinc-600">Zona horaria:</span>{" "}
+            {user.timeZone?.trim() ? formatTimeZoneForDisplay(user.timeZone) : "—"}
+          </p>
           {user.username ? <p className="text-xs text-zinc-500">@{user.username}</p> : null}
           <p className="mt-2 text-xs font-medium uppercase tracking-[0.12em] text-zinc-500">
             Rol: {user.role || "—"}
@@ -259,7 +297,7 @@ function UserCard({
         <p className="text-xs text-zinc-700">
           <strong className="text-zinc-500">Tel:</strong> {user.contactPhone?.trim() || "—"}
         </p>
-        <WorkingHoursBlock text={user.workingHours ?? ""} />
+        <WorkingHoursBlock user={user} timeZone={user.timeZone} />
         <UsefulLinksBlock text={user.usefulLinks ?? ""} />
         <NotesBlock text={user.internalNotes ?? ""} />
       </div>

@@ -10,11 +10,8 @@ export default async function AdminUsersPage() {
 
   return (
     <section className="mx-auto max-w-7xl">
-      <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl">Equipo del admin</h1>
-      <p className="mt-2 max-w-3xl text-sm text-zinc-600">
-        Listado según <strong className="font-medium text-zinc-800">Firebase Authentication</strong>, con perfil desde
-        Firestore cuando existe. Tres tarjetas por fila en pantallas anchas.
-      </p>
+      <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl">Team las girls</h1>
+
 
       <div className="mt-8">
         {users.length === 0 ? (

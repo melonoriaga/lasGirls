@@ -8,6 +8,13 @@ export type TeamUserFirestore = {
   role?: string;
   photoURL?: string;
   contactPhone?: string;
+  /** IANA, ej. America/Argentina/Buenos_Aires */
+  timeZone?: string;
+  /** 0=Dom … 6=Sáb; por defecto lun–vie en el parser */
+  workdays?: number[];
+  /** Intervalos HH:MM (varios por día, ej. mañana y tarde) */
+  workingHoursIntervals?: Array<{ start: string; end: string }>;
+  /** Resumen legible o texto legacy */
   workingHours?: string;
   usefulLinks?: string;
   internalNotes?: string;
@@ -73,6 +80,9 @@ export async function listMergedTeamUsers(): Promise<MergedTeamUser[]> {
       role: fs?.role,
       photoURL: fs?.photoURL || u.photoURL || undefined,
       contactPhone: fs?.contactPhone,
+      timeZone: fs?.timeZone,
+      workdays: fs?.workdays,
+      workingHoursIntervals: fs?.workingHoursIntervals,
       workingHours: fs?.workingHours,
       usefulLinks: fs?.usefulLinks,
       internalNotes: fs?.internalNotes,
