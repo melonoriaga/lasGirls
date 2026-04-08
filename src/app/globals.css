@@ -648,6 +648,12 @@ a {
   filter: saturate(1.08);
 }
 
+/* "Lista hoy" stroke text on impact poster */
+.impact-script-stroke {
+  -webkit-text-stroke: 4px #fff;
+  paint-order: stroke fill;
+}
+
 .impact-card {
   position: absolute;
   z-index: 9;

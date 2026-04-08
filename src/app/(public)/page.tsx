@@ -6,7 +6,6 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
 import Link from "next/link";
 import CircularText from "@/components/CircularText";
-import CurvedLoop from "@/components/CurvedLoop";
 import DecryptedText from "@/components/DecryptedText";
 import RotatingText from "@/components/RotatingText";
 import LiquidEther from "@/components/LiquidEther";
@@ -332,87 +331,45 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="impact-poster" className="brutal-section relative isolate min-h-[820px] overflow-hidden border-t-2 border-black bg-[#f4ede6] px-4 lg:h-screen lg:min-h-0 lg:px-10">
-        <div className="impact-side-text left-2 hidden lg:block">LAS GIRLS+ · BRUTAL BRANDING · WEB · APPS</div>
-        <div className="impact-side-text right right-2 hidden lg:block">ESTRATEGIA · CONTENIDO · CRECIMIENTO REAL</div>
+      <section id="impact-poster" className="relative isolate flex h-[100dvh] items-center justify-center overflow-hidden border-t-2 border-black bg-black px-4 py-6 lg:px-8 lg:py-8">
+        {/* Big rounded pink card */}
+        <div className="impact-fade relative h-full w-full max-w-[1200px] overflow-hidden rounded-[2.5rem] bg-[#f5a8cc] px-8 py-8 lg:rounded-[3rem] lg:px-12 lg:py-10">
 
-        <div className="pointer-events-none absolute inset-x-0 top-1/2 z-[2] hidden -translate-y-1/2 lg:block">
-          <CurvedLoop
-            marqueeText="✦ en menos de un dia · en menos de un dia · en menos de un dia · "
-            speed={1.35}
-            curveAmount={420}
-            direction="right"
-            interactive={false}
-            className="impact-curved-loop"
-          />
-        </div>
-
-        <div className="relative z-[4] mx-auto h-full w-full max-w-[1280px]">
-          <div className="impact-badge impact-fade">✦ ENTREGA EN TIEMPO REAL</div>
-          <div className="impact-stamp impact-fade hidden lg:flex">
-            <span className="impact-stamp__num">24</span>
-            <span className="impact-stamp__sub">HS</span>
-          </div>
-
-          <div className="absolute inset-x-0 top-[8%] z-[6] text-center">
-            <h2 className="impact-line impact-line--top font-display text-[19vw] uppercase leading-[0.8] tracking-[-0.02em] text-black md:text-[9rem] lg:text-[12rem]">
+          {/* Headline top-left */}
+          <div className="relative z-[6]">
+            <h2 className="impact-line impact-line--top font-display text-[clamp(3.5rem,11vw,9rem)] uppercase leading-[0.85] tracking-[-0.03em] text-black">
               TU IDEA
             </h2>
-            <h2 className="impact-line impact-line--bottom -mt-2 font-display text-[19vw] uppercase leading-[0.8] tracking-[-0.02em] text-[#ff5faf] md:text-[9rem] lg:text-[12rem]">
-              LISTA HOY.
+            <h2
+              className="impact-line font-accent -mt-1 text-[clamp(3rem,10vw,8rem)] leading-[0.9] text-[#ff2f9d]"
+              style={{ WebkitTextStroke: "5px white", paintOrder: "stroke fill" }}
+            >
+              Lista hoy
             </h2>
           </div>
 
-          <div
-            className="impact-char-wrap impact-fade absolute left-1/2 top-1/2 z-[8] h-[66vw] w-[66vw] max-h-[640px] max-w-[640px]"
-            onMouseEnter={() => setImpactPoseIndex((idx) => (idx + 1) % impactStickerPoses.length)}
-            style={{
-              transform: `translate(-50%, -50%) translate(${impactStickerPoses[impactPoseIndex].x}px, ${impactStickerPoses[impactPoseIndex].y}px) rotate(${impactStickerPoses[impactPoseIndex].r}deg)`,
-            }}
-          >
-            <Image src="/brand/stickers/STICKER2.png" alt="Sticker Las Girls+" fill className="object-contain object-bottom" priority={false} />
-          </div>
-
-          <div className="impact-card impact-card--left impact-fade hidden lg:block">
-            <p className="impact-card__kicker">✦ SIN VUELTAS</p>
-            <h4 className="impact-card__title">NO NECESITAS</h4>
-            <p className="impact-card__script">seis meses de reuniones.</p>
-            <p className="impact-card__copy">Si ya tenes marca, textos e imagenes, lo bajamos a tierra rapido y con criterio.</p>
-          </div>
-
-          <div className="impact-card impact-card--right impact-fade hidden lg:block">
-            <p className="impact-card__kicker">✦ INCLUYE TODO</p>
-            <p className="impact-card__copy">Con formulario, dominio conectado y estructura lista para recibir consultas reales.</p>
-            <p className="impact-card__pill">✦ BRANDING + WEB + LIVE</p>
-          </div>
-
-          <div className="impact-fade absolute inset-x-0 bottom-[8%] z-[10] px-3 lg:hidden">
-            <div className="mx-auto max-w-md space-y-3">
-              <div className="border-2 border-black bg-[#ffd7ea]/92 px-3 py-2">
-                <p className="text-[0.58rem] font-semibold uppercase tracking-[0.14em] text-black">✦ SIN VUELTAS</p>
-                <p className="mt-1 font-display text-2xl uppercase leading-none text-black">NO NECESITAS</p>
-                <p className="font-accent text-lg text-[#ff2f9d]">seis meses de reuniones.</p>
-                <p className="mt-1 text-[0.62rem] uppercase tracking-[0.08em] text-black/90">
-                  Si ya tenes marca, textos e imagenes, lo bajamos a tierra rapido y con criterio.
-                </p>
-              </div>
-              <div className="border-2 border-black bg-[#ffeaf4]/92 px-3 py-2">
-                <p className="text-[0.58rem] font-semibold uppercase tracking-[0.14em] text-black">✦ INCLUYE TODO</p>
-                <p className="mt-1 text-[0.62rem] uppercase tracking-[0.08em] text-black/90">
-                  Con formulario, dominio conectado y estructura lista para recibir consultas reales.
-                </p>
-                <p className="mt-2 inline-block bg-black px-2 py-1 text-[0.55rem] font-bold uppercase tracking-[0.14em] text-[#ff5faf]">
-                  ✦ BRANDING + WEB + LIVE
-                </p>
-              </div>
+          {/* Info card - bottom left */}
+          <div className="impact-fade absolute bottom-8 left-8 z-[10] lg:bottom-10 lg:left-12">
+            <div className="max-w-[280px] rounded-xl border border-black/30 bg-[#f5a8cc]/60 px-4 py-3 backdrop-blur-sm">
+              <p className="text-[0.58rem] font-bold uppercase tracking-[0.18em] text-black">SIN VUELTAS</p>
+              <p className="mt-1 font-accent text-[1rem] italic text-black line-through">
+                No necesitas seis meses de reuniones.
+              </p>
+              <p className="mt-1.5 text-[0.6rem] font-semibold uppercase leading-snug tracking-[0.1em] text-black/90">
+                SI YA TENES MARCA, TEXTOS E IMAGENES, LO BAJAMOS A TIERRA RAPIDO Y CON CRITERIO.
+              </p>
             </div>
           </div>
 
-          <div className="impact-script-wrap impact-fade absolute inset-x-0 bottom-[6%] z-[9] mx-auto max-w-4xl text-center">
-            <p className="impact-script font-accent text-4xl text-[#ff5faf] md:text-6xl">sin vueltas, con estrategia.</p>
-            <p className="mt-3 text-sm uppercase tracking-[0.14em] text-black/80 lg:text-base">
-              branding + web + contenido + direccion creativa para que tu marca se vea, se entienda y convierta.
-            </p>
+          {/* Character sticker - right side, bottom anchored, overflows card slightly */}
+          <div
+            className="impact-char-wrap impact-fade absolute bottom-0 right-0 z-[8] h-[90%] w-[48%] max-w-[560px]"
+            onMouseEnter={() => setImpactPoseIndex((idx) => (idx + 1) % impactStickerPoses.length)}
+            style={{
+              transform: `translate(${impactStickerPoses[impactPoseIndex].x}px, ${impactStickerPoses[impactPoseIndex].y}px) rotate(${impactStickerPoses[impactPoseIndex].r}deg)`,
+            }}
+          >
+            <Image src="/brand/stickers/STICKER19.png" alt="Sticker Las Girls+" fill className="object-contain object-bottom" priority={false} />
           </div>
         </div>
       </section>

@@ -381,8 +381,7 @@ export default function AdminProfilePage() {
                 <div className="grid gap-1">
                   <span className="text-xs uppercase tracking-[0.12em] text-zinc-500">Zona horaria</span>
                   <p className="text-[11px] leading-snug text-zinc-500">
-                    Se usa para calcular si estás «en horario» en las tarjetas del equipo. Podés elegir una lista
-                    estándar (IANA) o usar la del dispositivo.
+                    Se usa para calcular si estás «en horario» en las tarjetas del equipo.
                   </p>
                   <TimeZonePicker id="profile-timezone" value={timeZone} onChange={setTimeZone} disabled={saving} />
                 </div>

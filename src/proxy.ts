@@ -5,7 +5,19 @@ import { NextResponse } from "next/server";
 const SESSION_COOKIE_NAME = "lg_admin_session";
 
 export function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const { pathname, searchParams } = request.nextUrl;
+
+  // ── Under-construction redirect ──────────────────────────────────────────
+  // Redirect root to /under-construction unless ?viewWeb=true is set.
+  if (pathname === "/") {
+    const viewWeb = searchParams.get("viewWeb");
+    if (viewWeb !== "true") {
+      return NextResponse.redirect(new URL("/under-construction", request.url));
+    }
+    return NextResponse.next();
+  }
+
+  // ── Admin auth guard ─────────────────────────────────────────────────────
   const isAdminRoute = pathname.startsWith("/admin");
   const isLoginRoute = pathname.startsWith("/admin/login");
 
@@ -24,5 +36,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/", "/admin/:path*"],
 };

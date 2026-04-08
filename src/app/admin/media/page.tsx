@@ -53,7 +53,6 @@ export default function AdminMediaPage() {
     const file = e.dataTransfer.files?.[0];
     void validateAndUpload(file);
   };
-
   return (
     <section className="mx-auto max-w-2xl">
       <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl">Media</h1>
@@ -94,11 +93,10 @@ export default function AdminMediaPage() {
             setDragOver(false);
           }}
           onDrop={onDrop}
-          className={`rounded-2xl border-2 border-dashed p-6 text-center transition sm:p-10 ${
-            dragOver
+          className={`rounded-2xl border-2 border-dashed p-6 text-center transition sm:p-10 ${dragOver
               ? "border-rose-400 bg-rose-50"
               : "border-zinc-300 bg-white hover:border-rose-300 hover:bg-rose-50/40"
-          }`}
+            }`}
         >
           <div className="mx-auto flex max-w-sm flex-col items-center gap-3">
             <div className="rounded-full bg-rose-100 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-zinc-700">
