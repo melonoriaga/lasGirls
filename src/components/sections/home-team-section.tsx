@@ -1,12 +1,11 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import Image from "next/image";
-import Link from "next/link";
-import CircularText from "@/components/CircularText";
 import DecryptedText from "@/components/DecryptedText";
+import ProfileCard from "@/components/ProfileCard";
 import { StickerWindows } from "@/components/sections/sticker-windows";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -15,9 +14,10 @@ const TEAM_STICKERS = [
   { id: "t1", src: "/brand/stickers/STICKER7.png", x: 15, y: 68, w: 400, rotate: 7, delay: 0.18 },
 ];
 
-/** Home “strategic team” strip with Jean & Mel ally cards. */
+/** Home strategic team section with Jean & Mel profile cards. */
 export function HomeTeamSection() {
   const sectionRef = useRef<HTMLElement | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -66,7 +66,7 @@ export function HomeTeamSection() {
       ref={sectionRef}
       className="brutal-section vh-section section-shell relative border-t-2 border-black bg-[#111] text-[#fff8f0]"
     >
-      <StickerWindows items={TEAM_STICKERS} />
+      {/* <StickerWindows items={TEAM_STICKERS} /> */}
       <div className="mx-auto flex min-h-screen max-w-7xl flex-col justify-center">
         <p className="brutal-reveal inline-flex bg-[#ff5faf] px-3 py-1 text-[10px] uppercase tracking-[0.16em] text-black">
           equipo estratégico
@@ -86,74 +86,35 @@ export function HomeTeamSection() {
           Trabajamos con red real de especialistas. Vos hablás con nosotras: nos encargamos del resto.
         </p>
 
-        <div className="allies-grid brutal-reveal mt-8">
-          <Link href="/team/jean" className="ally-card group block" aria-label="Ver perfil de Jean">
-            <div className="ally-ring-wrap" aria-hidden>
-              <CircularText
-                text="JEAN ✦ JEAN ✦ JEAN ✦ JEAN ✦ JEAN ✦ JEAN ✦ "
-                spinDuration={16}
-                onHover="speedUp"
-                className="ally-ring"
-              />
-            </div>
-            <div className="ally-image-wrap">
-              <Image src="/brand/girls/jean.png" alt="Jean" fill unoptimized className="ally-image object-contain object-bottom" />
-            </div>
-            <div className="ally-tag">✦ ESTRATEGIA & ROADMAP</div>
-            <div className="ally-overlay">
-              <h3 className="ally-name">
-                <DecryptedText
-                  text="JEAN"
-                  speed={24}
-                  maxIterations={12}
-                  sequential
-                  animateOn="view"
-                  className="inline-block"
-                  encryptedClassName="inline-block text-[#f4ede6]/55"
-                />
-              </h3>
-              <p className="ally-script">estructura que ordena.</p>
-              <div className="ally-skills">
-                <span>Discovery</span>
-                <span>Roadmaps</span>
-                <span>Producto</span>
-              </div>
-            </div>
-          </Link>
+        <div className="brutal-reveal mt-12 grid grid-cols-1 items-start justify-items-center gap-10 md:grid-cols-2 md:gap-14 lg:gap-20">
 
-          <Link href="/team/mel" className="ally-card group block" aria-label="Ver perfil de Mel">
-            <div className="ally-ring-wrap" aria-hidden>
-              <CircularText
-                text="MEL ✦ MEL ✦ MEL ✦ MEL ✦ MEL ✦ MEL ✦ "
-                spinDuration={14}
-                onHover="speedUp"
-                className="ally-ring"
-              />
-            </div>
-            <div className="ally-image-wrap">
-              <Image src="/brand/girls/mel.png" alt="Mel" fill unoptimized className="ally-image object-contain object-bottom" />
-            </div>
-            <div className="ally-tag">✦ BRANDING & DIRECCIÓN CREATIVA</div>
-            <div className="ally-overlay">
-              <h3 className="ally-name">
-                <DecryptedText
-                  text="MEL"
-                  speed={24}
-                  maxIterations={12}
-                  sequential
-                  animateOn="view"
-                  className="inline-block"
-                  encryptedClassName="inline-block text-[#f4ede6]/55"
-                />
-              </h3>
-              <p className="ally-script">identidad que se recuerda.</p>
-              <div className="ally-skills">
-                <span>Branding</span>
-                <span>Visual Systems</span>
-                <span>Narrativa</span>
-              </div>
-            </div>
-          </Link>
+          <ProfileCard
+            name="JEAN"
+            title="Brand Designer & Visual Identity Lead"
+            handle="jean"
+            status="Disponible"
+            contactText="Ver perfil"
+            avatarUrl="/brand/girls/jean.png"
+            miniAvatarUrl="/brand/girls/jean.png"
+            iconUrl="/brand/logos/las-girls-vertical-rosa.png"
+            behindGlowColor="rgba(255, 62, 165, 0.15)"
+            avatarBottom="-200px"
+            onContactClick={() => router.push("/team/jean")}
+          />
+
+          <ProfileCard
+            name="MEL"
+            title="Product Designer & Developer"
+            handle="mel"
+            status="Disponible"
+            contactText="Ver perfil"
+            avatarUrl="/brand/girls/mel.png"
+            miniAvatarUrl="/brand/girls/mel.png"
+            iconUrl="/brand/logos/las-girls-vertical-rosa.png"
+            behindGlowColor="rgba(211, 66, 145, 0.15)"
+            avatarBottom="-200px"
+            onContactClick={() => router.push("/team/mel")}
+          />
         </div>
       </div>
     </section>
