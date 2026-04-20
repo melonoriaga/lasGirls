@@ -22,6 +22,8 @@ export interface StaggeredMenuProps {
   displayItemNumbering?: boolean;
   className?: string;
   logoUrl?: string;
+  scrolledLogoUrl?: string;
+  scrollThreshold?: number;
   menuButtonColor?: string;
   openMenuButtonColor?: string;
   accentColor?: string;
@@ -44,6 +46,8 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   displayItemNumbering = true,
   className,
   logoUrl = "/brand/logos/las-girls-horizontal-negro.png",
+  scrolledLogoUrl,
+  scrollThreshold = 80,
   menuButtonColor = "#111",
   openMenuButtonColor = "#111",
   changeMenuColorOnOpen = true,
@@ -58,6 +62,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
 }: StaggeredMenuProps) => {
   const [open, setOpen] = useState(false);
   const openRef = useRef(false);
+  const [scrolled, setScrolled] = useState(false);
 
   const panelRef = useRef<HTMLDivElement | null>(null);
   const preLayersRef = useRef<HTMLDivElement | null>(null);
@@ -371,6 +376,15 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   }, [playClose, animateIcon, animateColor, animateText, onMenuClose]);
 
   React.useEffect(() => {
+    const update = () => {
+      setScrolled(window.scrollY > scrollThreshold);
+    };
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    return () => window.removeEventListener("scroll", update);
+  }, [scrollThreshold]);
+
+  React.useEffect(() => {
     if (!smartContrast) return;
     if (open) return;
 
@@ -507,16 +521,40 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
           className="staggered-menu-header absolute top-0 left-0 w-full flex items-center justify-between p-[1.25em_1.5em] sm:p-[1.5em_2em] bg-transparent pointer-events-none z-20"
           aria-label="Main navigation header"
         >
-          <a href="/" className="sm-logo flex items-center select-none pointer-events-auto" aria-label="Las Girls+ home">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={logoUrl}
-              alt="Las Girls+"
-              className="sm-logo-img block h-9 w-auto object-contain sm:h-10"
-              draggable={false}
-              width={160}
-              height={40}
-            />
+          <a
+            href="/"
+            className="sm-logo flex items-center select-none pointer-events-auto"
+            aria-label="Las Girls+ home"
+            data-scrolled={scrolled || undefined}
+          >
+            <span
+              className={`sm-logo-shell relative inline-flex items-center transition-[height] duration-300 ease-out ${scrolled ? "h-8 sm:h-12 bg-white/10 backdrop-blur-sm rounded-sm px-6 py-2" : "h-12 sm:h-20"
+                }`}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={logoUrl}
+                alt="Las Girls+"
+                className={`sm-logo-img block h-full w-auto object-contain transition-opacity duration-300 ease-out ${scrolled && scrolledLogoUrl ? "opacity-0" : "opacity-100"
+                  }`}
+                draggable={false}
+                width={240}
+                height={64}
+              />
+              {scrolledLogoUrl && (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={scrolledLogoUrl}
+                  alt=""
+                  aria-hidden="true"
+                  className={`sm-logo-img sm-logo-img--scrolled absolute left-0 top-0 block h-full w-auto object-contain transition-opacity duration-300 ease-out ${scrolled ? "opacity-100" : "opacity-0"
+                    }`}
+                  draggable={false}
+                  width={240}
+                  height={64}
+                />
+              )}
+            </span>
           </a>
 
           <button

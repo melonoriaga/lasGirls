@@ -24,6 +24,8 @@ export function Navbar() {
       displaySocials
       displayItemNumbering
       logoUrl="/brand/logos/las-girls-horizontal-negro.png"
+      scrolledLogoUrl="/brand/logos/las-girls-horizontal-rosa.png"
+      scrollThreshold={80}
       menuButtonColor="#111"
       openMenuButtonColor="#111"
       changeMenuColorOnOpen
