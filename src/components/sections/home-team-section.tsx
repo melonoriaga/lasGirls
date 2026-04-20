@@ -193,10 +193,10 @@ export function HomeTeamSection() {
                 en el momento justo.
               </p>
 
-              <p className="max-w-[55ch] text-base leading-[1.65] text-white/75 md:text-[1.05rem]">
+              {/* <p className="max-w-[55ch] text-base leading-[1.65] text-white/75 md:text-[1.05rem]">
                 Nosotras lideramos, ordenamos y ejecutamos. El resto del equipo
                 aparece cuando tiene que aparecer.
-              </p>
+              </p> */}
             </div>
 
             {/* RIGHT col — specialist roster */}

@@ -11,20 +11,18 @@ Porque no existen preguntas tontas.
 
 Este ida y vuelta es clave para poder armar una propuesta bien pensada, alineada a vos, a tus tiempos y a tu presupuesto.
 
-Desde el día uno no estás sol0:
+Desde el día uno no estás solo:
 nos metemos con vos en el proceso y te acompañamos de punta a punta.`,
       },
       {
         description: `Una vez que entendimos todo, bajamos a tierra.
-
 Separamos lo urgente de lo importante,
 ordenamos ideas y armamos un camino lógico para avanzar.
 
 Desarmamos el proyecto en partes:
 qué va primero, qué puede esperar y qué realmente mueve el resultado.
 
-La idea es que podamos trabajar juntas de forma clara,
-sin caos, sin sobrecarga y adaptadas a tus tiempos.
+La idea es que podamos trabajar juntas de forma clara, sin caos, sin sobrecarga y adaptadas a tus tiempos.
 
 Si llegaste a las girls, no es casualidad.
 Ahora hay que hacerlo bien.`,
@@ -38,9 +36,7 @@ Nada de procesos rígidos que no se adaptan.
 Diseño, desarrollo, contenido, sistemas:
 todo conectado para que lo que estamos construyendo funcione de verdad.
 
-Te acompañamos en cada decisión, en cada entrega
-y en cada paso hasta que eso que imaginaste
-se convierte en algo real.`,
+Te acompañamos en cada decisión, en cada entrega y en cada paso hasta que eso que imaginaste se convierte en algo real.`,
       },
     ],
   },
@@ -56,17 +52,14 @@ se convierte en algo real.`,
   ],
   why: [
     "Acompañamiento real desde cero",
-    "Mirada estratégica y creativa en cada decisión",
-    "Equipo interdisciplinario que se arma según tu proyecto",
-    "Ejecución real: no solo ideas, sino implementación",
-    "Comunicación clara, humana y honesta",
-    "Capacidad de escalar con procesos y tecnología",
+
+
   ],
 };
 
 export const serviceCards = [
   {
-    title: "Branding & identidad",
+    title: "Branding e identidad",
     microcopy: "Marcas claras, memorables y coherentes.",
     description:
       "Construimos o refinamos tu identidad para que tu marca sea reconocible, consistente y funcional en todos los canales.",
@@ -94,7 +87,7 @@ export const serviceCards = [
     microcopy: "Presencia sostenida con narrativa de marca.",
     description:
       "Definimos estrategia de contenido, calendarización, piezas y lineamientos para comunicar con claridad y consistencia.",
-    solves: "Redes improvisadas, mensajes sin foco y baja conexión con audiencia.",
+    // solves: "Redes improvisadas, mensajes sin foco y baja conexión con audiencia.",
     examples: "Estrategia mensual, guiones, contenidos de lanzamiento.",
   },
   {

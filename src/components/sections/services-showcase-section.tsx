@@ -249,7 +249,7 @@ export function ServicesShowcaseSection() {
           <p className="svc-copy mt-4 w-full text-[1.04rem] uppercase leading-[1.45] tracking-[0.058em] text-black md:text-[1.22rem]">
             {services[0].description}
           </p>
-          <div className="mt-6 grid gap-4 border-t border-black pt-3 md:grid-cols-2">
+          {/* <div className="mt-6 grid gap-4 border-t border-black pt-3 md:grid-cols-2">
             <div>
               <p className="font-mono text-[0.56rem] uppercase tracking-[0.2em] text-black/70">resuelve</p>
               <p className="mt-1 text-[0.84rem] uppercase leading-[1.45] tracking-[0.058em] text-black/92 md:text-[0.94rem]">{services[0].solves}</p>
@@ -258,7 +258,7 @@ export function ServicesShowcaseSection() {
               <p className="font-mono text-[0.56rem] uppercase tracking-[0.2em] text-black/70">ejemplos</p>
               <p className="mt-1 text-[0.84rem] uppercase leading-[1.45] tracking-[0.058em] text-black/92 md:text-[0.94rem]">{services[0].examples}</p>
             </div>
-          </div>
+          </div> */}
           <div className="svc-line-draw mt-6 h-px w-full bg-black" />
         </article>
 
@@ -337,7 +337,7 @@ export function ServicesShowcaseSection() {
           <div className="svc-image-panel relative aspect-square overflow-hidden border border-black">
             <Image src={EDITORIAL_IMAGES[2]} alt={services[2].title} fill className="object-cover object-center" sizes="(max-width: 1024px) 100vw, 33vw" />
           </div>
-          <div className="mt-3 border-t border-black pt-2">
+          {/* <div className="mt-3 border-t border-black pt-2">
             <p className="font-mono text-[0.56rem] uppercase tracking-[0.2em] text-black/70">errores comunes</p>
             <div className="mt-1 grid gap-1">
               {ERRORES_COMUNES.slice(0, 3).map((item) => (
@@ -346,7 +346,7 @@ export function ServicesShowcaseSection() {
                 </p>
               ))}
             </div>
-          </div>
+          </div> */}
         </article>
 
         <article className="svc-module relative overflow-hidden border-b border-black bg-[#f3eee8] p-5 md:p-7 lg:col-span-6 lg:border-r lg:p-9">

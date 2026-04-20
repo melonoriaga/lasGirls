@@ -79,7 +79,7 @@ const CARD_SPECS: FeedCardSpec[] = [
     body: blocks[1]?.description ?? "",
     cardBg: "#EFE7DD",
     cutBg: "#E3DBD1",
-    bodyShellClass: "ml-4 mr-0 md:ml-5",
+    bodyShellClass: "mr-0 ",
     watermarkClass: WATERMARK_CLASS,
     stickers: [
       {

@@ -1,5 +1,6 @@
 "use client";
 
+import { BackToHeroFab } from "@/components/layout/back-to-hero-fab";
 import { ContactSection } from "@/components/sections/contact-section";
 import { HomeHeroSection } from "@/components/sections/home-hero-section";
 import { HomeTeamSection } from "@/components/sections/home-team-section";
@@ -12,6 +13,7 @@ export default function HomePage() {
   return (
     <>
       <HomeHeroSection />
+      <BackToHeroFab />
 
       <IdeaReadyImpactSection />
 

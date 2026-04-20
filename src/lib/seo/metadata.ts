@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { SITE_CONFIG } from "@/lib/constants/site";
+import { SITE_CONFIG, getSiteOrigin } from "@/lib/constants/site";
 
 type SeoArgs = {
   title: string;
@@ -20,11 +20,25 @@ export const buildMetadata = ({
   imageHeight = 630,
   imageAlt,
 }: SeoArgs): Metadata => {
-  const url = `${SITE_CONFIG.domain}${path}`;
-  const ogImage = `${SITE_CONFIG.domain}${image ?? SITE_CONFIG.defaultOg}`;
+  const origin = getSiteOrigin();
+  /** Next uses this to resolve relative URLs in metadata on the server */
+  const metadataBase = new URL(origin.endsWith("/") ? origin : `${origin}/`);
+
+  const pathNormalized = path.startsWith("/") ? path : `/${path}`;
+  const canonicalUrl =
+    pathNormalized === "/" ? `${origin}/` : `${origin}${pathNormalized}`;
+
+  const ogPath = image ?? SITE_CONFIG.defaultOg;
+  const ogRelative = ogPath.startsWith("/") ? ogPath.slice(1) : ogPath;
+  const ogImageAbsolute =
+    ogPath.startsWith("http://") || ogPath.startsWith("https://")
+      ? ogPath
+      : new URL(ogRelative, metadataBase).href;
+
   const alt = imageAlt ?? title;
 
   return {
+    metadataBase,
     title,
     description,
     icons: {
@@ -32,16 +46,16 @@ export const buildMetadata = ({
       shortcut: [{ url: "/favicon.ico?v=lg7", type: "image/x-icon" }],
       apple: [{ url: "/brand/stickers/sticker-6.png?v=lg7", type: "image/png" }],
     },
-    alternates: { canonical: url },
+    alternates: { canonical: canonicalUrl },
     openGraph: {
       title,
       description,
-      url,
+      url: canonicalUrl,
       siteName: SITE_CONFIG.name,
       locale: SITE_CONFIG.locale,
       images: [
         {
-          url: ogImage,
+          url: ogImageAbsolute,
           width: imageWidth,
           height: imageHeight,
           alt,
@@ -53,7 +67,7 @@ export const buildMetadata = ({
       card: "summary_large_image",
       title,
       description,
-      images: [ogImage],
+      images: [ogImageAbsolute],
     },
   };
 };

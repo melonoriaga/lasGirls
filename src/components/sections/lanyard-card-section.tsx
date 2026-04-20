@@ -23,13 +23,13 @@ export function LanyardCardSection() {
             position={[0, 0, 13]}
             gravity={[0, -40, 0]}
             fov={28}
-            cardColor="#ff3ea5"
-            cardStickerUrl="/brand/stickers/STICKER7.png"
-            strapColor="#ff6faf"
+            cardColor="#ed70a8"
+            cardStickerUrl="/brand/cards/FRENTE.png"
+            strapColor="#ff3ea5"
             strapStickerUrl="/brand/stickers/STICKER9.png"
-            logoScale={0.72}
-            logoOffsetX={0}
-            logoOffsetY={0.18}
+            logoScale={1.4}
+            logoOffsetX={0.00002}
+            logoOffsetY={-0.04}
           />
         </div>
 
@@ -43,26 +43,25 @@ export function LanyardCardSection() {
           </div>
 
           <h2 className="font-display text-[clamp(2rem,4.6vw,3.6rem)] font-black uppercase leading-[1.02] tracking-normal text-[#f4ede6]">
-            Llevátela{" "}
-            <span className="text-[#ff3ea5]">puesta.</span>
+            VIP Acceso{" "}
+            <span className="text-[#ff3ea5]">Total</span>
           </h2>
 
           <p className="max-w-[42ch] text-base leading-[1.65] text-white/75 md:text-[1.05rem]">
             Tu tarjeta Las Girls+ no es decorativa. Es el acceso directo a un
-            equipo que se arma a tu medida, sin intermediarios ni mil mails de
-            ida y vuelta.
+            equipo que se arma a tu medida.
           </p>
 
           <p className="max-w-[42ch] font-mono text-xs uppercase tracking-[0.18em] text-white/55">
-            ↓ Tirá del cordón, jugá con ella.
+            ↓ Tirá del la tarjeta y mira la magia.
           </p>
 
           <div className="mt-2 flex flex-wrap gap-3">
             <Link
               href="#contacto"
-              className="group inline-flex items-center gap-2 bg-[#ff3ea5] px-6 py-3.5 font-display text-sm font-bold uppercase tracking-widest text-black transition-colors hover:bg-white"
+              className="group inline-flex items-center gap-2 bg-[#ff3ea5] px-6 py-3.5 font-display text-sm font-bold uppercase tracking-widest text-white transition-colors hover:bg-[#ff3ea5]/50"
             >
-              Quiero la mía
+              Usar mi VIP code
               <span className="transition-transform group-hover:translate-x-1">
                 →
               </span>
@@ -71,7 +70,7 @@ export function LanyardCardSection() {
               href="/team"
               className="inline-flex items-center gap-2 border-2 border-white/30 px-6 py-3.5 font-display text-sm font-bold uppercase tracking-widest text-white transition-colors hover:border-white hover:bg-white hover:text-black"
             >
-              Conocer al equipo
+              Quiero mi VIP code
             </Link>
           </div>
 
