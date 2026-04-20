@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -198,7 +198,7 @@ function ScrambleScrollTitle({
     [text, smallerSubstring],
   );
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
 
     const spans = spansRef.current.filter((node): node is HTMLSpanElement => Boolean(node));
@@ -296,7 +296,7 @@ export function MethodologyFeed() {
   const sectionRef = useRef<HTMLElement | null>(null);
   const cardsRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
     if (!sectionRef.current || !cardsRef.current) return;
 
@@ -338,7 +338,9 @@ export function MethodologyFeed() {
 
       tl.to({}, { duration: 0.35 });
 
-      return () => { };
+      return () => {
+        tl.kill();
+      };
     });
 
     return () => mm.revert();
@@ -356,7 +358,9 @@ export function MethodologyFeed() {
           <h2 className="mt-3 font-display text-[clamp(2.5rem,9vw,4.75rem)] font-black uppercase leading-[0.9] tracking-[-0.03em] text-black">
             TRABAJAR CON NOSOTRAS
           </h2>
-          <p className="font-accent mt-3 text-[clamp(1.65rem,4.5vw,2.75rem)] leading-[0.98] text-black">es así de simple.</p>
+          <p className="font-accent mt-3 text-[clamp(1.65rem,4.5vw,2.75rem)] leading-[0.98] text-black">
+            Es así de simple.
+          </p>
         </header>
 
         <div

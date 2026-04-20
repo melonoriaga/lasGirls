@@ -50,6 +50,7 @@
 html,
 body {
   min-height: 100%;
+  margin: 0;
 }
 
 body {
@@ -69,6 +70,8 @@ a {
 
 .font-accent {
   font-family: var(--font-accent), cursive;
+  /* Legibility + override parent `.uppercase` wrappers site-wide */
+  text-transform: none !important;
 }
 
 .section-shell {
@@ -285,6 +288,20 @@ a {
 
 .pin-spacer:has(> #hero) {
   background: #000;
+}
+
+@keyframes contact-sticker-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+.contact-sticker-float-inner--animate {
+  animation: contact-sticker-float 3.2s ease-in-out infinite;
 }
 
 .lg-contact-tab {
@@ -732,6 +749,7 @@ a {
   font-size: 1rem;
   color: #ff2f9d;
   margin: 0.1rem 0 0.4rem;
+  text-transform: none !important;
 }
 
 .impact-card__copy {
@@ -962,6 +980,7 @@ a {
   font-family: var(--font-accent), cursive;
   font-size: clamp(0.78rem, 1.4vw, 1rem);
   color: #ff5faf;
+  text-transform: none !important;
   transform: rotate(-0.6deg);
   transform-origin: left center;
 }

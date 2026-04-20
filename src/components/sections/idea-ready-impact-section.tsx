@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
@@ -12,7 +12,7 @@ gsap.registerPlugin(ScrollTrigger);
 export function IdeaReadyImpactSection() {
   const sectionRef = useRef<HTMLElement | null>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = sectionRef.current;
     if (!el) return;
 

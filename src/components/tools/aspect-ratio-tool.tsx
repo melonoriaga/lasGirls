@@ -97,7 +97,7 @@ function FormatCard({ fmt }: { fmt: Format }) {
         </div>
       </div>
       <div>
-        <div className="font-accent text-[clamp(0.85rem,1.6vw,1.15rem)] uppercase leading-tight text-[#111]">{fmt.label}</div>
+        <div className="font-accent text-[clamp(0.85rem,1.6vw,1.15rem)] leading-tight text-[#111]">{fmt.label}</div>
         {fmt.note ? <div className="mt-1 text-[0.5rem] tracking-[0.08em] text-[#FF6FAF]">{fmt.note}</div> : null}
       </div>
       <button type="button" onClick={copy} className="flex cursor-pointer items-center gap-1 border-0 bg-transparent p-0 text-left">
@@ -130,7 +130,7 @@ function Calculator({ selected }: { selected: Format | null }) {
   return (
     <div className="flex flex-col gap-5 border border-black/10 p-6 sm:p-8">
       <div>
-        <div className="font-accent text-[clamp(1rem,1.8vw,1.35rem)] uppercase tracking-wide text-[#111]">Calculadora</div>
+        <div className="font-accent text-[clamp(1rem,1.8vw,1.35rem)] tracking-wide text-[#111]">Calculadora</div>
         <div className="mt-1 text-[0.6rem] text-[#111]/40">
           Ratio activo: <strong>{ratioStr}</strong>
           {selected ? ` — ${selected.platform} · ${selected.label}` : " (personalizado)"}
@@ -192,7 +192,7 @@ export function AspectRatioTool() {
     <ToolLayout toolName="Relación de aspecto">
       <div className="flex flex-col gap-8 px-4 py-10 sm:gap-10 sm:px-10 sm:py-14">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-          <h1 className="font-accent text-[clamp(1.75rem,5vw,3.5rem)] uppercase leading-[0.9] text-[#111]">
+          <h1 className="font-accent text-[clamp(1.75rem,5vw,3.5rem)] leading-[0.9] text-[#111]">
             Relaciones
             <br />
             <span className="text-[#FF6FAF]" style={{ fontStyle: "italic" }}>

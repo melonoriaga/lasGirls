@@ -35,6 +35,9 @@ export interface StaggeredMenuProps {
   smartContrastLightBgColor?: string;
   onMenuOpen?: () => void;
   onMenuClose?: () => void;
+  forceScrolled?: boolean;
+  /** Optional slot between logo and MENU (e.g. breadcrumb on inner routes). */
+  headerCenter?: React.ReactNode;
 }
 
 export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
@@ -59,10 +62,13 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   smartContrastLightBgColor,
   onMenuOpen,
   onMenuClose,
+  forceScrolled = false,
+  headerCenter,
 }: StaggeredMenuProps) => {
   const [open, setOpen] = useState(false);
   const openRef = useRef(false);
   const [scrolled, setScrolled] = useState(false);
+  const effectiveScrolled = forceScrolled || scrolled;
 
   const panelRef = useRef<HTMLDivElement | null>(null);
   const preLayersRef = useRef<HTMLDivElement | null>(null);
@@ -83,6 +89,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   const colorTweenRef = useRef<gsap.core.Tween | null>(null);
 
   const toggleBtnRef = useRef<HTMLButtonElement | null>(null);
+  const breadcrumbColorRef = useRef<HTMLDivElement | null>(null);
   const logoLinkRef = useRef<HTMLAnchorElement | null>(null);
   const busyRef = useRef(false);
 
@@ -120,7 +127,8 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
 
       gsap.set(textInner, { yPercent: 0 });
 
-      if (toggleBtnRef.current) gsap.set(toggleBtnRef.current, { color: menuButtonColor });
+      const navColorTargets = [toggleBtnRef.current, breadcrumbColorRef.current].filter(Boolean);
+      if (navColorTargets.length) gsap.set(navColorTargets, { color: menuButtonColor });
     });
     return () => ctx.revert();
   }, [menuButtonColor, position]);
@@ -293,26 +301,33 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   const animateColor = useCallback(
     (opening: boolean) => {
       const btn = toggleBtnRef.current;
-      if (!btn) return;
+      const crumbs = breadcrumbColorRef.current;
+      const targets = [btn, crumbs].filter(Boolean) as HTMLElement[];
+      if (!targets.length) return;
       colorTweenRef.current?.kill();
       if (changeMenuColorOnOpen) {
         const targetColor = opening ? openMenuButtonColor : menuButtonColor;
-        colorTweenRef.current = gsap.to(btn, { color: targetColor, delay: 0.18, duration: 0.3, ease: "power2.out" });
+        colorTweenRef.current = gsap.to(targets, {
+          color: targetColor,
+          delay: 0.18,
+          duration: 0.3,
+          ease: "power2.out",
+        });
       } else {
-        gsap.set(btn, { color: menuButtonColor });
+        gsap.set(targets, { color: menuButtonColor });
       }
     },
     [openMenuButtonColor, menuButtonColor, changeMenuColorOnOpen]
   );
 
   React.useEffect(() => {
-    if (toggleBtnRef.current) {
-      if (changeMenuColorOnOpen) {
-        const targetColor = openRef.current ? openMenuButtonColor : menuButtonColor;
-        gsap.set(toggleBtnRef.current, { color: targetColor });
-      } else {
-        gsap.set(toggleBtnRef.current, { color: menuButtonColor });
-      }
+    const targets = [toggleBtnRef.current, breadcrumbColorRef.current].filter(Boolean) as HTMLElement[];
+    if (!targets.length) return;
+    if (changeMenuColorOnOpen) {
+      const targetColor = openRef.current ? openMenuButtonColor : menuButtonColor;
+      gsap.set(targets, { color: targetColor });
+    } else {
+      gsap.set(targets, { color: menuButtonColor });
     }
   }, [changeMenuColorOnOpen, menuButtonColor, openMenuButtonColor]);
 
@@ -379,13 +394,14 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   }, [playClose, animateIcon, animateColor, animateText, onMenuClose]);
 
   React.useEffect(() => {
+    if (forceScrolled) return;
     const update = () => {
       setScrolled(window.scrollY > scrollThreshold);
     };
     update();
     window.addEventListener("scroll", update, { passive: true });
     return () => window.removeEventListener("scroll", update);
-  }, [scrollThreshold]);
+  }, [scrollThreshold, forceScrolled]);
 
   React.useEffect(() => {
     if (!smartContrast) return;
@@ -438,8 +454,10 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
 
       const lum = luminance(r, g, b);
       const target = lum < 0.5 ? smartContrastDarkBgColor : lightFallback;
+      const crumbs = breadcrumbColorRef.current;
+      const targets = [btn, crumbs].filter(Boolean) as HTMLElement[];
       colorTweenRef.current?.kill();
-      colorTweenRef.current = gsap.to(btn, {
+      colorTweenRef.current = gsap.to(targets, {
         color: target,
         duration: 0.25,
         ease: "power2.out",
@@ -467,7 +485,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   }, [smartContrast, smartContrastDarkBgColor, smartContrastLightBgColor, menuButtonColor, open]);
 
   React.useEffect(() => {
-    if (!scrolled || !scrolledLogoUrl) {
+    if (!effectiveScrolled || !scrolledLogoUrl) {
       setScrolledLogoFilter("none");
       return;
     }
@@ -547,7 +565,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
       window.removeEventListener("scroll", onScrollOrResize);
       window.removeEventListener("resize", onScrollOrResize);
     };
-  }, [scrolled, scrolledLogoUrl]);
+  }, [effectiveScrolled, scrolledLogoUrl]);
 
   React.useEffect(() => {
     if (!closeOnClickAway || !open) return;
@@ -569,13 +587,19 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
     };
   }, [closeOnClickAway, open, closeMenu]);
 
+  const logoShellClass = forceScrolled
+    ? "h-7 sm:h-9 bg-white/15 backdrop-blur-sm rounded-sm px-3 sm:px-4 py-1"
+    : effectiveScrolled
+      ? "h-8 sm:h-12 bg-white/10 backdrop-blur-sm rounded-sm px-6 py-2"
+      : "h-12 sm:h-20";
+
   return (
     <div
-      className={`sm-scope z-40 ${isFixed ? "fixed top-0 left-0 w-screen h-screen overflow-hidden pointer-events-none" : "w-full h-full"}`}
+      className={`sm-scope z-[70] ${isFixed ? "fixed top-0 left-0 w-screen h-screen overflow-hidden pointer-events-none" : "w-full h-full"}`}
     >
       <div
         className={
-          (className ? className + " " : "") + "staggered-menu-wrapper pointer-events-none relative w-full h-full z-40"
+          (className ? className + " " : "") + "staggered-menu-wrapper pointer-events-none relative w-full h-full z-[70]"
         }
         style={accentColor ? ({ ["--sm-accent" as any]: accentColor } as React.CSSProperties) : undefined}
         data-position={position}
@@ -604,7 +628,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
         </div>
 
         <header
-          className="staggered-menu-header absolute top-0 left-0 w-full flex items-center justify-between p-[1.25em_1.5em] sm:p-[1.5em_2em] bg-transparent pointer-events-none z-20"
+          className="staggered-menu-header absolute top-0 left-0 w-full p-[1.25em_1.5em] sm:p-[1.5em_2em] bg-transparent pointer-events-none z-20"
           aria-label="Main navigation header"
         >
           <a
@@ -612,17 +636,16 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
             href="/"
             className="sm-logo flex items-center select-none pointer-events-auto"
             aria-label="Las Girls+ home"
-            data-scrolled={scrolled || undefined}
+            data-scrolled={effectiveScrolled || undefined}
           >
             <span
-              className={`sm-logo-shell relative inline-flex items-center transition-[height] duration-300 ease-out ${scrolled ? "h-8 sm:h-12 bg-white/10 backdrop-blur-sm rounded-sm px-6 py-2" : "h-12 sm:h-20"
-                }`}
+              className={`sm-logo-shell relative inline-flex items-center transition-[height,padding] duration-300 ease-out ${logoShellClass}`}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={logoUrl}
                 alt="Las Girls+"
-                className={`sm-logo-img block h-full w-auto object-contain transition-opacity duration-300 ease-out ${scrolled && scrolledLogoUrl ? "opacity-0" : "opacity-100"
+                className={`sm-logo-img block h-full w-auto object-contain transition-opacity duration-300 ease-out ${effectiveScrolled && scrolledLogoUrl ? "opacity-0" : "opacity-100"
                   }`}
                 draggable={false}
                 width={240}
@@ -634,7 +657,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                   src={scrolledLogoUrl}
                   alt=""
                   aria-hidden="true"
-                  className={`sm-logo-img sm-logo-img--scrolled absolute left-0 top-0 block h-full w-auto object-contain transition-[opacity,filter] duration-300 ease-out ${scrolled ? "opacity-100" : "opacity-0"
+                  className={`sm-logo-img sm-logo-img--scrolled absolute left-0 top-0 block h-full w-auto object-contain transition-[opacity,filter] duration-300 ease-out ${effectiveScrolled ? "opacity-100" : "opacity-0"
                     }`}
                   style={{
                     filter:
@@ -651,6 +674,17 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
               )}
             </span>
           </a>
+
+          <div className="sm-header-center flex min-w-0 justify-center self-center pointer-events-none">
+            {headerCenter ? (
+              <div
+                ref={breadcrumbColorRef}
+                className="pointer-events-auto flex min-w-0 max-w-full justify-center text-inherit transition-none"
+              >
+                {headerCenter}
+              </div>
+            ) : null}
+          </div>
 
           <button
             ref={toggleBtnRef}
@@ -759,8 +793,12 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
 
       <style>{`
 .sm-scope .staggered-menu-wrapper { position: relative; width: 100%; height: 100%; z-index: 40; pointer-events: none; }
-.sm-scope .staggered-menu-header { position: absolute; top: 0; left: 0; width: 100%; display: flex; align-items: center; justify-content: space-between; background: transparent; pointer-events: none; z-index: 20; }
+.sm-scope .staggered-menu-header { position: absolute; top: 0; left: 0; width: 100%; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 0.5rem; align-items: center; background: transparent; pointer-events: none; z-index: 20; }
+@media (min-width: 640px) {
+  .sm-scope .staggered-menu-header { gap: 0.75rem; }
+}
 .sm-scope .staggered-menu-header > * { pointer-events: auto; }
+.sm-scope .staggered-menu-header .sm-header-center { pointer-events: none; }
 .sm-scope .sm-logo { display: flex; align-items: center; user-select: none; }
 .sm-scope .sm-toggle:focus-visible { outline: 2px solid var(--sm-accent, #ff3ea5); outline-offset: 4px; border-radius: 4px; }
 .sm-scope .sm-toggle-textWrap { width: var(--sm-toggle-width, auto); min-width: var(--sm-toggle-width, auto); margin-right: 0.5em; font-family: var(--font-display), sans-serif; }

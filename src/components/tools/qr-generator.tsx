@@ -140,7 +140,7 @@ export function QRGenerator() {
     <ToolLayout toolName="Generador de QR">
       <div className="px-4 py-10 sm:px-10 sm:py-14">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="mb-10 sm:mb-14">
-          <h1 className="font-accent text-[clamp(1.75rem,5vw,3.5rem)] uppercase leading-[0.9] tracking-tight text-[#111]">
+          <h1 className="font-accent text-[clamp(1.75rem,5vw,3.5rem)] leading-[0.9] tracking-tight text-[#111]">
             Generador
             <br />
             <span className="text-[#FF6FAF]" style={{ fontStyle: "italic" }}>

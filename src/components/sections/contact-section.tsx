@@ -1,6 +1,7 @@
 "use client";
 
 import { ContactForm } from "@/components/forms/contact-form";
+import { ContactStickerFloat } from "@/components/sections/contact-sticker-float";
 import { contactPageContent } from "@/content/site/contact";
 
 type ContactSectionProps = {
@@ -23,7 +24,7 @@ export function ContactSection({ id }: ContactSectionProps) {
             Hablemos de tu idea<span className="text-black">.</span>
           </h2>
           <p className="font-accent text-[clamp(1.65rem,4.5vw,2.75rem)] leading-[0.98] text-black">
-            primera consulta sin costo.
+            Primera consulta sin costo.
           </p>
           <p className="max-w-[60ch] text-base leading-[1.6] text-black/75 md:text-lg">
             {contactPageContent.subtitle}
@@ -47,8 +48,13 @@ export function ContactSection({ id }: ContactSectionProps) {
           </div>
         </header>
 
-        {/* ─────────── FORM ─────────── */}
-        <ContactForm />
+        {/* ─────────── FORM + sticker ─────────── */}
+        <div className="grid w-full grid-cols-1 items-start gap-12 lg:grid-cols-3 lg:gap-14 xl:gap-16">
+          <div className="min-w-0 lg:col-span-2">
+            <ContactForm />
+          </div>
+          <ContactStickerFloat className="mx-auto w-full max-w-[300px] lg:col-span-1 lg:mx-0 lg:max-w-none" />
+        </div>
 
         {/* ─────────── FOOTER MARK ─────────── */}
         <div className="flex items-center gap-3 border-t-2 border-black/80 pt-5 text-[10px] uppercase tracking-[0.2em] text-black/60">

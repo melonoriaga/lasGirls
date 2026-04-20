@@ -27,6 +27,9 @@ export function LanyardCardSection() {
             cardStickerUrl="/brand/stickers/STICKER7.png"
             strapColor="#ff6faf"
             strapStickerUrl="/brand/stickers/STICKER9.png"
+            logoScale={0.72}
+            logoOffsetX={0}
+            logoOffsetY={0.18}
           />
         </div>
 

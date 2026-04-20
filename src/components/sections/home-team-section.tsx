@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import DecryptedText from "@/components/DecryptedText";
@@ -24,7 +23,6 @@ const SPECIALIST_TAGS = [
  *  network model. */
 export function HomeTeamSection() {
   const sectionRef = useRef<HTMLElement | null>(null);
-  const router = useRouter();
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -151,7 +149,7 @@ export function HomeTeamSection() {
               iconUrl="/brand/logos/las-girls-vertical-rosa.png"
               behindGlowColor="rgba(255, 62, 165, 0.25)"
               avatarBottom="-200px"
-              onContactClick={() => router.push("/team/jean")}
+              contactHref="/team/jean"
             />
             <ProfileCard
               name="MEL"
@@ -164,7 +162,7 @@ export function HomeTeamSection() {
               iconUrl="/brand/logos/las-girls-vertical-rosa.png"
               behindGlowColor="rgba(211, 66, 145, 0.25)"
               avatarBottom="-200px"
-              onContactClick={() => router.push("/team/mel")}
+              contactHref="/team/mel"
             />
           </div>
         </div>

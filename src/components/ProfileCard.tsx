@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import React, {
   useEffect,
   useRef,
@@ -132,12 +133,19 @@ if (typeof document !== "undefined" && !document.getElementById(STYLE_ID)) {
       pointer-events: none;
     }
 
+    /* Beat .pc-card universal selector (0,1,1): footer UI must receive clicks / taps. */
+    .pc-card .pc-user-info,
+    .pc-card .pc-user-info * {
+      pointer-events: auto;
+    }
+
     .pc-inside {
       inset: 0;
       position: absolute;
       background-image: var(--inner-gradient);
       background-color: rgba(8, 4, 12, 0.96);
       transform: none;
+      isolation: isolate;
     }
 
     .pc-shine {
@@ -167,7 +175,8 @@ if (typeof document !== "undefined" && !document.getElementById(STYLE_ID)) {
       --angle: -45deg;
       transform: translate3d(0, 0, 1px);
       overflow: hidden;
-      z-index: 3;
+      /* Below foreground UI (avatar strip + footer); still above card base */
+      z-index: 1;
       background: transparent;
       background-size: cover;
       background-position: center;
@@ -276,7 +285,12 @@ if (typeof document !== "undefined" && !document.getElementById(STYLE_ID)) {
       );
       mix-blend-mode: overlay;
       filter: brightness(0.85) contrast(1.18);
-      z-index: 4;
+      z-index: 2;
+    }
+
+    .pc-content.pc-avatar-content {
+      position: relative;
+      z-index: 5;
     }
 
     .pc-avatar-content {
@@ -317,7 +331,8 @@ if (typeof document !== "undefined" && !document.getElementById(STYLE_ID)) {
       bottom: var(--ui-inset);
       left: var(--ui-inset);
       right: var(--ui-inset);
-      z-index: 2;
+      /* Above avatar parallax + holo layers inside this stacking context */
+      z-index: 4;
       display: flex !important;
       align-items: center;
       justify-content: space-between;
@@ -329,7 +344,6 @@ if (typeof document !== "undefined" && !document.getElementById(STYLE_ID)) {
         max(0px, var(--card-radius) - var(--ui-inset) + var(--ui-radius-bias))
       );
       padding: 12px 14px;
-      pointer-events: auto;
     }
 
     .pc-user-details {
@@ -379,6 +393,10 @@ if (typeof document !== "undefined" && !document.getElementById(STYLE_ID)) {
     }
 
     .pc-contact-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
       border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 8px;
       padding: 10px 14px;
@@ -488,6 +506,8 @@ interface ProfileCardProps {
   contactText?: string;
   showUserInfo?: boolean;
   onContactClick?: () => void;
+  /** When set, the primary CTA is a real link (cmd+click, prefetch) — preferred over `onContactClick` alone. */
+  contactHref?: string;
   /** Offset in CSS units to push the avatar image up/down from the card
    *  bottom edge. Negative values overflow downward (e.g. "-40px"). */
   avatarBottom?: string;
@@ -526,6 +546,7 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
   contactText = "Contact",
   showUserInfo = true,
   onContactClick,
+  contactHref,
   avatarBottom,
   avatarBlend,
 }) => {
@@ -889,15 +910,24 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
                       <div className="pc-status">{status}</div>
                     </div>
                   </div>
-                  <button
-                    className="pc-contact-btn"
-                    onClick={handleContactClick}
-                    style={{ pointerEvents: "auto" }}
-                    type="button"
-                    aria-label={`Contact ${name || "user"}`}
-                  >
-                    {contactText}
-                  </button>
+                  {contactHref ? (
+                    <Link
+                      href={contactHref}
+                      className="pc-contact-btn"
+                      aria-label={`Ver perfil de ${name || "usuario"}`}
+                    >
+                      {contactText}
+                    </Link>
+                  ) : (
+                    <button
+                      className="pc-contact-btn"
+                      onClick={handleContactClick}
+                      type="button"
+                      aria-label={`Contact ${name || "user"}`}
+                    >
+                      {contactText}
+                    </button>
+                  )}
                 </div>
               )}
             </div>

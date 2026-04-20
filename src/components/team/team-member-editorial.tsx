@@ -42,13 +42,25 @@ export function TeamMemberEditorial({ member, others }: Props) {
 
   const headlineLines = member.headline.split("\n");
 
+  /** Sentence-style casing for pink accent spans (never force ALL CAPS in cursive). */
+  const sentenceCaseAccent = (s: string): string => {
+    const t = s.trim().toLowerCase();
+    if (!t) return s;
+    return t.charAt(0).toUpperCase() + t.slice(1);
+  };
+
   const renderLine = (line: string) => {
     const parts = line.split(/(\[\[.*?\]\])/g);
     if (parts.length === 1) return line;
 
     return parts.map((part, idx) => {
       const match = part.match(/^\[\[(.*?)\]\]$/);
-      if (match) return <span key={idx} style={{ color: PINK }}>{match[1]}</span>;
+      if (match)
+        return (
+          <span key={idx} style={{ color: PINK }}>
+            {sentenceCaseAccent(match[1])}
+          </span>
+        );
       return <span key={idx} style={{ color: INK }}>{part}</span>;
     });
   };
@@ -82,58 +94,10 @@ export function TeamMemberEditorial({ member, others }: Props) {
         }
       `}</style>
 
-      <nav
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 100,
-          background: BEIGE,
-          borderBottom: "1px solid rgba(17,17,17,0.12)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "0.75rem clamp(1.2rem,5vw,4rem)",
-        }}
-      >
-        <button
-          className="tm-back"
-          onClick={() => router.push("/")}
-          style={{
-            fontFamily: "var(--font-body), sans-serif",
-            fontSize: "clamp(0.54rem,.78vw,.66rem)",
-            fontWeight: 800,
-            letterSpacing: "0.16em",
-            textTransform: "uppercase",
-            background: "transparent",
-            color: INK,
-            border: "1.5px solid rgba(17,17,17,0.3)",
-            padding: "0.42rem 1.1rem",
-            cursor: "pointer",
-          }}
-        >
-          ← VOLVER
-        </button>
-
-        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-          <span style={{ fontFamily: "var(--font-body), sans-serif", fontSize: "clamp(0.46rem,.65vw,.55rem)", fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: INK, opacity: 0.3 }}>
-            EQUIPO /
-          </span>
-          <span style={{ fontFamily: "var(--font-display), sans-serif", fontSize: "clamp(0.7rem,1.1vw,.9rem)", letterSpacing: "0.06em", color: INK }}>
-            {member.name}
-          </span>
-        </div>
-
-        <div style={{ fontFamily: "var(--font-accent), cursive", fontSize: "clamp(0.72rem,1.1vw,.9rem)", color: PINK }}>
-          lasgirls.com
-        </div>
-      </nav>
-
       <div
         className="tm-hero-grid"
         style={{
-          paddingTop: 52,
+          paddingTop: "clamp(4.8rem,9vh,6rem)",
           minHeight: "100vh",
           display: "grid",
           gridTemplateColumns: "1fr clamp(280px, 42%, 560px)",
@@ -170,7 +134,7 @@ export function TeamMemberEditorial({ member, others }: Props) {
                   fontSize: "clamp(3.5rem,9.5vw,9.5rem)",
                   lineHeight: 0.87,
                   letterSpacing: "-0.025em",
-                  textTransform: "uppercase",
+                  textTransform: i === headlineLines.length - 1 ? "none" : "uppercase",
                   color: i === headlineLines.length - 1 ? PINK : INK,
                 }}
               >
@@ -178,7 +142,15 @@ export function TeamMemberEditorial({ member, others }: Props) {
               </div>
             ))}
 
-            <div style={{ fontFamily: "var(--font-accent), cursive", fontSize: "clamp(1.1rem,2.2vw,1.75rem)", color: PINK, marginTop: "clamp(1rem,2.5vh,2rem)" }}>
+            <div
+              style={{
+                fontFamily: "var(--font-accent), cursive",
+                fontSize: "clamp(1.1rem,2.2vw,1.75rem)",
+                color: PINK,
+                marginTop: "clamp(1rem,2.5vh,2rem)",
+                textTransform: "none",
+              }}
+            >
               {member.tagline}
             </div>
           </motion.div>
@@ -292,7 +264,17 @@ export function TeamMemberEditorial({ member, others }: Props) {
       </div>
 
       <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.9 }} style={{ padding: "clamp(4rem,10vh,8rem) clamp(1.5rem,8vw,10rem)", borderBottom: "1px solid rgba(17,17,17,0.12)", textAlign: "center" }}>
-        <div style={{ fontFamily: "var(--font-accent), cursive", fontSize: "clamp(1.5rem,3.8vw,3.2rem)", color: PINK, lineHeight: 1.5, maxWidth: 820, margin: "0 auto" }}>
+        <div
+          style={{
+            fontFamily: "var(--font-accent), cursive",
+            fontSize: "clamp(1.5rem,3.8vw,3.2rem)",
+            color: PINK,
+            lineHeight: 1.5,
+            maxWidth: 820,
+            margin: "0 auto",
+            textTransform: "none",
+          }}
+        >
           &ldquo;{member.quote}&rdquo;
         </div>
         <div style={{ marginTop: "1.5rem", display: "flex", alignItems: "center", justifyContent: "center", gap: "1rem" }}>
@@ -309,7 +291,15 @@ export function TeamMemberEditorial({ member, others }: Props) {
           <div style={{ fontFamily: "var(--font-display), sans-serif", fontSize: "clamp(2rem,5vw,4rem)", lineHeight: 0.9, letterSpacing: "-0.025em", textTransform: "uppercase", color: INK }}>
             QUE HACE
           </div>
-          <div style={{ fontFamily: "var(--font-accent), cursive", fontSize: "clamp(1.8rem,4.5vw,3.5rem)", color: PINK, lineHeight: 0.9 }}>
+          <div
+            style={{
+              fontFamily: "var(--font-accent), cursive",
+              fontSize: "clamp(1.8rem,4.5vw,3.5rem)",
+              color: PINK,
+              lineHeight: 0.9,
+              textTransform: "none",
+            }}
+          >
             {member.name.toLowerCase()}.
           </div>
         </motion.div>

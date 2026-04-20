@@ -32,9 +32,6 @@ declare module "@react-three/fiber" {
 }
 
 const CARD_GLB_URL = "/lanyard/card.glb";
-
-// Fallback asset kept around so the `useTexture` call remains stable
-// (otherwise the Suspense-based loader swaps hooks between renders).
 const CARD_TEX_FALLBACK = "/brand/stickers/STICKER7.png";
 
 type Vec3 = [number, number, number];
@@ -44,18 +41,30 @@ interface LanyardProps {
   gravity?: Vec3;
   fov?: number;
   transparent?: boolean;
-  /** Optional direct texture URL for the card front. Overrides cardColor + cardStickerUrl. */
   cardTextureUrl?: string;
-  /** Solid background color painted on the card front. */
   cardColor?: string;
-  /** Sticker/logo overlaid on top of the card body (transparent PNG). */
   cardStickerUrl?: string;
-  /** Solid color painted on the lanyard strap. */
   strapColor?: string;
-  /** Sticker tiled over the strap. */
   strapStickerUrl?: string;
-  /** Render the card horizontally. Default false (vertical, like the original). */
   landscape?: boolean;
+  logoScale?: number;
+  logoOffsetX?: number;
+  logoOffsetY?: number;
+}
+
+interface BandProps {
+  maxSpeed?: number;
+  minSpeed?: number;
+  isMobile?: boolean;
+  cardTextureUrl?: string;
+  cardColor: string;
+  cardStickerUrl?: string;
+  strapColor: string;
+  strapStickerUrl?: string;
+  landscape?: boolean;
+  logoScale: number;
+  logoOffsetX: number;
+  logoOffsetY: number;
 }
 
 export default function Lanyard({
@@ -69,6 +78,9 @@ export default function Lanyard({
   strapColor = "#ff6faf",
   strapStickerUrl = "/brand/stickers/STICKER9.png",
   landscape = false,
+  logoScale = 0.52,
+  logoOffsetX = 0,
+  logoOffsetY = 0,
 }: LanyardProps) {
   const [isMobile, setIsMobile] = useState(
     () => typeof window !== "undefined" && window.innerWidth < 768,
@@ -107,8 +119,12 @@ export default function Lanyard({
               strapColor={strapColor}
               strapStickerUrl={strapStickerUrl}
               landscape={landscape}
+              logoScale={logoScale}
+              logoOffsetX={logoOffsetX}
+              logoOffsetY={logoOffsetY}
             />
           </Physics>
+
           <Environment blur={0.75}>
             <Lightformer
               intensity={2}
@@ -145,68 +161,16 @@ export default function Lanyard({
   );
 }
 
-interface BandProps {
-  maxSpeed?: number;
-  minSpeed?: number;
-  isMobile?: boolean;
-  cardTextureUrl?: string;
-  cardColor: string;
-  cardStickerUrl?: string;
-  strapColor: string;
-  strapStickerUrl?: string;
-  landscape?: boolean;
-}
-
-/**
- * Paint a square canvas with a solid color, then stamp a sticker centered
- * on it. Returns a `THREE.CanvasTexture` ready to plug into a material.
- */
-function buildCardCanvasTexture(color: string, stickerUrl?: string) {
-  if (typeof document === "undefined") return null;
-  const canvas = document.createElement("canvas");
-  canvas.width = 1024;
-  canvas.height = 1024;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return null;
-  ctx.fillStyle = color;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.anisotropy = 16;
-  texture.flipY = false;
-  texture.center.set(0.5, 0.5);
-
-  if (stickerUrl) {
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => {
-      const target = 720;
-      const ar = img.width / img.height;
-      let w = target;
-      let h = target;
-      if (ar > 1) h = target / ar;
-      else w = target * ar;
-      ctx.drawImage(img, (canvas.width - w) / 2, (canvas.height - h) / 2, w, h);
-      texture.needsUpdate = true;
-    };
-    img.src = stickerUrl;
-  }
-  return texture;
-}
-
-/**
- * Paint a long horizontal canvas to serve as a tileable band texture.
- * Draws the strap color as background and stamps the sticker once; the
- * MeshLineMaterial `repeat` setting multiplies that stamp along the strap.
- */
 function buildStrapCanvasTexture(color: string, stickerUrl?: string) {
   if (typeof document === "undefined") return null;
+
   const canvas = document.createElement("canvas");
   canvas.width = 512;
   canvas.height = 128;
+
   const ctx = canvas.getContext("2d");
   if (!ctx) return null;
+
   ctx.fillStyle = color;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -224,14 +188,100 @@ function buildStrapCanvasTexture(color: string, stickerUrl?: string) {
       const ar = img.width / img.height;
       let w = target;
       let h = target;
+
       if (ar > 1) h = target / ar;
       else w = target * ar;
-      ctx.drawImage(img, (canvas.width - w) / 2, (canvas.height - h) / 2, w, h);
+
+      ctx.drawImage(
+        img,
+        (canvas.width - w) / 2,
+        (canvas.height - h) / 2,
+        w,
+        h,
+      );
       texture.needsUpdate = true;
     };
     img.src = stickerUrl;
   }
+
   return texture;
+}
+
+function CardLogo({
+  textureUrl,
+  geometry,
+  landscape,
+  scale,
+  offsetX,
+  offsetY,
+}: {
+  textureUrl: string;
+  geometry: THREE.BufferGeometry;
+  landscape: boolean;
+  scale: number;
+  offsetX: number;
+  offsetY: number;
+}) {
+  const texture = useTexture(textureUrl || CARD_TEX_FALLBACK);
+
+  useEffect(() => {
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.anisotropy = 16;
+    texture.wrapS = THREE.ClampToEdgeWrapping;
+    texture.wrapT = THREE.ClampToEdgeWrapping;
+    texture.flipY = true;
+    texture.needsUpdate = true;
+  }, [texture]);
+
+  const { center, size } = useMemo(() => {
+    const g = geometry.clone();
+    g.computeBoundingBox();
+
+    const box = g.boundingBox ?? new THREE.Box3();
+    const center = new THREE.Vector3();
+    const size = new THREE.Vector3();
+
+    box.getCenter(center);
+    box.getSize(size);
+
+    return { center, size };
+  }, [geometry]);
+
+  const image = texture.image as HTMLImageElement | undefined;
+  const aspect =
+    image && image.width && image.height ? image.width / image.height : 1;
+
+  const innerWidth = size.x * 0.72;
+  const innerHeight = size.y * 0.72;
+
+  let logoW = innerWidth * scale;
+  let logoH = logoW / aspect;
+
+  if (logoH > innerHeight * scale) {
+    logoH = innerHeight * scale;
+    logoW = logoH * aspect;
+  }
+
+  return (
+    <mesh
+      position={[
+        center.x + offsetX,
+        center.y + offsetY,
+        center.z + size.z * 0.55,
+      ]}
+      rotation={[0, 0, landscape ? -Math.PI / 2 : 0]}
+    >
+      <planeGeometry args={[logoW, logoH]} />
+      <meshBasicMaterial
+        map={texture}
+        transparent
+        alphaTest={0.02}
+        depthWrite={false}
+        toneMapped={false}
+        side={THREE.DoubleSide}
+      />
+    </mesh>
+  );
 }
 
 function Band({
@@ -244,6 +294,9 @@ function Band({
   strapColor,
   strapStickerUrl,
   landscape = false,
+  logoScale,
+  logoOffsetX,
+  logoOffsetY,
 }: BandProps) {
   const band = useRef<any>(null);
   const fixed = useRef<any>(null);
@@ -267,9 +320,6 @@ function Band({
 
   const { nodes, materials } = useGLTF(CARD_GLB_URL) as any;
 
-  // Keep this hook call stable (always with a string URL) to preserve
-  // Suspense/hook ordering. When the caller does not provide their own
-  // texture, we fall back to a lightweight asset but ignore the result.
   const customCardTexture = useTexture(cardTextureUrl || CARD_TEX_FALLBACK);
 
   useEffect(() => {
@@ -282,30 +332,16 @@ function Band({
     customCardTexture.needsUpdate = true;
   }, [cardTextureUrl, customCardTexture, landscape]);
 
-  const cardCanvasTexture = useMemo(
-    () => buildCardCanvasTexture(cardColor, cardStickerUrl),
-    [cardColor, cardStickerUrl],
-  );
   const strapCanvasTexture = useMemo(
     () => buildStrapCanvasTexture(strapColor, strapStickerUrl),
     [strapColor, strapStickerUrl],
   );
 
-  // Landscape mode: rotate the UVs of the procedural card texture so the
-  // sticker appears upright when the card is rendered horizontally.
-  useEffect(() => {
-    if (!cardCanvasTexture) return;
-    cardCanvasTexture.center.set(0.5, 0.5);
-    cardCanvasTexture.rotation = landscape ? -Math.PI / 2 : 0;
-    cardCanvasTexture.needsUpdate = true;
-  }, [cardCanvasTexture, landscape]);
-
   useEffect(() => {
     return () => {
-      cardCanvasTexture?.dispose();
       strapCanvasTexture?.dispose();
     };
-  }, [cardCanvasTexture, strapCanvasTexture]);
+  }, [strapCanvasTexture]);
 
   const [curve] = useState(
     () =>
@@ -316,6 +352,7 @@ function Band({
         new THREE.Vector3(),
       ]),
   );
+
   const [dragged, drag] = useState<false | THREE.Vector3>(false);
   const [hovered, hover] = useState(false);
 
@@ -340,6 +377,7 @@ function Band({
       dir.copy(vec).sub(state.camera.position).normalize();
       vec.add(dir.multiplyScalar(state.camera.position.length()));
       [card, j1, j2, j3, fixed].forEach((ref) => ref.current?.wakeUp());
+
       const d = dragged as THREE.Vector3;
       card.current?.setNextKinematicTranslation({
         x: vec.x - d.x,
@@ -347,6 +385,7 @@ function Band({
         z: vec.z - d.z,
       });
     }
+
     if (fixed.current) {
       [j1, j2].forEach((ref) => {
         if (!ref.current.lerped) {
@@ -354,22 +393,27 @@ function Band({
             ref.current.translation(),
           );
         }
+
         const clampedDistance = Math.max(
           0.1,
           Math.min(1, ref.current.lerped.distanceTo(ref.current.translation())),
         );
+
         ref.current.lerped.lerp(
           ref.current.translation(),
           delta * (minSpeed + clampedDistance * (maxSpeed - minSpeed)),
         );
       });
+
       curve.points[0].copy(j3.current.translation());
       curve.points[1].copy(j2.current.lerped);
       curve.points[2].copy(j1.current.lerped);
       curve.points[3].copy(fixed.current.translation());
+
       (band.current.geometry as any).setPoints(
         curve.getPoints(isMobile ? 16 : 32),
       );
+
       ang.copy(card.current.angvel());
       rot.copy(card.current.rotation());
       card.current.setAngvel({ x: ang.x, y: ang.y - rot.y * 0.25, z: ang.z });
@@ -378,23 +422,25 @@ function Band({
 
   curve.curveType = "chordal";
 
-  const effectiveCardMap = cardTextureUrl
-    ? customCardTexture
-    : cardCanvasTexture ?? materials.base.map;
+  const effectiveCardMap = cardTextureUrl ? customCardTexture : undefined;
 
   return (
     <>
       <group position={[0, 4, 0]}>
         <RigidBody ref={fixed} {...segmentProps} type="fixed" />
+
         <RigidBody position={[0.5, 0, 0]} ref={j1} {...segmentProps}>
           <BallCollider args={[0.1]} />
         </RigidBody>
+
         <RigidBody position={[1, 0, 0]} ref={j2} {...segmentProps}>
           <BallCollider args={[0.1]} />
         </RigidBody>
+
         <RigidBody position={[1.5, 0, 0]} ref={j3} {...segmentProps}>
           <BallCollider args={[0.1]} />
         </RigidBody>
+
         <RigidBody
           position={[2, 0, 0]}
           ref={card}
@@ -402,6 +448,7 @@ function Band({
           type={dragged ? "kinematicPosition" : "dynamic"}
         >
           <CuboidCollider args={[0.8, 1.125, 0.01]} />
+
           <group
             scale={2.25}
             position={[0, -1.2, -0.05]}
@@ -422,14 +469,27 @@ function Band({
           >
             <mesh geometry={nodes.card.geometry}>
               <meshPhysicalMaterial
+                color={cardColor}
                 map={effectiveCardMap}
-                map-anisotropy={16}
+                // map-anisotropy={16}
                 clearcoat={isMobile ? 0 : 1}
                 clearcoatRoughness={0.15}
                 roughness={0.85}
                 metalness={0.15}
               />
             </mesh>
+
+            {!cardTextureUrl && cardStickerUrl && (
+              <CardLogo
+                textureUrl={cardStickerUrl}
+                geometry={nodes.card.geometry}
+                landscape={landscape}
+                scale={logoScale}
+                offsetX={logoOffsetX}
+                offsetY={logoOffsetY}
+              />
+            )}
+
             <mesh
               geometry={nodes.clip.geometry}
               material={materials.metal}
@@ -439,6 +499,7 @@ function Band({
           </group>
         </RigidBody>
       </group>
+
       <mesh ref={band}>
         <meshLineGeometry />
         <meshLineMaterial

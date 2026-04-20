@@ -4,12 +4,23 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Noise } from "@/components/Noise";
-import { leadSchema, type LeadFormInput } from "@/lib/validations/lead";
+import {
+  leadSchema,
+  type LeadFormValues,
+  type LeadParsed,
+} from "@/lib/validations/lead";
 
 type Panel = "whatsapp" | "email";
 
-const inputClassName =
-  "w-full border-b-2 border-black/30 bg-transparent px-0 py-2.5 font-display text-base uppercase tracking-[0.02em] text-black placeholder:text-black/40 placeholder:normal-case placeholder:tracking-normal placeholder:font-sans focus:border-black focus:outline-none transition-colors";
+/** Solo línea inferior (sin caja completa): inputs, email, select y textarea alineados. */
+const fieldBase =
+  "w-full rounded-none border-0 border-b-2 border-black/35 bg-transparent px-0 py-2.5 font-display text-base uppercase tracking-[0.02em] text-black shadow-none outline-none ring-0 transition-colors placeholder:text-black/45 placeholder:normal-case placeholder:tracking-normal placeholder:font-sans focus:border-black";
+
+const inputClassName = `${fieldBase}`;
+
+const selectClassName = `${fieldBase} cursor-pointer appearance-none bg-transparent pr-8`;
+
+const textareaClassName = `${fieldBase} min-h-[120px] resize-y`;
 
 const labelClassName =
   "mb-1.5 block font-mono text-[10px] uppercase tracking-[0.18em] text-black/60";
@@ -29,10 +40,10 @@ export function ContactForm() {
   const [waName, setWaName] = useState("");
   const [waPhone, setWaPhone] = useState("");
 
-  const form = useForm<LeadFormInput>({
+  const form = useForm<LeadFormValues>({
     resolver: zodResolver(leadSchema),
     defaultValues: {
-      inquiryType: "consulta_general",
+      inquiryType: "",
       projectStage: "solo_idea",
       preferredContactMethod: "email",
       serviceInterest: [],
@@ -41,7 +52,7 @@ export function ContactForm() {
     },
   });
 
-  const submitLead = async (payload: LeadFormInput) => {
+  const submitLead = async (payload: LeadParsed) => {
     return fetch("/api/contact", {
       method: "POST",
       body: JSON.stringify(payload),
@@ -52,7 +63,10 @@ export function ContactForm() {
   const onEmailSubmit = form.handleSubmit(async (values) => {
     setIsSending(true);
     setSuccessMessage("");
-    const response = await submitLead({ ...values, acceptsPrivacy: true });
+    const response = await submitLead({
+      ...values,
+      acceptsPrivacy: true,
+    } as LeadParsed);
 
     if (!response.ok) {
       form.setError("root", {
@@ -118,8 +132,8 @@ export function ContactForm() {
         onClick={() => setPanel(target)}
         className={`group relative z-20 flex w-full items-center gap-4 border-b-2 border-black/25 px-5 py-5 text-left transition-colors md:px-8 md:py-7 ${
           active
-            ? "bg-[#ff3ea5] text-black"
-            : "bg-transparent text-black hover:bg-black/5"
+            ? "bg-[#ff3ea5] text-black shadow-[inset_0_-3px_0_rgba(0,0,0,0.06)]"
+            : "bg-[#fde4f2] text-black hover:bg-[#fbcfe8] hover:shadow-[0_6px_0_0_rgba(0,0,0,0.07)] active:bg-[#f9b9dd]"
         }`}
         aria-expanded={active}
       >
@@ -148,10 +162,10 @@ export function ContactForm() {
         </span>
         <span
           aria-hidden
-          className={`hidden font-mono text-[11px] uppercase tracking-[0.16em] transition-transform md:inline ${
+          className={`shrink-0 font-mono text-[10px] uppercase tracking-[0.16em] transition-transform md:text-[11px] ${
             active
               ? "translate-x-1 text-black"
-              : "text-black/50 group-hover:translate-x-1"
+              : "text-black/55 group-hover:translate-x-1 group-hover:text-black"
           }`}
         >
           {active ? "↓ activo" : "→ usar"}
@@ -244,7 +258,7 @@ export function ContactForm() {
               <label className={labelClassName}>Nombre</label>
               <input
                 className={inputClassName}
-                placeholder="Tu nombre"
+                placeholder="Ej. María González"
                 value={waName}
                 onChange={(event) => setWaName(event.target.value)}
               />
@@ -253,7 +267,7 @@ export function ContactForm() {
               <label className={labelClassName}>WhatsApp</label>
               <input
                 className={inputClassName}
-                placeholder="+54..."
+                placeholder="+54 9 11 2345-6789"
                 value={waPhone}
                 onChange={(event) => setWaPhone(event.target.value)}
               />
@@ -289,19 +303,29 @@ export function ContactForm() {
         >
           <div>
             <label className={labelClassName}>Nombre completo</label>
-            <input className={inputClassName} {...form.register("fullName")} />
+            <input
+              className={inputClassName}
+              placeholder="Nombre y apellido"
+              autoComplete="name"
+              {...form.register("fullName")}
+            />
           </div>
           <div>
             <label className={labelClassName}>Email</label>
             <input
               className={inputClassName}
               type="email"
+              placeholder="nombre@ejemplo.com"
+              autoComplete="email"
               {...form.register("email")}
             />
           </div>
           <div>
             <label className={labelClassName}>Tipo de consulta</label>
-            <select className={inputClassName} {...form.register("inquiryType")}>
+            <select className={selectClassName} {...form.register("inquiryType")}>
+              <option value="" disabled className="text-black/40">
+                Seleccioná tipo de consulta
+              </option>
               <option className="bg-[#F3EEE8]" value="consulta_general">
                 Consulta general
               </option>
@@ -333,12 +357,18 @@ export function ContactForm() {
           </div>
           <div>
             <label className={labelClassName}>Teléfono</label>
-            <input className={inputClassName} {...form.register("phone")} />
+            <input
+              className={inputClassName}
+              placeholder="+54 9 ..."
+              autoComplete="tel"
+              {...form.register("phone")}
+            />
           </div>
           <div className="md:col-span-2">
             <label className={labelClassName}>Mensaje</label>
             <textarea
-              className={`${inputClassName} min-h-[120px] resize-y`}
+              className={textareaClassName}
+              placeholder="Contanos tu idea, en qué etapa estás y qué necesitás."
               {...form.register("message")}
             />
           </div>

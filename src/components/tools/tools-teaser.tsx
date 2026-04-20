@@ -31,7 +31,7 @@ export function ToolsTeaser() {
             href="/herramientas"
             className="flex h-full min-h-[120px] flex-col justify-between p-5 text-left transition-colors hover:bg-[#FF6FAF]/[0.08] md:min-h-0"
           >
-            <div className="font-accent text-[clamp(1.3rem,3vw,2.2rem)] uppercase leading-[0.9]" style={{ color: BEIGE }}>
+            <div className="font-accent text-[clamp(1.3rem,3vw,2.2rem)] leading-[0.9]" style={{ color: BEIGE }}>
               Ver
               <br />
               <span className="text-[#FF6FAF]">todas</span>
@@ -60,7 +60,7 @@ export function ToolsTeaser() {
                     <Icon size={16} strokeWidth={1.5} color={PINK} />
                   </div>
                   <div>
-                    <p className="font-accent text-[clamp(0.85rem,1.6vw,1.15rem)] uppercase leading-tight" style={{ color: BEIGE }}>
+                    <p className="font-accent text-[clamp(0.85rem,1.6vw,1.15rem)] leading-tight" style={{ color: BEIGE }}>
                       {tool.name}
                     </p>
                     <p className="mt-1 text-[0.58rem] leading-snug text-white/40">{tool.desc}</p>

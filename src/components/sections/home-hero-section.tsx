@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
@@ -15,7 +15,7 @@ gsap.registerPlugin(ScrollTrigger);
 export function HomeHeroSection() {
   const scopeRef = useRef<HTMLElement | null>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!scopeRef.current) return;
 
     let revertMatchMedia: (() => void) | undefined;
