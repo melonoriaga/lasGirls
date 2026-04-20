@@ -6,6 +6,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
 import Link from "next/link";
 import Aurora from "@/components/Aurora";
+import { RotatingText } from "@/components/RotatingText";
 import { HeroBrandMarquee } from "@/components/sections/hero-brand-marquee";
 import { HeroStickerMotion } from "@/components/sections/hero-sticker-motion";
 
@@ -26,15 +27,132 @@ export function HomeHeroSection() {
 
       gsap.fromTo(
         ".hero-floating-sticker",
-        { autoAlpha: 0, scale: 0.7, rotate: -25 },
-        { autoAlpha: 1, scale: 1, rotate: 0, duration: 0.9, ease: "back.out(1.7)", delay: 0.35 },
+        { autoAlpha: 0 },
+        { autoAlpha: 1, duration: 0.6, delay: 0.35, ease: "power2.out" },
       );
+
+      const inner = scopeRef.current?.querySelector<HTMLElement>(".hero-floating-sticker__inner");
+      if (inner) {
+        const tl = gsap.timeline({ delay: 0.35 });
+
+        tl.fromTo(
+          inner,
+          { scale: 0.6, rotate: -25, y: 0 },
+          { scale: 1, rotate: 0, duration: 0.9, ease: "back.out(1.8)" },
+        );
+
+        tl.to(inner, {
+          keyframes: [
+            { y: -22, rotate: 6, duration: 2.4, ease: "sine.inOut" },
+            { y: 8, rotate: -5, duration: 2.4, ease: "sine.inOut" },
+            { y: 0, rotate: 0, duration: 2.0, ease: "sine.inOut" },
+          ],
+          repeat: -1,
+        });
+      }
 
       gsap.fromTo(
         ".hero-soft-line",
         { autoAlpha: 0, y: 18 },
         { autoAlpha: 1, y: 0, duration: 0.62, ease: "power2.out", delay: 0.42, stagger: 0.08 },
       );
+
+      const section = scopeRef.current;
+      const cta = section?.querySelector<HTMLElement>(".hero-cta-morph");
+      const curtain = section?.querySelector<HTMLElement>(".hero-curtain");
+      if (section && cta && curtain) {
+        const baseline = {
+          dx: 0,
+          dy: 0,
+          ctaStartX: 0,
+          ctaStartY: 0,
+          vw: 1,
+          vh: 1,
+        };
+        const translateFactor = 0.85;
+
+        const measure = () => {
+          gsap.set(cta, { clearProps: "x,y,scale,borderRadius" });
+          const rect = cta.getBoundingClientRect();
+          const vw = window.innerWidth;
+          const vh = window.innerHeight;
+          const ctaDocX = rect.left + rect.width / 2;
+          const ctaDocY = rect.top + window.scrollY + rect.height / 2;
+          const pinScreenY = ctaDocY - section.offsetTop;
+          baseline.dx = vw / 2 - ctaDocX;
+          baseline.dy = vh / 2 - pinScreenY;
+          baseline.ctaStartX = ctaDocX;
+          baseline.ctaStartY = pinScreenY;
+          baseline.vw = vw;
+          baseline.vh = vh;
+          const startCx = (ctaDocX / vw) * 100;
+          const startCy = (pinScreenY / vh) * 100;
+          gsap.set(curtain, {
+            clipPath: `circle(0% at ${startCx}% ${startCy}%)`,
+            opacity: 1,
+          });
+        };
+
+        const toggleHeroContents = (hide: boolean) => {
+          const kids = Array.from(section.children) as HTMLElement[];
+          kids.forEach((el) => {
+            if (el.classList.contains("hero-curtain")) return;
+            el.style.visibility = hide ? "hidden" : "";
+          });
+        };
+
+        ScrollTrigger.create({
+          trigger: section,
+          start: "top top",
+          end: "+=110%",
+          pin: true,
+          pinSpacing: true,
+          scrub: 0.6,
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
+          onRefresh: measure,
+          onUpdate: (self) => {
+            const t = self.progress;
+            const eased = t * t;
+            const scale = 1 + eased * 4;
+
+            gsap.set(cta, {
+              x: baseline.dx * t * translateFactor,
+              y: baseline.dy * t * translateFactor,
+              scale,
+              force3D: true,
+            });
+
+            const label = cta.querySelector<HTMLElement>(".hero-cta-morph__label");
+            if (label) {
+              label.style.opacity = `${Math.max(0, 1 - t * 2.2)}`;
+            }
+
+            const currentCtaX = baseline.ctaStartX + baseline.dx * t * translateFactor;
+            const currentCtaY = baseline.ctaStartY + baseline.dy * t * translateFactor;
+            const curtainCx = (currentCtaX / baseline.vw) * 100;
+            const curtainCy = (currentCtaY / baseline.vh) * 100;
+            const radius = Math.min(160, t * 160);
+            gsap.set(curtain, {
+              clipPath: `circle(${radius}% at ${curtainCx}% ${curtainCy}%)`,
+            });
+          },
+          onLeave: () => toggleHeroContents(true),
+          onEnterBack: () => toggleHeroContents(false),
+        });
+
+        gsap.to(curtain, {
+          opacity: 0,
+          ease: "none",
+          scrollTrigger: {
+            trigger: "#impact-poster",
+            start: "top bottom",
+            end: "top top",
+            scrub: 0.3,
+            invalidateOnRefresh: true,
+          },
+        });
+      }
     }, scopeRef);
 
     return () => ctx.revert();
@@ -76,6 +194,17 @@ export function HomeHeroSection() {
                   lg:text-[clamp(5.4rem,10.8vw,7.9rem)]"
               >
                 <span className="block">SOLUCIONES DIGITALES</span>
+                <span className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 leading-[1]">
+                  <span>QUE</span>
+                  <RotatingText
+                    texts={["FUNCIONAN", "VENDEN", "ESCALAN"]}
+                    mainClassName="inline-flex items-center overflow-hidden rounded-2xl bg-[#ff3ea5] px-5 py-2 text-white md:px-7 md:py-3"
+                    staggerFrom="last"
+                    staggerDuration={0.025}
+                    rotationInterval={2200}
+                    transition={{ type: "spring", damping: 30, stiffness: 380 }}
+                  />
+                </span>
               </h1>
 
               <p
@@ -102,8 +231,8 @@ export function HomeHeroSection() {
               </div>
 
               <div className="hero-soft-line relative z-20 mt-7 flex flex-wrap items-center justify-start gap-3">
-                <Link href="#contacto" className="hero-cta hero-cta--dark">
-                  HABLEMOS DE TU IDEA
+                <Link href="#contacto" className="hero-cta hero-cta--dark hero-cta-morph">
+                  <span className="hero-cta-morph__label">HABLEMOS DE TU IDEA</span>
                 </Link>
                 <Link href="#servicios" className="hero-cta hero-cta--light">
                   VER CÓMO TRABAJAMOS
@@ -113,6 +242,7 @@ export function HomeHeroSection() {
           </div>
         </div>
       </div>
+      <div className="hero-curtain" aria-hidden="true" />
       <div className="hero-floating-sticker pointer-events-none absolute right-4 top-20 z-[12] hidden lg:block xl:right-8 xl:top-24">
         <div className="hero-floating-sticker__inner">
           <Image

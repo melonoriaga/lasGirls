@@ -1,24 +1,16 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
+import CurvedLoop from "@/components/CurvedLoop";
 
 gsap.registerPlugin(ScrollTrigger);
-
-const STICKER_POSES = [
-  { x: 0, y: 0, r: 0 },
-  { x: -18, y: -10, r: -6 },
-  { x: 14, y: -16, r: 8 },
-  { x: -10, y: 12, r: -9 },
-  { x: 22, y: 8, r: 7 },
-];
 
 /** Full-viewport “your idea, ready today” poster block (headline + callout + sticker). */
 export function IdeaReadyImpactSection() {
   const sectionRef = useRef<HTMLElement | null>(null);
-  const [poseIndex, setPoseIndex] = useState(0);
 
   useEffect(() => {
     const el = sectionRef.current;
@@ -68,6 +60,18 @@ export function IdeaReadyImpactSection() {
           scrub: 0.9,
         },
       });
+
+      const charInner = el.querySelector<HTMLElement>(".impact-char-float");
+      if (charInner) {
+        gsap.to(charInner, {
+          keyframes: [
+            { y: -26, rotate: 4, duration: 2.6, ease: "sine.inOut" },
+            { y: 12, rotate: -3, duration: 2.6, ease: "sine.inOut" },
+            { y: 0, rotate: 0, duration: 2.2, ease: "sine.inOut" },
+          ],
+          repeat: -1,
+        });
+      }
     }, el);
 
     return () => ctx.revert();
@@ -77,47 +81,66 @@ export function IdeaReadyImpactSection() {
     <section
       id="impact-poster"
       ref={sectionRef}
-      className="relative isolate flex h-[100dvh] items-center justify-center overflow-hidden border-t-2 border-black bg-black px-4 py-6 lg:px-8 lg:py-8"
+      className="relative isolate flex h-[100dvh]  overflow-hidden  bg-black  items-center justify-center"
     >
-      <div className="impact-fade relative h-full w-full max-w-[1200px] overflow-hidden rounded-[2.5rem] bg-[#f5a8cc] px-8 py-8 lg:rounded-[3rem] lg:px-12 lg:py-10">
+      <div className="impact-fade relative h-[70%] w-[80%]  rounded-[1.75rem] bg-[#f5a8cc] px-6 py-6 sm:px-10 sm:py-10
+      lg:rounded-[2.5rem] lg:px-16 lg:py-14">
+        <p className="font-mono text-[10px] font-bold uppercase tracking-[0.32em] text-black/65 md:text-[11px] mb-4">02 - Idea Ready Impact</p>
+
+        <div className="pointer-events-none absolute inset-0 z-[1] flex items-center justify-center opacity-90 overflow-hidden">
+          <CurvedLoop
+            marqueeText="TU IDEA LISTA HOY ✦ "
+            speed={1.2}
+            curveAmount={260}
+            interactive={false}
+            fill="#FC92C1"
+            className="font-display font-black"
+          />
+        </div>
+
         <div className="relative z-[6]">
-          <h2 className="impact-line impact-line--top font-display text-[clamp(3.5rem,11vw,9rem)] uppercase leading-[0.85] tracking-[-0.03em] text-black">
+          <h2 className="font-display text-[clamp(4rem,13vw,14rem)] uppercase leading-[0.85] tracking-[-0.03em] text-black">
             TU IDEA
           </h2>
+
           <h2
-            className="impact-line font-accent -mt-1 text-[clamp(3rem,10vw,8rem)] leading-[0.9] text-[#ff2f9d]"
-            style={{ WebkitTextStroke: "5px white", paintOrder: "stroke fill" }}
+            className="impact-line font-accent -mt-10 text-[clamp(3.5rem,12vw,10rem)] leading-[0.8] text-[#FF6FAF]"
+            style={{ WebkitTextStroke: "26px white", paintOrder: "stroke fill", transform: "rotate(-6deg) translateX(120px) translateY(-24px)" }}
           >
             Lista hoy
           </h2>
         </div>
 
-        <div className="impact-fade absolute bottom-8 left-8 z-[10] lg:bottom-10 lg:left-12">
-          <div className="max-w-[280px] rounded-xl border border-black/30 bg-[#f5a8cc]/60 px-4 py-3 backdrop-blur-sm">
-            <p className="text-[0.58rem] font-bold uppercase tracking-[0.18em] text-black">SIN VUELTAS</p>
-            <p className="mt-1 font-accent text-[1rem] italic text-black line-through">
-              No necesitas seis meses de reuniones.
+        <div className="impact-fade absolute bottom-6 left-6 z-[10] sm:bottom-10 sm:left-10 lg:bottom-14 lg:left-16">
+          <div
+            className="max-w-[340px] rounded-xl border border-black bg-[#FF6FAF] px-4 py-3 backdrop-blur-sm
+            lg:max-w-[420px] lg:px-5 lg:py-4"
+            style={{ borderStyle: "dashed", borderWidth: "3px" }}
+          >
+            <p className="text-[0.62rem] font-bold uppercase tracking-[0.18em] text-black lg:text-[0.7rem]">
+              SIN VUELTAS
             </p>
-            <p className="mt-1.5 text-[0.6rem] font-semibold uppercase leading-snug tracking-[0.1em] text-black/90">
-              SI YA TENES MARCA, TEXTOS E IMAGENES, LO BAJAMOS A TIERRA RAPIDO Y CON CRITERIO.
+
+            <p className="mt-1 font-accent text-[1rem] italic text-white lg:text-[1.15rem]">
+              No necesitas meses y meses de reuniones.
+            </p>
+
+            <p className="mt-1.5 text-[0.8rem] font-semibold uppercase leading-snug tracking-[0.15em] text-black/95 lg:text-[1rem]">
+              Si ya tenés marca, textos e imágenes, lo bajamos a tierra rápido y con criterio.
             </p>
           </div>
         </div>
 
-        <div
-          className="impact-char-wrap impact-fade absolute bottom-0 right-0 z-[8] h-[90%] w-[48%] max-w-[560px]"
-          onMouseEnter={() => setPoseIndex((i) => (i + 1) % STICKER_POSES.length)}
-          style={{
-            transform: `translate(${STICKER_POSES[poseIndex].x}px, ${STICKER_POSES[poseIndex].y}px) rotate(${STICKER_POSES[poseIndex].r}deg)`,
-          }}
-        >
-          <Image
-            src="/brand/stickers/STICKER19.png"
-            alt="Sticker Las Girls+"
-            fill
-            className="object-contain object-bottom"
-            priority={false}
-          />
+        <div className="impact-char-wrap absolute -bottom-2 right-0 z-[8] h-full w-[58%] max-w-[760px] sm:-bottom-4 sm:right-[-100px] lg:h-[110%] lg:w-[55%]">
+          <div className="impact-char-float impact-fade relative h-full w-full" style={{ transformOrigin: "50% 100%" }}>
+            <Image
+              src="/brand/stickers/STICKER19.png"
+              alt="Sticker Las Girls+"
+              fill
+              className="object-contain object-bottom"
+              priority={false}
+            />
+          </div>
         </div>
       </div>
     </section>

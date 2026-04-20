@@ -83,7 +83,10 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   const colorTweenRef = useRef<gsap.core.Tween | null>(null);
 
   const toggleBtnRef = useRef<HTMLButtonElement | null>(null);
+  const logoLinkRef = useRef<HTMLAnchorElement | null>(null);
   const busyRef = useRef(false);
+
+  const [scrolledLogoFilter, setScrolledLogoFilter] = useState<"none" | "black" | "white">("none");
 
   const itemEntranceTweenRef = useRef<gsap.core.Tween | null>(null);
 
@@ -464,6 +467,89 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   }, [smartContrast, smartContrastDarkBgColor, smartContrastLightBgColor, menuButtonColor, open]);
 
   React.useEffect(() => {
+    if (!scrolled || !scrolledLogoUrl) {
+      setScrolledLogoFilter("none");
+      return;
+    }
+
+    const parseColor = (str: string): [number, number, number, number] | null => {
+      const m = str.match(/-?\d+(\.\d+)?/g);
+      if (!m) return null;
+      const nums = m.map(Number);
+      const [r, g, b] = nums;
+      const a = nums[3] ?? 1;
+      return [r, g, b, a];
+    };
+
+    const relLum = (r: number, g: number, b: number) => {
+      const lin = (c: number) => {
+        const v = c / 255;
+        return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+      };
+      return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+    };
+
+    const LOGO_PINK_LUM = relLum(255, 62, 165);
+    const MIN_CONTRAST = 2.2;
+
+    const sample = () => {
+      const el0 = logoLinkRef.current;
+      if (!el0) return;
+      const rect = el0.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      const x = rect.left + rect.width / 2;
+      const y = rect.top + rect.height / 2;
+
+      const prevPe = el0.style.pointerEvents;
+      el0.style.pointerEvents = "none";
+      let el = document.elementFromPoint(x, y) as HTMLElement | null;
+      el0.style.pointerEvents = prevPe;
+
+      let r = 255;
+      let g = 255;
+      let b = 255;
+      while (el && el !== document.body) {
+        const c = window.getComputedStyle(el).backgroundColor;
+        const parsed = parseColor(c);
+        if (parsed && parsed[3] > 0.4) {
+          [r, g, b] = parsed;
+          break;
+        }
+        el = el.parentElement;
+      }
+
+      const bgLum = relLum(r, g, b);
+      const lighter = Math.max(bgLum, LOGO_PINK_LUM);
+      const darker = Math.min(bgLum, LOGO_PINK_LUM);
+      const contrast = (lighter + 0.05) / (darker + 0.05);
+
+      if (contrast >= MIN_CONTRAST) {
+        setScrolledLogoFilter("none");
+      } else {
+        setScrolledLogoFilter(bgLum > 0.5 ? "black" : "white");
+      }
+    };
+
+    let raf = 0;
+    const onScrollOrResize = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        sample();
+      });
+    };
+
+    sample();
+    window.addEventListener("scroll", onScrollOrResize, { passive: true });
+    window.addEventListener("resize", onScrollOrResize);
+    return () => {
+      if (raf) cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", onScrollOrResize);
+      window.removeEventListener("resize", onScrollOrResize);
+    };
+  }, [scrolled, scrolledLogoUrl]);
+
+  React.useEffect(() => {
     if (!closeOnClickAway || !open) return;
 
     const handleClickOutside = (event: MouseEvent) => {
@@ -522,6 +608,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
           aria-label="Main navigation header"
         >
           <a
+            ref={logoLinkRef}
             href="/"
             className="sm-logo flex items-center select-none pointer-events-auto"
             aria-label="Las Girls+ home"
@@ -547,8 +634,16 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                   src={scrolledLogoUrl}
                   alt=""
                   aria-hidden="true"
-                  className={`sm-logo-img sm-logo-img--scrolled absolute left-0 top-0 block h-full w-auto object-contain transition-opacity duration-300 ease-out ${scrolled ? "opacity-100" : "opacity-0"
+                  className={`sm-logo-img sm-logo-img--scrolled absolute left-0 top-0 block h-full w-auto object-contain transition-[opacity,filter] duration-300 ease-out ${scrolled ? "opacity-100" : "opacity-0"
                     }`}
+                  style={{
+                    filter:
+                      scrolledLogoFilter === "black"
+                        ? "brightness(0)"
+                        : scrolledLogoFilter === "white"
+                          ? "brightness(0) invert(1)"
+                          : undefined,
+                  }}
                   draggable={false}
                   width={240}
                   height={64}
@@ -690,11 +785,11 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
 .sm-scope .sm-socials-link { font-size: 1.1rem; font-weight: 600; color: #111; text-decoration: none; position: relative; padding: 2px 0; display: inline-block; transition: color 0.3s ease, opacity 0.3s ease; letter-spacing: 0.04em; }
 .sm-scope .sm-socials-link:hover { color: var(--sm-accent, #ff3ea5); }
 .sm-scope .sm-panel-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; }
-.sm-scope .sm-panel-item { position: relative; color: #000; font-weight: 400; font-size: clamp(2.8rem, 7vw, 4.5rem); cursor: pointer; line-height: 0.95; letter-spacing: -1.5px; text-transform: uppercase; transition: color 0.25s ease; display: inline-block; text-decoration: none; padding-right: 1.4em; font-family: var(--font-display), sans-serif; }
+.sm-scope .sm-panel-item { position: relative; color: #000; font-weight: 400; font-size: clamp(2.8rem, 7vw, 4.5rem); cursor: pointer; line-height: 0.95; letter-spacing: -1.5px; text-transform: uppercase; transition: color 0.25s ease; display: inline-flex; align-items: flex-start; gap: 0.35em; text-decoration: none; font-family: var(--font-display), sans-serif; }
 .sm-scope .sm-panel-itemLabel { display: inline-block; will-change: transform; transform-origin: 50% 100%; }
 .sm-scope .sm-panel-item:hover { color: var(--sm-accent, #ff3ea5); }
 .sm-scope .sm-panel-list[data-numbering] { counter-reset: smItem; }
-.sm-scope .sm-panel-list[data-numbering] .sm-panel-item::after { counter-increment: smItem; content: counter(smItem, decimal-leading-zero); position: absolute; top: 0.1em; right: 0.4em; font-size: 16px; font-weight: 700; color: var(--sm-accent, #ff3ea5); letter-spacing: 0; pointer-events: none; user-select: none; opacity: var(--sm-num-opacity, 0); font-family: var(--font-display), sans-serif; }
+.sm-scope .sm-panel-list[data-numbering] .sm-panel-item::after { counter-increment: smItem; content: counter(smItem, decimal-leading-zero); font-size: 16px; font-weight: 700; color: var(--sm-accent, #ff3ea5); letter-spacing: 0; pointer-events: none; user-select: none; opacity: var(--sm-num-opacity, 0); font-family: var(--font-display), sans-serif; margin-top: 0.4em; }
 @media (max-width: 1024px) { .sm-scope .staggered-menu-panel, .sm-scope .sm-prelayers { width: 100%; left: 0; right: 0; } }
 @media (max-width: 640px) { .sm-scope .staggered-menu-panel, .sm-scope .sm-prelayers { width: 100%; left: 0; right: 0; } }
       `}</style>

@@ -256,14 +256,35 @@ a {
   color: #fff;
 }
 
-@keyframes hero-sticker-float {
-  0%, 100% { transform: translateY(0) rotate(-4deg); }
-  50% { transform: translateY(-16px) rotate(5deg); }
+.hero-floating-sticker__inner {
+  will-change: transform;
+  transform-origin: 50% 50%;
 }
 
-.hero-floating-sticker__inner {
-  animation: hero-sticker-float 5.5s ease-in-out infinite;
+.hero-cta-morph {
+  position: relative;
+  transform-origin: 50% 50%;
   will-change: transform;
+  z-index: 50;
+}
+
+.hero-cta-morph__label {
+  display: inline-block;
+}
+
+.hero-curtain {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 39;
+  pointer-events: none;
+  clip-path: circle(0% at 50% 80%);
+  will-change: clip-path, opacity;
+  visibility: visible !important;
+}
+
+.pin-spacer:has(> #hero) {
+  background: #000;
 }
 
 .lg-contact-tab {
