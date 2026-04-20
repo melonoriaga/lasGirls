@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Anton, Pacifico, Sora, Geist } from "next/font/google";
+import { Anton, Pacifico, Lexend_Deca, Geist } from "next/font/google";
 import "@/app/globals.css";
 import { buildMetadata } from "@/lib/seo/metadata";
 import { cn } from "@/lib/utils";
@@ -12,7 +12,7 @@ const display = Anton({
   variable: "--font-display",
 });
 
-const body = Sora({
+const body = Lexend_Deca({
   subsets: ["latin"],
   variable: "--font-body",
 });
