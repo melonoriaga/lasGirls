@@ -18,7 +18,7 @@ function MarqueeChunk() {
 
 export function HeroBrandMarquee() {
   return (
-    <div className="hero-soft-line relative z-10 self-start w-full max-w-[30%] min-w-0 rotate-[-1.4deg] rounded-full bg-black text-xs font-bold uppercase tracking-[0.22em] text-[#f4ede6] md:text-[13px]">
+    <div className="hero-soft-line relative z-10 self-start w-full max-w-full min-w-0 rotate-[-1.4deg] rounded-full bg-black text-xs font-bold uppercase tracking-[0.22em] text-[#f4ede6] md:max-w-[30%] md:text-[13px]">
       <p className="sr-only">
         LAS GIRLS+ · BRANDING · TECH · ESTRATEGIA · PRODUCTO
       </p>
