@@ -138,9 +138,8 @@ export function StickerWindows({ items, containerClassName = "" }: Props) {
             key={item.id}
             data-delay={item.delay ?? 0}
             data-rotate-drift={item.w > 520 ? (item.rotate ?? 0) * 1.2 : 0}
-            className={`sticker-window pointer-events-auto absolute cursor-grab active:cursor-grabbing ${
-              item.w > 520 ? "sticker-window--mega" : ""
-            }`}
+            className={`sticker-window pointer-events-auto absolute cursor-grab active:cursor-grabbing ${item.w > 520 ? "sticker-window--mega" : ""
+              }`}
             onPointerDown={(event) => onPointerDown(item.id, event)}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}

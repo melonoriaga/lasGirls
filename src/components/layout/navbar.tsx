@@ -46,10 +46,10 @@ export function Navbar() {
         aria-label="Ir al inicio"
       >
         <Image
-          src={isHome && heroVisible ? "/brand/logos/las-girls-vertical-negro.png" : "/brand/logos/las-girls-vertical-rosa.png"}
+          src={isHome && heroVisible ? "/brand/logos/las-girls-horizontal-negro.png" : "/brand/logos/las-girls-vertical-rosa.png"}
           alt="Las Girls+"
-          width={230}
-          height={230}
+          width={300}
+          height={300}
           priority
           className="floating-brand__logo"
         />

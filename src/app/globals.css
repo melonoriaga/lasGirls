@@ -391,11 +391,15 @@ a {
 }
 
 .floating-brand.is-hero .floating-brand__logo {
-  width: 178px;
+  width: 300px;
 }
 
 .floating-brand.is-scrolled .floating-brand__logo {
-  width: 88px;
+  background-color: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border-radius: 10px;
+  padding: 10px;
+  width: 100px;
 }
 
 .hamburger span {
@@ -758,12 +762,13 @@ a {
 
 /* Hero split: figura izquierda + panel de copy derecha (sin overlay) */
 .hero-split .hero-rotating-shell {
-  width: 100%;
-  max-width: none;
+  width: auto;
+  max-width: 100%;
 }
 
 .hero-split .hero-rotating-main,
 .hero-split .hero-rotating-word {
+  width: auto;
   justify-content: flex-start;
 }
 
