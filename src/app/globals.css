@@ -256,6 +256,16 @@ a {
   color: #fff;
 }
 
+@keyframes hero-sticker-float {
+  0%, 100% { transform: translateY(0) rotate(-4deg); }
+  50% { transform: translateY(-16px) rotate(5deg); }
+}
+
+.hero-floating-sticker__inner {
+  animation: hero-sticker-float 5.5s ease-in-out infinite;
+  will-change: transform;
+}
+
 .lg-contact-tab {
   width: 100%;
   border-bottom: 1px solid rgba(17, 17, 17, 0.2);

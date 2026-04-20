@@ -3,16 +3,13 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Image from "next/image";
 import Link from "next/link";
-import CircularText from "@/components/CircularText";
 import Aurora from "@/components/Aurora";
-import RotatingText from "@/components/RotatingText";
 import { HeroBrandMarquee } from "@/components/sections/hero-brand-marquee";
 import { HeroStickerMotion } from "@/components/sections/hero-sticker-motion";
 
 gsap.registerPlugin(ScrollTrigger);
-
-const heroRotatingWords = ["FUNCIONAN", "VENDEN", "ESCALAN"];
 
 export function HomeHeroSection() {
   const scopeRef = useRef<HTMLElement | null>(null);
@@ -28,9 +25,9 @@ export function HomeHeroSection() {
       );
 
       gsap.fromTo(
-        ".hero-rotating-reveal",
-        { autoAlpha: 0, y: 16, scaleY: 0.92 },
-        { autoAlpha: 1, y: 0, scaleY: 1, duration: 0.62, ease: "power3.out", delay: 0.28 },
+        ".hero-floating-sticker",
+        { autoAlpha: 0, scale: 0.7, rotate: -25 },
+        { autoAlpha: 1, scale: 1, rotate: 0, duration: 0.9, ease: "back.out(1.7)", delay: 0.35 },
       );
 
       gsap.fromTo(
@@ -81,33 +78,6 @@ export function HomeHeroSection() {
                 <span className="block">SOLUCIONES DIGITALES</span>
               </h1>
 
-              <div className="hero-rotating-reveal mt-1 inline-flex w-auto max-w-full min-w-0 items-center justify-start gap-x-3 self-start rounded-2xl bg-black px-5 py-3 md:gap-x-4 md:rounded-3xl md:px-7 md:py-4">
-                <span
-                  className="font-display font-black uppercase leading-[0.9] tracking-[-0.012em] text-[#f4ede6]
-                    text-[clamp(4.3rem,12.3vw,6rem)]
-                    md:text-[clamp(4.9rem,10.5vw,7rem)]
-                    lg:text-[clamp(5.4rem,10.8vw,7.9rem)]"
-                >
-                  QUE
-                </span>
-                <div className="hero-rotating-shell inline-flex min-h-[0.9em] w-auto min-w-0 items-center justify-start">
-                  <RotatingText
-                    texts={heroRotatingWords}
-                    rotationInterval={1850}
-                    auto
-                    loop
-                    splitBy="words"
-                    transition={{ type: "spring", damping: 24, stiffness: 310 }}
-                    initial={{ y: "100%", opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: "-120%", opacity: 0 }}
-                    mainClassName="hero-rotating-main"
-                    splitLevelClassName="hero-rotating-word"
-                    elementLevelClassName="hero-rotating-char"
-                  />
-                </div>
-              </div>
-
               <p
                 className="hero-soft-line mt-4 font-accent font-medium leading-[1.05] text-black
                   text-[clamp(2.7rem,6.2vw,3.9rem)]
@@ -143,13 +113,17 @@ export function HomeHeroSection() {
           </div>
         </div>
       </div>
-      <div className="absolute right-5 top-20 z-[12] hidden lg:block">
-        <CircularText
-          text="LAS GIRLS+ ✦ BRANDING ✦ WEB ✦ APPS ✦ "
-          spinDuration={18}
-          onHover="speedUp"
-          className="lg-circular-text"
-        />
+      <div className="hero-floating-sticker pointer-events-none absolute right-4 top-20 z-[12] hidden lg:block xl:right-8 xl:top-24">
+        <div className="hero-floating-sticker__inner">
+          <Image
+            src="/brand/stickers/sticker-6.png"
+            alt=""
+            width={260}
+            height={260}
+            priority
+            className="h-auto w-[180px] xl:w-[230px] 2xl:w-[260px] drop-shadow-[0_18px_30px_rgba(211,66,145,0.25)]"
+          />
+        </div>
       </div>
     </section>
   );
