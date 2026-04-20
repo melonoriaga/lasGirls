@@ -28,7 +28,10 @@ export const metadata: Metadata = buildMetadata({
   description:
     "Agencia liderada por Jean y Mel. Acompañamos proyectos desde la idea hasta la ejecución con estrategia, diseño y tecnología.",
   path: "/",
-  image: "/brand/girls/seo.jpeg",
+  image: "/seo/seo.png",
+  imageWidth: 3600,
+  imageHeight: 2046,
+  imageAlt: "Las Girls+ — soluciones digitales que funcionan, venden y escalan.",
 });
 
 export default function RootLayout({

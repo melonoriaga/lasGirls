@@ -10,7 +10,7 @@ const items: StaggeredMenuItem[] = NAV_LINKS.map((link) => ({
 }));
 
 const socialItems: StaggeredMenuSocialItem[] = [
-  { label: "Instagram", link: "https://instagram.com/lasgirlsplus" },
+  { label: "Instagram", link: "https://www.instagram.com/lasgirls.plus?igsh=MWdyZXEybXYyOW9tOQ%3D%3D&utm_source=qr" },
   { label: "Behance", link: "https://behance.net/lasgirlsplus" },
   { label: "LinkedIn", link: "https://linkedin.com/company/lasgirlsplus" },
 ];

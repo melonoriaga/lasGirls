@@ -1,5 +1,6 @@
+"use client";
+
 import { ContactForm } from "@/components/forms/contact-form";
-import { ContactDecorationSticker } from "@/components/sections/contact-decoration-sticker";
 import { contactPageContent } from "@/content/site/contact";
 
 type ContactSectionProps = {
@@ -8,37 +9,52 @@ type ContactSectionProps = {
 
 export function ContactSection({ id }: ContactSectionProps) {
   return (
-    <section id={id} className="relative min-h-screen w-full overflow-hidden border-y-2 border-black bg-[#f4ede6]">
-      <div className="relative z-10 flex min-h-screen w-full flex-col justify-center px-0 py-20">
-        <div className="mx-auto w-full max-w-[1280px] px-4 md:px-8">
-          <header className="mb-8 md:mb-10">
-            <h1 className="font-display text-[12vw] uppercase leading-[0.84] text-black md:text-[6rem]">
-              CONTACT
-            </h1>
-            <p className="mt-3 max-w-[64ch] text-sm text-black/75 md:text-base">{contactPageContent.subtitle}</p>
-            <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-black/65">
-              Primera consulta sin costo
-            </p>
-            <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2">
-              {contactPageContent.channels.map((channel) => (
-                <a
-                  key={channel.label}
-                  href={channel.href}
-                  className="text-xs uppercase tracking-[0.12em] text-[#ff2f9d] underline decoration-black/35 underline-offset-4"
-                >
-                  {channel.label}: {channel.value}
-                </a>
-              ))}
-            </div>
-          </header>
+    <section
+      id={id}
+      className="relative w-full overflow-hidden border-t-2 border-black bg-[#ff6faf] px-4 py-16 text-black sm:px-6 md:py-20 lg:px-10 lg:py-24"
+    >
+      <div className="relative z-10 mx-auto flex w-full max-w-[1600px] flex-col gap-14 md:gap-16">
+        {/* ─────────── HEADER ─────────── */}
+        <header className="flex flex-col gap-4 max-w-3xl">
+          <p className="font-mono text-[10px] font-bold uppercase tracking-[0.32em] text-black/65 md:text-[11px]">
+            05 — Hablemos
+          </p>
+          <h2 className="font-display text-[clamp(2.5rem,9vw,4.75rem)] font-black uppercase leading-[0.9] tracking-[-0.03em] text-black">
+            Hablemos de tu idea<span className="text-black">.</span>
+          </h2>
+          <p className="font-accent text-[clamp(1.65rem,4.5vw,2.75rem)] leading-[0.98] text-black">
+            primera consulta sin costo.
+          </p>
+          <p className="max-w-[60ch] text-base leading-[1.6] text-black/75 md:text-lg">
+            {contactPageContent.subtitle}
+          </p>
 
-          <ContactForm />
+          <div className="mt-2 flex flex-wrap gap-2.5">
+            {contactPageContent.channels.map((channel) => (
+              <a
+                key={channel.label}
+                href={channel.href}
+                target={channel.href.startsWith("http") ? "_blank" : undefined}
+                rel={channel.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                className="group inline-flex items-center gap-2 border-2 border-black/80 bg-[#F3EEE8] px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-black shadow-[0_6px_0_0_rgba(0,0,0,0.9)] transition-transform hover:-translate-y-[2px] hover:shadow-[0_8px_0_0_rgba(0,0,0,0.9)]"
+              >
+                <span className="text-[8px] text-black/70">◆</span>
+                <span className="opacity-70">{channel.label}</span>
+                <span className="text-black">/</span>
+                <span>{channel.value}</span>
+              </a>
+            ))}
+          </div>
+        </header>
+
+        {/* ─────────── FORM ─────────── */}
+        <ContactForm />
+
+        {/* ─────────── FOOTER MARK ─────────── */}
+        <div className="flex items-center gap-3 border-t-2 border-black/80 pt-5 text-[10px] uppercase tracking-[0.2em] text-black/60">
+          <span className="font-mono">/ Las Girls+ · Hablemos / 2026</span>
+          <span className="ml-auto font-mono">↘ Te respondemos en 24/48hs</span>
         </div>
-      </div>
-
-      <div className="pointer-events-none absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_72%,rgba(255,111,175,0.16),transparent_45%)]" />
-        <ContactDecorationSticker />
       </div>
     </section>
   );

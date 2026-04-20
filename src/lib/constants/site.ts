@@ -1,7 +1,7 @@
 export const SITE_CONFIG = {
   name: "Las Girls+",
   domain: process.env.APP_URL ?? "http://localhost:3000",
-  defaultOg: "/images/og/las-girls-og.png",
+  defaultOg: "/seo/seo.png",
   locale: "es_AR",
 };
 

@@ -6,11 +6,23 @@ type SeoArgs = {
   description: string;
   path: string;
   image?: string;
+  imageWidth?: number;
+  imageHeight?: number;
+  imageAlt?: string;
 };
 
-export const buildMetadata = ({ title, description, path, image }: SeoArgs): Metadata => {
+export const buildMetadata = ({
+  title,
+  description,
+  path,
+  image,
+  imageWidth = 1200,
+  imageHeight = 630,
+  imageAlt,
+}: SeoArgs): Metadata => {
   const url = `${SITE_CONFIG.domain}${path}`;
   const ogImage = `${SITE_CONFIG.domain}${image ?? SITE_CONFIG.defaultOg}`;
+  const alt = imageAlt ?? title;
 
   return {
     title,
@@ -27,7 +39,14 @@ export const buildMetadata = ({ title, description, path, image }: SeoArgs): Met
       url,
       siteName: SITE_CONFIG.name,
       locale: SITE_CONFIG.locale,
-      images: [{ url: ogImage }],
+      images: [
+        {
+          url: ogImage,
+          width: imageWidth,
+          height: imageHeight,
+          alt,
+        },
+      ],
       type: "website",
     },
     twitter: {

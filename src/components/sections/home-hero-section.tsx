@@ -178,7 +178,7 @@ export function HomeHeroSection() {
       <div className="hero-split relative z-10 flex min-h-0 flex-1 flex-col items-center justify-center px-4 pb-10 pt-0 sm:px-5 md:px-6 md:pb-12 lg:px-10">
         <div className="hero-split__stage mx-auto w-full max-w-full md:max-w-[min(1600px,100%)]">
           <div className="grid grid-cols-1 items-stretch gap-y-8 sm:gap-y-10 md:grid-cols-[minmax(10rem,1fr)_min(54vw,36rem)] md:gap-x-5 lg:grid-cols-[minmax(12rem,1fr)_min(56vw,40rem)] lg:gap-x-7 xl:grid-cols-[minmax(14rem,1fr)_58vw] xl:gap-x-10">
-            <div className="hero-split__figure-area relative z-0 flex w-full min-h-[min(100svh,100dvh)] min-w-0 flex-col items-center justify-end md:min-h-[100dvh] md:w-full md:shrink-0 md:items-end md:justify-end">
+            <div className="hero-split__figure-area relative z-0 flex w-full min-h-[46dvh] min-w-0 flex-col items-center justify-end md:min-h-[100dvh] md:w-full md:shrink-0 md:items-end md:justify-end">
               <div className="relative z-0 mx-auto w-full min-w-0 md:mx-0 md:max-w-none">
                 <HeroStickerMotion />
               </div>
@@ -189,16 +189,17 @@ export function HomeHeroSection() {
 
               <h1
                 className="hero-main-line mt-6 w-full font-display font-black uppercase leading-[1] tracking-[-0.015em] text-black md:mt-8
-                  text-[clamp(4.3rem,12.3vw,6rem)]
+                  text-[clamp(3.1rem,11vw,5.5rem)]
+                  sm:text-[clamp(3.8rem,11vw,5.8rem)]
                   md:max-w-none md:text-[clamp(4.9rem,10.5vw,7rem)]
                   lg:text-[clamp(5.4rem,10.8vw,7.9rem)]"
               >
                 <span className="block">SOLUCIONES DIGITALES</span>
-                <span className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 leading-[1]">
+                <span className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2 leading-[1] md:gap-x-4">
                   <span>QUE</span>
                   <RotatingText
                     texts={["FUNCIONAN", "VENDEN", "ESCALAN"]}
-                    mainClassName="inline-flex items-center overflow-hidden rounded-2xl bg-[#ff3ea5] px-5 py-2 text-white md:px-7 md:py-3"
+                    mainClassName="inline-flex items-center overflow-hidden rounded-2xl bg-[#ff3ea5] px-3 py-1.5 text-white sm:px-5 sm:py-2 md:px-7 md:py-3"
                     staggerFrom="last"
                     staggerDuration={0.025}
                     rotationInterval={2200}

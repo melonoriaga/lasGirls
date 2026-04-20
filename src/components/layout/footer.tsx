@@ -31,7 +31,7 @@ export function Footer() {
           <a href="mailto:hola@lasgirls.com" className="footer-pill bg-[#ff5faf] text-black">
             hola@lasgirls.com
           </a>
-          <a href="https://instagram.com/lasgirlsplus" target="_blank" rel="noreferrer" className="footer-pill border border-[#fff8f0] bg-transparent text-[#fff8f0]">
+          <a href="https://www.instagram.com/lasgirls.plus?igsh=MWdyZXEybXYyOW9tOQ%3D%3D&utm_source=qr" target="_blank" rel="noreferrer" className="footer-pill border border-[#fff8f0] bg-transparent text-[#fff8f0]">
             instagram
           </a>
           <Link href="/#contacto" className="footer-cta">

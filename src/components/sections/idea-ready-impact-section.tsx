@@ -83,8 +83,7 @@ export function IdeaReadyImpactSection() {
       ref={sectionRef}
       className="relative isolate flex h-[100dvh]  overflow-hidden  bg-black  items-center justify-center"
     >
-      <div className="impact-fade relative h-[70%] w-[80%]  rounded-[1.75rem] bg-[#f5a8cc] px-6 py-6 sm:px-10 sm:py-10
-      lg:rounded-[2.5rem] lg:px-16 lg:py-14">
+      <div className="impact-fade relative h-[78%] w-[88%] rounded-[1.75rem] bg-[#f5a8cc] px-5 py-5 sm:h-[72%] sm:w-[84%] sm:px-10 sm:py-10 lg:h-[70%] lg:w-[80%] lg:rounded-[2.5rem] lg:px-16 lg:py-14">
         <p className="font-mono text-[10px] font-bold uppercase tracking-[0.32em] text-black/65 md:text-[11px] mb-4">02 - Idea Ready Impact</p>
 
         <div className="pointer-events-none absolute inset-0 z-[1] flex items-center justify-center opacity-90 overflow-hidden">
@@ -99,39 +98,37 @@ export function IdeaReadyImpactSection() {
         </div>
 
         <div className="relative z-[6]">
-          <h2 className="font-display text-[clamp(4rem,13vw,14rem)] uppercase leading-[0.85] tracking-[-0.03em] text-black">
+          <h2 className="font-display text-[clamp(2.4rem,11vw,14rem)] uppercase leading-[0.85] tracking-[-0.03em] text-black">
             TU IDEA
           </h2>
 
           <h2
-            className="impact-line font-accent -mt-10 text-[clamp(3.5rem,12vw,10rem)] leading-[0.8] text-[#FF6FAF]"
-            style={{ WebkitTextStroke: "26px white", paintOrder: "stroke fill", transform: "rotate(-6deg) translateX(120px) translateY(-24px)" }}
+            className="impact-line font-accent -mt-6 text-[clamp(2.2rem,12vw,10rem)] leading-[0.8] text-[#FF6FAF] -rotate-[6deg] translate-x-[10px] translate-y-[-6px] [-webkit-text-stroke:6px_white] [paint-order:stroke_fill] sm:-mt-10 sm:translate-x-[50px] sm:translate-y-[-14px] sm:[-webkit-text-stroke:12px_white] lg:translate-x-[120px] lg:translate-y-[-24px] lg:[-webkit-text-stroke:26px_white]"
           >
             Lista hoy
           </h2>
         </div>
 
-        <div className="impact-fade absolute bottom-6 left-6 z-[10] sm:bottom-10 sm:left-10 lg:bottom-14 lg:left-16">
+        <div className="impact-fade absolute bottom-4 left-4 z-[10] max-w-[calc(100%-2rem)] sm:bottom-10 sm:left-10 sm:max-w-none lg:bottom-14 lg:left-16">
           <div
-            className="max-w-[340px] rounded-xl border border-black bg-[#FF6FAF] px-4 py-3 backdrop-blur-sm
-            lg:max-w-[420px] lg:px-5 lg:py-4"
+            className="max-w-[240px] rounded-xl border border-black bg-[#FF6FAF] px-3 py-2.5 backdrop-blur-sm sm:max-w-[340px] sm:px-4 sm:py-3 lg:max-w-[420px] lg:px-5 lg:py-4"
             style={{ borderStyle: "dashed", borderWidth: "3px" }}
           >
-            <p className="text-[0.62rem] font-bold uppercase tracking-[0.18em] text-black lg:text-[0.7rem]">
+            <p className="text-[0.58rem] font-bold uppercase tracking-[0.18em] text-black sm:text-[0.62rem] lg:text-[0.7rem]">
               SIN VUELTAS
             </p>
 
-            <p className="mt-1 font-accent text-[1rem] italic text-white lg:text-[1.15rem]">
+            <p className="mt-1 font-accent text-[0.9rem] italic text-white sm:text-[1rem] lg:text-[1.15rem]">
               No necesitas meses y meses de reuniones.
             </p>
 
-            <p className="mt-1.5 text-[0.8rem] font-semibold uppercase leading-snug tracking-[0.15em] text-black/95 lg:text-[1rem]">
+            <p className="mt-1.5 text-[0.7rem] font-semibold uppercase leading-snug tracking-[0.15em] text-black/95 sm:text-[0.8rem] lg:text-[1rem]">
               Si ya tenés marca, textos e imágenes, lo bajamos a tierra rápido y con criterio.
             </p>
           </div>
         </div>
 
-        <div className="impact-char-wrap absolute -bottom-2 right-0 z-[8] h-full w-[58%] max-w-[760px] sm:-bottom-4 sm:right-[-100px] lg:h-[110%] lg:w-[55%]">
+        <div className="impact-char-wrap pointer-events-none absolute -bottom-2 right-0 z-[8] h-full w-[48%] max-w-[760px] sm:-bottom-4 sm:right-[-100px] sm:w-[58%] lg:h-[110%] lg:w-[55%]">
           <div className="impact-char-float impact-fade relative h-full w-full" style={{ transformOrigin: "50% 100%" }}>
             <Image
               src="/brand/stickers/STICKER19.png"

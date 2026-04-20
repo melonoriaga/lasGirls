@@ -10,9 +10,13 @@ const FRAMES = [
   { src: "/LASGIRLSS/STIKER-001.png" as const, width: 962, height: 1715 },
 ] as const;
 
-/** Misma caja para ambos: siempre 100dvh de alto (móvil acotado con svh por UI del navegador). */
+/**
+ * Sizing: on mobile we cap the figure to ~46dvh so the copy (headline,
+ * marquee, CTAs) fits in the same viewport. From md+ we keep the full
+ * 100dvh column like the original design.
+ */
 const STICKER_SIZE_CLASS =
-  "h-[min(100dvh,100svh)] min-h-[min(100dvh,100svh)] md:h-[100dvh] md:min-h-[100dvh] w-auto max-w-[min(100vw,100%)] max-md:max-w-[100vw]";
+  "h-[46dvh] min-h-[46dvh] md:h-[100dvh] md:min-h-[100dvh] w-auto max-w-[min(100vw,100%)] max-md:max-w-[100vw]";
 
 type Props = {
   className?: string;
@@ -31,7 +35,7 @@ export function HeroStickerMotion({ className = "" }: Props) {
 
   return (
     <div
-      className={`hero-sticker-motion pointer-events-none relative min-h-[min(100dvh,100svh)] w-full overflow-visible md:min-h-[100dvh] ${className}`}
+      className={`hero-sticker-motion pointer-events-none relative min-h-[46dvh] w-full overflow-visible md:min-h-[100dvh] ${className}`}
       aria-hidden
     >
       {FRAMES.map((frame, index) => {
