@@ -10,23 +10,7 @@ const { BEIGE } = TOOL_THEME;
 
 export function ToolsHub() {
   return (
-    <div className="min-h-screen" style={{ background: BEIGE }}>
-      <nav
-        className="sticky top-0 z-[100] flex items-center justify-between border-b border-black/10 px-4 py-3 sm:px-10"
-        style={{ background: BEIGE }}
-      >
-        <Link
-          href="/"
-          className="border-[1.5px] border-black/30 px-3 py-1.5 text-[0.65rem] font-extrabold uppercase tracking-[0.16em] text-[#111] transition-colors hover:border-[#FF6FAF] hover:text-[#FF6FAF]"
-        >
-          ← Inicio
-        </Link>
-        <span className="text-[0.55rem] font-bold uppercase tracking-[0.18em] text-[#111]/30">
-          Herramientas gratuitas
-        </span>
-        <span className="hidden font-accent text-sm text-[#FF6FAF] sm:inline">Las Girls+</span>
-      </nav>
-
+    <div className="min-h-screen pt-16 sm:pt-20" style={{ background: BEIGE }}>
       <header className="grid items-end gap-8 border-b border-black/10 px-4 py-12 sm:grid-cols-[1fr_auto] sm:px-10 sm:py-16">
         <motion.div
           initial={{ opacity: 0, y: 32 }}
@@ -36,7 +20,7 @@ export function ToolsHub() {
           <p className="mb-3 text-[0.54rem] font-extrabold uppercase tracking-[0.22em] text-[#111]/35">
             ✦ Utilidades digitales
           </p>
-          <h1 className="font-accent text-[clamp(2.5rem,9vw,6rem)] uppercase leading-[0.88] tracking-tight text-[#111]">
+          <h1 className="font-accent text-[clamp(2.5rem,9vw,6rem)] leading-[0.88] tracking-tight text-[#111]">
             Herramientas
             <br />
             <span className="text-[#FF6FAF]" style={{ fontStyle: "italic" }}>
@@ -76,7 +60,7 @@ export function ToolsHub() {
                   <Icon size={22} color={BEIGE} strokeWidth={1.5} />
                 </div>
                 <div className="flex flex-1 flex-col gap-2">
-                  <h2 className="font-accent text-[clamp(1.15rem,2.5vw,1.75rem)] uppercase leading-none text-[#111]">{tool.name}</h2>
+                  <h2 className="font-accent text-[clamp(1.15rem,2.5vw,1.75rem)] leading-none text-[#111]">{tool.name}</h2>
                   <p className="text-[0.82rem] leading-relaxed text-[#111]/60">{tool.desc}</p>
                   <p className="text-[0.68rem] leading-snug text-[#111]/38">{tool.detail}</p>
                 </div>

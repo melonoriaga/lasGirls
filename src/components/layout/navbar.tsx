@@ -1,6 +1,8 @@
 "use client";
 
 import StaggeredMenu, { type StaggeredMenuItem, type StaggeredMenuSocialItem } from "@/components/StaggeredMenu";
+import { PublicBreadcrumbInline } from "@/components/layout/public-breadcrumb";
+import { usePathname } from "next/navigation";
 import { NAV_LINKS } from "@/lib/constants/site";
 
 const items: StaggeredMenuItem[] = NAV_LINKS.map((link) => ({
@@ -10,12 +12,15 @@ const items: StaggeredMenuItem[] = NAV_LINKS.map((link) => ({
 }));
 
 const socialItems: StaggeredMenuSocialItem[] = [
-  { label: "Instagram", link: "https://instagram.com/lasgirlsplus" },
+  { label: "Instagram", link: "https://www.instagram.com/lasgirls.plus?igsh=MWdyZXEybXYyOW9tOQ%3D%3D&utm_source=qr" },
   { label: "Behance", link: "https://behance.net/lasgirlsplus" },
   { label: "LinkedIn", link: "https://linkedin.com/company/lasgirlsplus" },
 ];
 
 export function Navbar() {
+  const pathname = usePathname();
+  const isHome = pathname === "/";
+
   return (
     <StaggeredMenu
       position="right"
@@ -24,6 +29,9 @@ export function Navbar() {
       displaySocials
       displayItemNumbering
       logoUrl="/brand/logos/las-girls-horizontal-negro.png"
+      scrolledLogoUrl="/brand/logos/las-girls-horizontal-rosa.png"
+      scrollThreshold={80}
+      forceScrolled={!isHome}
       menuButtonColor="#111"
       openMenuButtonColor="#111"
       changeMenuColorOnOpen
@@ -31,6 +39,7 @@ export function Navbar() {
       colors={["#F8BBD0", "#ff3ea5"]}
       isFixed
       closeOnClickAway
+      headerCenter={<PublicBreadcrumbInline />}
     />
   );
 }

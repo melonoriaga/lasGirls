@@ -4,6 +4,21 @@ import { leadPipelineStatusSchema } from "@/lib/validations/pipeline";
 /** Estados del lead en admin (pipeline + legado). */
 export const leadStatusSchema = leadPipelineStatusSchema;
 
+/** Valores válidos para tipo de consulta (formulario + API). */
+export const INQUIRY_TYPES = [
+  "consulta_general",
+  "cotizar_servicio",
+  "definir_estrategia",
+  "branding",
+  "sitio_web",
+  "app",
+  "redes_contenido",
+  "marketing_seo",
+  "otro",
+] as const;
+
+export type InquiryType = (typeof INQUIRY_TYPES)[number];
+
 export const leadSchema = z.object({
   fullName: z
     .string()
@@ -13,17 +28,14 @@ export const leadSchema = z.object({
     .email("Revisá el email, parece incompleto."),
   phone: z.string().min(6, "Sumá un teléfono o WhatsApp para agilizar."),
   company: z.string().optional().or(z.literal("")),
-  inquiryType: z.enum([
-    "consulta_general",
-    "cotizar_servicio",
-    "definir_estrategia",
-    "branding",
-    "sitio_web",
-    "app",
-    "redes_contenido",
-    "marketing_seo",
-    "otro",
-  ]),
+  inquiryType: z
+    .string()
+    .min(1, "Seleccioná tipo de consulta.")
+    .refine(
+      (val): val is InquiryType =>
+        (INQUIRY_TYPES as readonly string[]).includes(val),
+      { message: "Seleccioná un tipo de consulta válido." },
+    ),
   serviceInterest: z.array(z.string()).optional(),
   budgetRange: z.string().optional().or(z.literal("")),
   projectStage: z.enum([
@@ -43,4 +55,8 @@ export const leadSchema = z.object({
   }),
 });
 
-export type LeadFormInput = z.infer<typeof leadSchema>;
+/** Payload validado (API + envíos exitosos). */
+export type LeadParsed = z.infer<typeof leadSchema>;
+
+/** Estado del formulario (incluye placeholders como `inquiryType: ""`). */
+export type LeadFormValues = z.input<typeof leadSchema>;

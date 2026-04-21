@@ -3,19 +3,24 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import Image from "next/image";
-import Link from "next/link";
-import CircularText from "@/components/CircularText";
 import DecryptedText from "@/components/DecryptedText";
-import { StickerWindows } from "@/components/sections/sticker-windows";
+import TextType from "@/components/TextType";
+import ProfileCard from "@/components/ProfileCard";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const TEAM_STICKERS = [
-  { id: "t1", src: "/brand/stickers/STICKER7.png", x: 15, y: 68, w: 400, rotate: 7, delay: 0.18 },
+const SPECIALIST_TAGS = [
+  "DESARROLLO",
+  "DISEÑO",
+  "PRODUCTO",
+  "AUTOMATIZACIONES",
+  "AI",
+  "CONTENIDO",
 ];
 
-/** Home “strategic team” strip with Jean & Mel ally cards. */
+/** Home strategic team section — editorial / brutalist layout with the
+ *  Jean & Mel ProfileCards plus an extended copy block describing the
+ *  network model. */
 export function HomeTeamSection() {
   const sectionRef = useRef<HTMLElement | null>(null);
 
@@ -55,6 +60,25 @@ export function HomeTeamSection() {
           },
         },
       );
+
+      // Pink underline / divider reveals as you scroll into block 02
+      gsap.utils
+        .toArray<HTMLElement>(section.querySelectorAll(".brutal-rule"))
+        .forEach((rule) => {
+          gsap.fromTo(
+            rule,
+            { scaleX: 0, transformOrigin: "left center" },
+            {
+              scaleX: 1,
+              duration: 1.1,
+              ease: "expo.out",
+              scrollTrigger: {
+                trigger: rule,
+                start: "top 85%",
+              },
+            },
+          );
+        });
     }, section);
 
     return () => ctx.revert();
@@ -64,96 +88,184 @@ export function HomeTeamSection() {
     <section
       id="equipo"
       ref={sectionRef}
-      className="brutal-section vh-section section-shell relative border-t-2 border-black bg-[#111] text-[#fff8f0]"
+      className="brutal-section section-shell relative overflow-hidden border-t-2 border-black bg-[#0b0b0b] py-24 text-[#fff8f0] md:py-32"
     >
-      <StickerWindows items={TEAM_STICKERS} />
-      <div className="mx-auto flex min-h-screen max-w-7xl flex-col justify-center">
-        <p className="brutal-reveal inline-flex bg-[#ff5faf] px-3 py-1 text-[10px] uppercase tracking-[0.16em] text-black">
-          equipo estratégico
-        </p>
-        <h2 className="brutal-reveal mt-4 font-display text-6xl uppercase leading-[0.86] text-[#f4ede6] lg:text-8xl">
-          <DecryptedText
-            text="no hacemos todo solas."
-            speed={26}
-            maxIterations={12}
-            sequential
-            animateOn="view"
-            className="inline-block"
-            encryptedClassName="inline-block text-white/55"
-          />
-        </h2>
-        <p className="brutal-reveal mt-4 max-w-xl text-sm text-white/70">
-          Trabajamos con red real de especialistas. Vos hablás con nosotras: nos encargamos del resto.
-        </p>
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-24 px-6 md:gap-32 md:px-10">
+        {/* ─────────── BLOCK 01 — HEADER + CARDS ─────────── */}
+        <div className="flex flex-col gap-12">
+          <header className="flex flex-col gap-6">
+            <div className="brutal-reveal flex items-center gap-4">
+              <span className="inline-flex bg-[#ff3ea5] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-black">
+                01 — Equipo extendido
+              </span>
+              <span className="hidden h-px flex-1 bg-white/15 md:block" />
+            </div>
 
-        <div className="allies-grid brutal-reveal mt-8">
-          <Link href="/team/jean" className="ally-card group block" aria-label="Ver perfil de Jean">
-            <div className="ally-ring-wrap" aria-hidden>
-              <CircularText
-                text="JEAN ✦ JEAN ✦ JEAN ✦ JEAN ✦ JEAN ✦ JEAN ✦ "
-                spinDuration={16}
-                onHover="speedUp"
-                className="ally-ring"
+            <h2 className="brutal-reveal w-full font-display text-[clamp(2rem,5.4vw,4.5rem)] font-black uppercase leading-[1.02] tracking-normal text-[#f4ede6]">
+              <DecryptedText
+                text="Nosotras somos la cara de Las Girls+ pero hay más"
+                speed={26}
+                maxIterations={14}
+                sequential
+                animateOn="view"
+                className="inline"
+                encryptedClassName="inline text-white/45"
               />
-            </div>
-            <div className="ally-image-wrap">
-              <Image src="/brand/girls/jean.png" alt="Jean" fill unoptimized className="ally-image object-contain object-bottom" />
-            </div>
-            <div className="ally-tag">✦ ESTRATEGIA & ROADMAP</div>
-            <div className="ally-overlay">
-              <h3 className="ally-name">
-                <DecryptedText
-                  text="JEAN"
-                  speed={24}
-                  maxIterations={12}
-                  sequential
-                  animateOn="view"
-                  className="inline-block"
-                  encryptedClassName="inline-block text-[#f4ede6]/55"
-                />
-              </h3>
-              <p className="ally-script">estructura que ordena.</p>
-              <div className="ally-skills">
-                <span>Discovery</span>
-                <span>Roadmaps</span>
-                <span>Producto</span>
-              </div>
-            </div>
-          </Link>
+              <span className="text-[#ff3ea5]">.</span>
+            </h2>
 
-          <Link href="/team/mel" className="ally-card group block" aria-label="Ver perfil de Mel">
-            <div className="ally-ring-wrap" aria-hidden>
-              <CircularText
-                text="MEL ✦ MEL ✦ MEL ✦ MEL ✦ MEL ✦ MEL ✦ "
-                spinDuration={14}
-                onHover="speedUp"
-                className="ally-ring"
+            <div className="brutal-reveal mt-2 max-w-2xl border-l-2 border-[#ff3ea5] pl-5">
+              <TextType
+                as="p"
+                text="Trabajamos con una red real de especialistas en desarrollo, diseño y producto."
+                typingSpeed={28}
+                initialDelay={300}
+                pauseDuration={1200}
+                loop={false}
+                showCursor
+                cursorCharacter="▌"
+                cursorClassName="text-[#ff3ea5]"
+                startOnVisible
+                className="font-display text-base uppercase leading-[1.45] tracking-[0.04em] text-white/85 md:text-lg"
               />
+              <p className="mt-3 font-display text-base uppercase leading-[1.45] tracking-[0.04em] text-white md:text-lg">
+                Vos hablás con nosotras.{" "}
+                <span className="text-[#ff3ea5]">
+                  Nosotras armamos el equipo.
+                </span>
+              </p>
             </div>
-            <div className="ally-image-wrap">
-              <Image src="/brand/girls/mel.png" alt="Mel" fill unoptimized className="ally-image object-contain object-bottom" />
+          </header>
+
+          <div className="brutal-reveal mt-4 grid grid-cols-1 items-start justify-items-center gap-10 md:grid-cols-2 md:gap-14 lg:gap-20">
+            <ProfileCard
+              name="JEAN"
+              title="Brand Designer & Visual Identity Lead"
+              handle="jean"
+              status="Disponible"
+              contactText="Ver perfil"
+              avatarUrl="/brand/girls/jean.png"
+              miniAvatarUrl="/brand/girls/jean.png"
+              iconUrl="/brand/logos/las-girls-vertical-rosa.png"
+              behindGlowColor="rgba(255, 62, 165, 0.25)"
+              avatarBottom="-200px"
+              contactHref="/team/jean"
+            />
+            <ProfileCard
+              name="MEL"
+              title="Product Designer & Developer"
+              handle="mel"
+              status="Disponible"
+              contactText="Ver perfil"
+              avatarUrl="/brand/girls/mel.png"
+              miniAvatarUrl="/brand/girls/mel.png"
+              iconUrl="/brand/logos/las-girls-vertical-rosa.png"
+              behindGlowColor="rgba(211, 66, 145, 0.25)"
+              avatarBottom="-200px"
+              contactHref="/team/mel"
+            />
+          </div>
+        </div>
+
+        {/* ─────────── BLOCK 02 — EL SISTEMA ─────────── */}
+        <div className="flex flex-col gap-10">
+          <div className="brutal-reveal flex items-center gap-4">
+            <span className="inline-flex border-2 border-white/80 bg-transparent px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-white">
+              02 — Cómo funciona
+            </span>
+            <span className="brutal-rule h-[2px] flex-1 bg-[#ff3ea5]" />
+          </div>
+
+          <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
+            {/* LEFT col — editorial body */}
+            <div className="brutal-reveal flex flex-col gap-7 lg:col-span-7">
+              <p className="font-display text-[clamp(1.5rem,2.4vw,2rem)] font-black uppercase leading-[1.05] tracking-[-0.005em] text-[#f4ede6]">
+                No somos una dupla aislada ni una agencia inflada.
+                <br />
+                <span className="text-[#ff3ea5]">
+                  Somos el punto de entrada a un sistema de trabajo flexible.
+                </span>
+              </p>
+
+              <p className="max-w-[55ch] text-base leading-[1.65] text-white/75 md:text-[1.05rem]">
+                Cada proyecto es distinto, por eso no forzamos estructuras
+                fijas: definimos qué necesitás y sumamos los perfiles correctos
+                en el momento justo.
+              </p>
+
+              {/* <p className="max-w-[55ch] text-base leading-[1.65] text-white/75 md:text-[1.05rem]">
+                Nosotras lideramos, ordenamos y ejecutamos. El resto del equipo
+                aparece cuando tiene que aparecer.
+              </p> */}
             </div>
-            <div className="ally-tag">✦ BRANDING & DIRECCIÓN CREATIVA</div>
-            <div className="ally-overlay">
-              <h3 className="ally-name">
-                <DecryptedText
-                  text="MEL"
-                  speed={24}
-                  maxIterations={12}
-                  sequential
-                  animateOn="view"
-                  className="inline-block"
-                  encryptedClassName="inline-block text-[#f4ede6]/55"
-                />
-              </h3>
-              <p className="ally-script">identidad que se recuerda.</p>
-              <div className="ally-skills">
-                <span>Branding</span>
-                <span>Visual Systems</span>
-                <span>Narrativa</span>
+
+            {/* RIGHT col — specialist roster */}
+            <aside className="brutal-reveal lg:col-span-5">
+              <div className="relative border-2 border-white/15 bg-white/3 p-7 md:p-8">
+                <span className="absolute -top-3 left-6 bg-[#0b0b0b] px-2 font-mono text-[10px] uppercase tracking-[0.2em] text-white/60">
+                  / red de especialistas
+                </span>
+
+                <p className="font-display text-base uppercase leading-[1.4] tracking-[0.04em] text-white/85 md:text-[1.05rem]">
+                  El equipo crece o se ajusta según el alcance:
+                </p>
+
+                <ul className="mt-6 flex flex-wrap gap-2.5">
+                  {SPECIALIST_TAGS.map((tag, i) => (
+                    <li
+                      key={tag}
+                      className={`inline-flex items-center gap-2 border-2 px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.12em] transition-colors ${i % 2 === 0
+                        ? "border-[#ff3ea5] bg-[#ff3ea5]/10 text-[#ff8ec7] hover:bg-[#ff3ea5] hover:text-black"
+                        : "border-white/40 bg-transparent text-white/85 hover:border-white hover:bg-white hover:text-black"
+                        }`}
+                    >
+                      <span className="text-[8px]">◆</span>
+                      {tag}
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="mt-7 flex items-center justify-between border-t border-white/10 pt-4 text-[10px] uppercase tracking-[0.18em] text-white/50">
+                  <span>Network model</span>
+                  <span className="font-mono">∞ on-demand</span>
+                </div>
               </div>
-            </div>
-          </Link>
+            </aside>
+          </div>
+        </div>
+
+        {/* ─────────── BLOCK 03 — CIERRE / QUOTE ─────────── */}
+        <div className="flex flex-col gap-8">
+          <div className="brutal-reveal flex items-center gap-4">
+            <span className="brutal-rule h-[2px] flex-1 bg-white/30" />
+            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/60">
+              03 — La promesa
+            </span>
+          </div>
+
+          <blockquote className="brutal-reveal relative">
+            <span
+              aria-hidden
+              className="absolute -left-2 -top-10 font-display text-[6rem] font-black leading-none text-[#ff3ea5]/20 md:-left-4 md:-top-14 md:text-[10rem]"
+            >
+              “
+            </span>
+            <p className="relative font-display text-[clamp(2rem,5vw,4rem)] font-black uppercase leading-[0.95] tracking-[-0.01em] text-[#f4ede6]">
+              Tenés una sola{" "}
+              <DecryptedText
+                text="conversación"
+                speed={32}
+                maxIterations={14}
+                sequential
+                animateOn="view"
+                className="inline-block text-[#ff3ea5]"
+                encryptedClassName="inline-block text-[#ff3ea5]/40"
+              />
+              ,
+              <br />
+              pero detrás hay un equipo completo trabajando para que funcione.
+            </p>
+          </blockquote>
         </div>
       </div>
     </section>
