@@ -6,23 +6,17 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import DecryptedText from "@/components/DecryptedText";
 import TextType from "@/components/TextType";
 import ProfileCard from "@/components/ProfileCard";
+import { useDictionary } from "@/i18n/locale-provider";
 
 gsap.registerPlugin(ScrollTrigger);
-
-const SPECIALIST_TAGS = [
-  "DESARROLLO",
-  "DISEÑO",
-  "PRODUCTO",
-  "AUTOMATIZACIONES",
-  "AI",
-  "CONTENIDO",
-];
 
 /** Home strategic team section — editorial / brutalist layout with the
  *  Jean & Mel ProfileCards plus an extended copy block describing the
  *  network model. */
 export function HomeTeamSection() {
   const sectionRef = useRef<HTMLElement | null>(null);
+  const tm = useDictionary().team;
+  const specialistTags = tm.tags;
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -96,14 +90,14 @@ export function HomeTeamSection() {
           <header className="flex flex-col gap-6">
             <div className="brutal-reveal flex items-center gap-4">
               <span className="inline-flex bg-[#ff3ea5] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-black">
-                01 — Equipo extendido
+                {tm.eyebrow01}
               </span>
               <span className="hidden h-px flex-1 bg-white/15 md:block" />
             </div>
 
             <h2 className="brutal-reveal w-full font-display text-[clamp(2rem,5.4vw,4.5rem)] font-black uppercase leading-[1.02] tracking-normal text-[#f4ede6]">
               <DecryptedText
-                text="Nosotras somos la cara de Las Girls+ pero hay más"
+                text={tm.h2}
                 speed={26}
                 maxIterations={14}
                 sequential
@@ -117,7 +111,7 @@ export function HomeTeamSection() {
             <div className="brutal-reveal mt-2 max-w-2xl border-l-2 border-[#ff3ea5] pl-5">
               <TextType
                 as="p"
-                text="Trabajamos con una red real de especialistas en desarrollo, diseño y producto."
+                text={tm.leadIn}
                 typingSpeed={28}
                 initialDelay={300}
                 pauseDuration={1200}
@@ -129,9 +123,9 @@ export function HomeTeamSection() {
                 className="font-display text-base uppercase leading-[1.45] tracking-[0.04em] text-white/85 md:text-lg"
               />
               <p className="mt-3 font-display text-base uppercase leading-[1.45] tracking-[0.04em] text-white md:text-lg">
-                Vos hablás con nosotras.{" "}
+                {tm.vosHablas}
                 <span className="text-[#ff3ea5]">
-                  Nosotras armamos el equipo.
+                  {tm.armamosEquipo}
                 </span>
               </p>
             </div>
@@ -142,8 +136,8 @@ export function HomeTeamSection() {
               name="JEAN"
               title="Brand Designer & Visual Identity Lead"
               handle="jean"
-              status="Disponible"
-              contactText="Ver perfil"
+              status={tm.profileAvailable}
+              contactText={tm.profileContact}
               avatarUrl="/brand/girls/jean.png"
               miniAvatarUrl="/brand/girls/jean.png"
               iconUrl="/brand/logos/las-girls-vertical-rosa.png"
@@ -155,8 +149,8 @@ export function HomeTeamSection() {
               name="MEL"
               title="Product Designer & Developer"
               handle="mel"
-              status="Disponible"
-              contactText="Ver perfil"
+              status={tm.profileAvailable}
+              contactText={tm.profileContact}
               avatarUrl="/brand/girls/mel.png"
               miniAvatarUrl="/brand/girls/mel.png"
               iconUrl="/brand/logos/las-girls-vertical-rosa.png"
@@ -171,7 +165,7 @@ export function HomeTeamSection() {
         <div className="flex flex-col gap-10">
           <div className="brutal-reveal flex items-center gap-4">
             <span className="inline-flex border-2 border-white/80 bg-transparent px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-white">
-              02 — Cómo funciona
+              {tm.eyebrow02}
             </span>
             <span className="brutal-rule h-[2px] flex-1 bg-[#ff3ea5]" />
           </div>
@@ -180,17 +174,15 @@ export function HomeTeamSection() {
             {/* LEFT col — editorial body */}
             <div className="brutal-reveal flex flex-col gap-7 lg:col-span-7">
               <p className="font-display text-[clamp(1.5rem,2.4vw,2rem)] font-black uppercase leading-[1.05] tracking-[-0.005em] text-[#f4ede6]">
-                No somos una dupla aislada ni una agencia inflada.
+                {tm.sistemaP1Line1a}
                 <br />
                 <span className="text-[#ff3ea5]">
-                  Somos el punto de entrada a un sistema de trabajo flexible.
+                  {tm.sistemaP1Line1bHighlight}
                 </span>
               </p>
 
               <p className="max-w-[55ch] text-base leading-[1.65] text-white/75 md:text-[1.05rem]">
-                Cada proyecto es distinto, por eso no forzamos estructuras
-                fijas: definimos qué necesitás y sumamos los perfiles correctos
-                en el momento justo.
+                {tm.sistemaP2}
               </p>
 
               {/* <p className="max-w-[55ch] text-base leading-[1.65] text-white/75 md:text-[1.05rem]">
@@ -203,15 +195,15 @@ export function HomeTeamSection() {
             <aside className="brutal-reveal lg:col-span-5">
               <div className="relative border-2 border-white/15 bg-white/3 p-7 md:p-8">
                 <span className="absolute -top-3 left-6 bg-[#0b0b0b] px-2 font-mono text-[10px] uppercase tracking-[0.2em] text-white/60">
-                  / red de especialistas
+                  {tm.specialistRosterEyebrow}
                 </span>
 
                 <p className="font-display text-base uppercase leading-[1.4] tracking-[0.04em] text-white/85 md:text-[1.05rem]">
-                  El equipo crece o se ajusta según el alcance:
+                  {tm.equipoCrece}
                 </p>
 
                 <ul className="mt-6 flex flex-wrap gap-2.5">
-                  {SPECIALIST_TAGS.map((tag, i) => (
+                  {specialistTags.map((tag, i) => (
                     <li
                       key={tag}
                       className={`inline-flex items-center gap-2 border-2 px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.12em] transition-colors ${i % 2 === 0
@@ -226,8 +218,8 @@ export function HomeTeamSection() {
                 </ul>
 
                 <div className="mt-7 flex items-center justify-between border-t border-white/10 pt-4 text-[10px] uppercase tracking-[0.18em] text-white/50">
-                  <span>Network model</span>
-                  <span className="font-mono">∞ on-demand</span>
+                  <span>{tm.modeloNetwork}</span>
+                  <span className="font-mono">{tm.onDemand}</span>
                 </div>
               </div>
             </aside>
@@ -239,7 +231,7 @@ export function HomeTeamSection() {
           <div className="brutal-reveal flex items-center gap-4">
             <span className="brutal-rule h-[2px] flex-1 bg-white/30" />
             <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/60">
-              03 — La promesa
+              {tm.eyebrow03}
             </span>
           </div>
 
@@ -251,9 +243,9 @@ export function HomeTeamSection() {
               “
             </span>
             <p className="relative font-display text-[clamp(2rem,5vw,4rem)] font-black uppercase leading-[0.95] tracking-[-0.01em] text-[#f4ede6]">
-              Tenés una sola{" "}
+              {tm.quotePrefix}
               <DecryptedText
-                text="conversación"
+                text={tm.quoteVerb}
                 speed={32}
                 maxIterations={14}
                 sequential
@@ -261,9 +253,7 @@ export function HomeTeamSection() {
                 className="inline-block text-[#ff3ea5]"
                 encryptedClassName="inline-block text-[#ff3ea5]/40"
               />
-              ,
-              <br />
-              pero detrás hay un equipo completo trabajando para que funcione.
+              <span className="whitespace-pre-line">{tm.quoteRest}</span>
             </p>
           </blockquote>
         </div>

@@ -38,6 +38,16 @@ export interface StaggeredMenuProps {
   forceScrolled?: boolean;
   /** Optional slot between logo and MENU (e.g. breadcrumb on inner routes). */
   headerCenter?: React.ReactNode;
+  /** Optional slot after breadcrumb, before MENU (e.g. language switcher). */
+  headerTrailing?: React.ReactNode;
+  /** Words for the toggle button cycling animation ([closed-state label, opened-state label]). */
+  toggleWords?: readonly [string, string];
+  /** Empty menu fallback label */
+  emptyMenuLabel?: string;
+  /** Accessible toggle labels when [menu collapsed, menu expanded]. */
+  toggleAria?: readonly [string, string];
+  /** Sidebar social column title */
+  socialsHeading?: string;
 }
 
 export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
@@ -58,12 +68,18 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   isFixed = true,
   closeOnClickAway = true,
   smartContrast = true,
-  smartContrastDarkBgColor = "#ff3ea5",
+  /** Text/icon on dark backdrops — cream white reads like inverted logo strokes. Pink (`accentColor`) is used on light BGs. */
+  smartContrastDarkBgColor = "#fff8f0",
   smartContrastLightBgColor,
   onMenuOpen,
   onMenuClose,
   forceScrolled = false,
   headerCenter,
+  headerTrailing,
+  toggleWords,
+  emptyMenuLabel = "Sin items",
+  toggleAria = ["Abrir menú", "Cerrar menú"],
+  socialsHeading = "Socials",
 }: StaggeredMenuProps) => {
   const [open, setOpen] = useState(false);
   const openRef = useRef(false);
@@ -80,7 +96,10 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
 
   const textInnerRef = useRef<HTMLSpanElement | null>(null);
   const textWrapRef = useRef<HTMLSpanElement | null>(null);
-  const [textLines, setTextLines] = useState<string[]>(["Menú", "Cerrar"]);
+  const closedWord = toggleWords?.[0] ?? "Menú";
+  const openWord = toggleWords?.[1] ?? "Cerrar";
+
+  const [textLines, setTextLines] = useState<string[]>([closedWord, openWord]);
 
   const openTlRef = useRef<gsap.core.Timeline | null>(null);
   const closeTweenRef = useRef<gsap.core.Tween | null>(null);
@@ -300,6 +319,11 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
 
   const animateColor = useCallback(
     (opening: boolean) => {
+      if (smartContrast && changeMenuColorOnOpen) {
+        // Toggle + breadcrumb color comes from sampled contrast (matches logo behavior).
+        colorTweenRef.current?.kill();
+        return;
+      }
       const btn = toggleBtnRef.current;
       const crumbs = breadcrumbColorRef.current;
       const targets = [btn, crumbs].filter(Boolean) as HTMLElement[];
@@ -317,10 +341,20 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
         gsap.set(targets, { color: menuButtonColor });
       }
     },
-    [openMenuButtonColor, menuButtonColor, changeMenuColorOnOpen]
+    [
+      smartContrast,
+      changeMenuColorOnOpen,
+      openMenuButtonColor,
+      menuButtonColor,
+    ]
   );
 
   React.useEffect(() => {
+    setTextLines([closedWord, openWord]);
+  }, [closedWord, openWord]);
+
+  React.useEffect(() => {
+    if (smartContrast) return;
     const targets = [toggleBtnRef.current, breadcrumbColorRef.current].filter(Boolean) as HTMLElement[];
     if (!targets.length) return;
     if (changeMenuColorOnOpen) {
@@ -329,7 +363,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
     } else {
       gsap.set(targets, { color: menuButtonColor });
     }
-  }, [changeMenuColorOnOpen, menuButtonColor, openMenuButtonColor]);
+  }, [smartContrast, changeMenuColorOnOpen, menuButtonColor, openMenuButtonColor]);
 
   const animateText = useCallback((opening: boolean) => {
     const inner = textInnerRef.current;
@@ -337,14 +371,14 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
 
     textCycleAnimRef.current?.kill();
 
-    const currentLabel = opening ? "Menú" : "Cerrar";
-    const targetLabel = opening ? "Cerrar" : "Menú";
+    const currentLabel = opening ? closedWord : openWord;
+    const targetLabel = opening ? openWord : closedWord;
     const cycles = 3;
 
     const seq: string[] = [currentLabel];
     let last = currentLabel;
     for (let i = 0; i < cycles; i++) {
-      last = last === "Menú" ? "Cerrar" : "Menú";
+      last = last === closedWord ? openWord : closedWord;
       seq.push(last);
     }
     if (last !== targetLabel) seq.push(targetLabel);
@@ -361,7 +395,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
       duration: 0.5 + lineCount * 0.07,
       ease: "power4.out",
     });
-  }, []);
+  }, [closedWord, openWord]);
 
   const toggleMenu = useCallback(() => {
     const target = !openRef.current;
@@ -405,7 +439,6 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
 
   React.useEffect(() => {
     if (!smartContrast) return;
-    if (open) return;
 
     const lightFallback = smartContrastLightBgColor ?? menuButtonColor;
 
@@ -686,10 +719,14 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
             ) : null}
           </div>
 
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+            {headerTrailing ? (
+              <div className="pointer-events-auto relative z-10">{headerTrailing}</div>
+            ) : null}
           <button
             ref={toggleBtnRef}
             className="sm-toggle relative inline-flex items-center gap-[0.4rem] bg-transparent border-0 cursor-pointer font-bold uppercase tracking-[0.18em] leading-none overflow-visible pointer-events-auto"
-            aria-label={open ? "Cerrar menú" : "Abrir menú"}
+            aria-label={open ? toggleAria[1] : toggleAria[0]}
             aria-expanded={open}
             aria-controls="staggered-menu-panel"
             onClick={toggleMenu}
@@ -724,6 +761,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
               />
             </span>
           </button>
+          </div>
         </header>
 
         <aside
@@ -758,7 +796,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                 <li className="sm-panel-itemWrap relative overflow-hidden leading-none" aria-hidden="true">
                   <span className="sm-panel-item font-display">
                     <span className="sm-panel-itemLabel inline-block [transform-origin:50%_100%] will-change-transform">
-                      Sin items
+                      {emptyMenuLabel}
                     </span>
                   </span>
                 </li>
@@ -767,7 +805,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
 
             {displaySocials && socialItems && socialItems.length > 0 && (
               <div className="sm-socials mt-auto pt-8 flex flex-col gap-3" aria-label="Social links">
-                <h3 className="sm-socials-title font-display tracking-[0.15em]">Socials</h3>
+                <h3 className="sm-socials-title font-display tracking-[0.15em]">{socialsHeading}</h3>
                 <ul
                   className="sm-socials-list list-none m-0 p-0 flex flex-row items-center gap-4 flex-wrap"
                   role="list"

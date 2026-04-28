@@ -3,6 +3,7 @@ import { Anton, Pacifico, Lexend_Deca, Geist } from "next/font/google";
 import "@/app/globals.css";
 import { buildMetadata } from "@/lib/seo/metadata";
 import { cn } from "@/lib/utils";
+import { LocaleProvider } from "@/i18n/locale-provider";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -40,14 +41,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={cn(display.variable, body.variable, accent.variable, "font-sans", geist.variable)}>
+    <html lang="es" suppressHydrationWarning className={cn(display.variable, body.variable, accent.variable, "font-sans", geist.variable)}>
       <head>
         <link rel="icon" href="/favicon.ico?v=lg7" sizes="any" />
         <link rel="shortcut icon" href="/favicon.ico?v=lg7" />
         <link rel="apple-touch-icon" sizes="180x180" href="/brand/stickers/sticker-6.png?v=lg7" />
         <link rel="mask-icon" href="/brand/stickers/sticker-6.png?v=lg7" color="#ff5faf" />
       </head>
-      <body>{children}</body>
+      <body>
+        <LocaleProvider>{children}</LocaleProvider>
+      </body>
     </html>
   );
 }

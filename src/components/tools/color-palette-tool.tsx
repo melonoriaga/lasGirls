@@ -15,11 +15,14 @@ import {
   isValidHex,
   normalizeHexInput,
   textColor,
-} from "@/lib/tools/color-math";
+import { dictionaries } from "@/i18n/messages";
+import { useLocale } from "@/i18n/locale-provider";
 
 const { INK, PINK } = TOOL_THEME;
 
 function Swatch({ hex, label, large = false }: { hex: string; label?: string; large?: boolean }) {
+  const { locale } = useLocale();
+  const tm = useMemo(() => dictionaries[locale].tools as unknown as Record<string, string>, [locale]);
   const [copied, setCopied] = useState(false);
 
   const copy = useCallback(() => {
@@ -35,7 +38,7 @@ function Swatch({ hex, label, large = false }: { hex: string; label?: string; la
       whileHover={{ scale: 1.04 }}
       whileTap={{ scale: 0.97 }}
       onClick={copy}
-      title={`Copiar ${hex.toUpperCase()}`}
+      title={tm.copySwatchAria?.replace("{hex}", hex.toUpperCase()) ?? `Copy ${hex.toUpperCase()}`}
       className="relative flex flex-col items-start justify-end border-0 text-left"
       style={{
         background: hex,
@@ -127,6 +130,10 @@ function drawPalettePng(
 }
 
 export function ColorPaletteTool() {
+  const { locale } = useLocale();
+  const tm = useMemo(() => dictionaries[locale].tools as unknown as Record<string, string>, [locale]);
+  const toolName = dictionaries[locale].tools.paleta.name;
+
   const [hex, setHex] = useState("#FF6FAF");
   const [input, setInput] = useState("#FF6FAF");
   const [error, setError] = useState(false);
@@ -178,26 +185,23 @@ export function ColorPaletteTool() {
   };
 
   return (
-    <ToolLayout toolName="Generador de paleta">
+    <ToolLayout toolName={toolName}>
       <div className="flex flex-col gap-10 px-4 py-10 sm:gap-12 sm:px-10 sm:py-14">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
           <h1 className="font-accent text-[clamp(1.75rem,5vw,3.5rem)] leading-[0.9] text-[#111]">
-            Generador
+            {tm.paletteTitle1}
             <br />
             <span className="text-[#FF6FAF]" style={{ fontStyle: "italic" }}>
-              de paleta.
+              {tm.paletteTitleAccent}
             </span>
           </h1>
-          <p className="mt-2 max-w-lg text-sm leading-relaxed text-[#111]/50">
-            HEX base, colores extra, tints/shades y armonías. Exportá una grilla PNG hasta <strong>1000×1000</strong> con fondo sólido o
-            <strong> transparente</strong>.
-          </p>
+          <p className="mt-2 max-w-lg text-sm leading-relaxed text-[#111]/50">{tm.paletteIntro}</p>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.08 }} className="flex flex-wrap items-center gap-4">
           <input type="color" value={hex} onChange={(e) => applyHex(e.target.value)} className="h-12 w-12 cursor-pointer border border-black/20 bg-transparent p-0.5" />
           <div className="flex flex-col gap-1">
-            <span className="text-[0.44rem] font-extrabold uppercase tracking-[0.2em] text-[#111]/35">Color base</span>
+            <span className="text-[0.44rem] font-extrabold uppercase tracking-[0.2em] text-[#111]/35">{tm.paletteBaseColour}</span>
             <input
               type="text"
               value={input}

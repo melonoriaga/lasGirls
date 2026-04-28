@@ -2,9 +2,12 @@
 
 import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import type { ReactNode } from "react";
 import type { EditorialTeamMember } from "@/content/team/editorial-members";
+import { resolveEditorialMember } from "@/content/team/resolve-editorial-member";
+import { dictionaries } from "@/i18n/messages";
+import { useLocale } from "@/i18n/locale-provider";
 
 const BEIGE = "#F4EDE6";
 const INK = "#111111";
@@ -35,12 +38,25 @@ type Props = {
 
 export function TeamMemberEditorial({ member, others }: Props) {
   const router = useRouter();
+  const { locale, t } = useLocale();
+  const ui = dictionaries[locale].teamEditorial;
+
+  const resolved = useMemo(() => resolveEditorialMember(member, locale), [member, locale]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
   }, [member.slug]);
 
-  const headlineLines = member.headline.split("\n");
+  const stats = useMemo(
+    () => [
+      { n: "10+", label: ui.statYears },
+      { n: "100+", label: ui.statBrands },
+      { n: "5+", label: ui.statTeam },
+    ],
+    [ui],
+  );
+
+  const headlineLines = resolved.headline.split("\n");
 
   /** Sentence-style casing for pink accent spans (never force ALL CAPS in cursive). */
   const sentenceCaseAccent = (s: string): string => {
@@ -117,7 +133,7 @@ export function TeamMemberEditorial({ member, others }: Props) {
         >
           <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
             <div style={{ width: 32, height: 1.5, background: INK, opacity: 0.25 }} />
-            <Label>{member.roleLabel}</Label>
+            <Label>{resolved.roleLabel}</Label>
           </div>
 
           <motion.div
@@ -151,14 +167,14 @@ export function TeamMemberEditorial({ member, others }: Props) {
                 textTransform: "none",
               }}
             >
-              {member.tagline}
+              {resolved.tagline}
             </div>
           </motion.div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-            <Label>ESPECIALIDADES</Label>
+            <Label>{ui.specialties}</Label>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", marginTop: "0.4rem" }}>
-              {member.skills.map((skill) => (
+              {resolved.skills.map((skill) => (
                 <span
                   key={skill}
                   style={{
@@ -215,11 +231,7 @@ export function TeamMemberEditorial({ member, others }: Props) {
       </div>
 
       <div className="tm-stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", borderBottom: "1px solid rgba(17,17,17,0.12)" }}>
-        {[
-          { n: "10+", label: "ANOS DE EXPERIENCIA" },
-          { n: "100+", label: "MARCAS" },
-          { n: "5+", label: "EN EL EQUIPO" },
-        ].map((stat, i) => (
+        {stats.map((stat, i) => (
           <motion.div
             key={stat.label}
             className="tm-stat-cell"
@@ -242,13 +254,13 @@ export function TeamMemberEditorial({ member, others }: Props) {
       <div className="tm-bio-grid" style={{ display: "grid", gridTemplateColumns: "clamp(80px,18%,220px) 1fr", borderBottom: "1px solid rgba(17,17,17,0.12)" }}>
         <div className="tm-bio-side" style={{ borderRight: "1px solid rgba(17,17,17,0.12)", padding: "clamp(2.5rem,5vh,4.5rem) clamp(1rem,2vw,1.8rem)", display: "flex", alignItems: "flex-start", justifyContent: "center" }}>
           <div style={{ fontFamily: "var(--font-display), sans-serif", fontSize: "clamp(2rem,5vw,4.5rem)", lineHeight: 0.88, letterSpacing: "-0.02em", textTransform: "uppercase", color: INK, opacity: 0.08, writingMode: "vertical-rl", transform: "rotate(180deg)", userSelect: "none" }}>
-            SOBRE {member.name}
+            {`${ui.aboutVertical}\n${resolved.name}`}
           </div>
         </div>
 
         <div style={{ padding: "clamp(2.5rem,5vh,4.5rem) clamp(1.5rem,5vw,5rem)", display: "flex", flexDirection: "column", gap: "clamp(1.2rem,2.5vh,2rem)" }}>
-          <Label>BIO ✦ {member.name}</Label>
-          {member.bio.map((paragraph, i) => (
+          <Label>{ui.bioEyebrow} ✦ {resolved.name}</Label>
+          {resolved.bio.map((paragraph, i) => (
             <motion.p
               key={`${member.id}-bio-${i}`}
               initial={{ opacity: 0, y: 16 }}
@@ -275,12 +287,12 @@ export function TeamMemberEditorial({ member, others }: Props) {
             textTransform: "none",
           }}
         >
-          &ldquo;{member.quote}&rdquo;
+          &ldquo;{resolved.quote}&rdquo;
         </div>
         <div style={{ marginTop: "1.5rem", display: "flex", alignItems: "center", justifyContent: "center", gap: "1rem" }}>
           <div style={{ width: 32, height: 1, background: INK, opacity: 0.2 }} />
           <Label>
-            — {member.name} · {member.role}
+            — {resolved.name} · {resolved.role}
           </Label>
           <div style={{ width: 32, height: 1, background: INK, opacity: 0.2 }} />
         </div>
@@ -289,7 +301,7 @@ export function TeamMemberEditorial({ member, others }: Props) {
       <div style={{ padding: "clamp(3rem,7vh,6rem) clamp(1.5rem,5vw,4rem)", borderBottom: "1px solid rgba(17,17,17,0.12)" }}>
         <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} style={{ display: "flex", alignItems: "center", gap: "1.5rem", marginBottom: "clamp(2rem,4vh,3.5rem)" }}>
           <div style={{ fontFamily: "var(--font-display), sans-serif", fontSize: "clamp(2rem,5vw,4rem)", lineHeight: 0.9, letterSpacing: "-0.025em", textTransform: "uppercase", color: INK }}>
-            QUE HACE
+            {ui.whatDoes}
           </div>
           <div
             style={{
@@ -300,19 +312,19 @@ export function TeamMemberEditorial({ member, others }: Props) {
               textTransform: "none",
             }}
           >
-            {member.name.toLowerCase()}.
+            {resolved.name.toLowerCase()}.
           </div>
         </motion.div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%,240px), 1fr))", gap: 0, border: "1px solid rgba(17,17,17,0.12)" }}>
-          {member.expertise.map((item, i) => (
+          {resolved.expertise.map((item, i) => (
             <motion.div
               key={`${member.id}-${item.label}`}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.55, delay: i * 0.09 }}
-              style={{ padding: "clamp(1.5rem,3vw,2.5rem)", borderRight: i < member.expertise.length - 1 ? "1px solid rgba(17,17,17,0.12)" : "none", borderBottom: "1px solid rgba(17,17,17,0.12)" }}
+              style={{ padding: "clamp(1.5rem,3vw,2.5rem)", borderRight: i < resolved.expertise.length - 1 ? "1px solid rgba(17,17,17,0.12)" : "none", borderBottom: "1px solid rgba(17,17,17,0.12)" }}
             >
               <div style={{ fontFamily: "var(--font-body), sans-serif", fontSize: "clamp(0.55rem,.75vw,.62rem)", fontWeight: 700, color: PINK, letterSpacing: "0.1em", marginBottom: "0.65rem", opacity: 0.8 }}>
                 {String(i + 1).padStart(2, "0")}
@@ -329,20 +341,21 @@ export function TeamMemberEditorial({ member, others }: Props) {
       </div>
 
       <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }} style={{ padding: "clamp(4rem,9vh,8rem) clamp(1.5rem,5vw,4rem)", borderBottom: "1px solid rgba(17,17,17,0.12)", display: "flex", flexDirection: "column", gap: "clamp(1.5rem,3vh,2.5rem)" }}>
-        <Label>SIGUIENTE PASO?</Label>
+        <Label>{ui.nextStepEyebrow}</Label>
         <div style={{ fontFamily: "var(--font-display), sans-serif", fontSize: "clamp(2.8rem,7.5vw,7rem)", lineHeight: 0.88, letterSpacing: "-0.025em", textTransform: "uppercase", color: INK }}>
-          EMPEZA TU<br />
-          <span style={{ color: PINK }}>PROYECTO.</span>
+          {ui.ctaTitleLine}
+          <br />
+          <span style={{ color: PINK }}>{ui.ctaTitleAccent}</span>
         </div>
         <p style={{ fontFamily: "var(--font-body), sans-serif", fontSize: "clamp(0.78rem,1.1vw,.92rem)", color: INK, opacity: 0.5, lineHeight: 1.7, maxWidth: 460, margin: 0 }}>
-          Hablanos y armamos el equipo ideal para tu objetivo. Si {member.name} es quien mejor se adapta a lo que necesitas, avanzamos por ahi.
+          {t("teamEditorial.ctaBody", { name: resolved.name })}
         </p>
         <div className="tm-cta-btns" style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
           <button className="tm-cta-main" onClick={() => router.push("/#contacto")} style={{ fontFamily: "var(--font-body), sans-serif", fontSize: "clamp(0.6rem,.88vw,.75rem)", fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", background: INK, color: BEIGE, border: `2px solid ${INK}`, padding: "0.85rem 2.2rem", cursor: "pointer", transition: "background .18s, color .18s, border-color .18s" }}>
-            CONTACTAR AL EQUIPO ✦
+            {ui.ctaContact}
           </button>
           <button className="tm-cta-sec" onClick={() => router.push("/")} style={{ fontFamily: "var(--font-body), sans-serif", fontSize: "clamp(0.6rem,.88vw,.75rem)", fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", background: "transparent", color: INK, border: "2px solid rgba(17,17,17,0.25)", padding: "0.85rem 2.2rem", cursor: "pointer", transition: "background .18s, color .18s" }}>
-            ← VOLVER AL INICIO
+            ← {ui.ctaHome}
           </button>
         </div>
       </motion.div>
@@ -350,10 +363,12 @@ export function TeamMemberEditorial({ member, others }: Props) {
       {others.length > 0 && (
         <div style={{ padding: "clamp(3rem,6vh,5rem) clamp(1.5rem,5vw,4rem)", borderBottom: "1px solid rgba(17,17,17,0.12)" }}>
           <div style={{ marginBottom: "clamp(1.5rem,3vh,2.5rem)" }}>
-            <Label>TAMBIEN EN EL EQUIPO ✦</Label>
+            <Label>{ui.alsoTeam} ✦</Label>
           </div>
           <div className="tm-others-grid" style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min(others.length, 3)}, 1fr)`, gap: 0, border: "1px solid rgba(17,17,17,0.12)" }}>
-            {others.map((other, i) => (
+            {others.map((other, i) => {
+              const o = resolveEditorialMember(other, locale);
+              return (
               <motion.button
                 key={other.id}
                 className="tm-other"
@@ -368,11 +383,12 @@ export function TeamMemberEditorial({ member, others }: Props) {
                 <div style={{ width: "100%" }}>
                   <div style={{ fontFamily: "var(--font-display), sans-serif", fontSize: "clamp(1.4rem,2.8vw,2.2rem)", color: INK, letterSpacing: "0.02em", textAlign: "left" }}>{other.name}</div>
                   <div style={{ marginTop: "0.15rem" }}>
-                    <Label>{other.role}</Label>
+                    <Label>{o.role}</Label>
                   </div>
                 </div>
               </motion.button>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

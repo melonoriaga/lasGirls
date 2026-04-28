@@ -3,12 +3,20 @@
 import Link from "next/link";
 import { motion } from "motion/react";
 import { ArrowRight } from "lucide-react";
-import { TOOLS_LIST } from "@/components/tools/tools-data";
+import { useMemo } from "react";
+import { getToolsForLocale, toolStrings } from "@/components/tools/tools-data";
+import { dictionaries } from "@/i18n/messages";
+import { useLocale } from "@/i18n/locale-provider";
 import { TOOL_THEME } from "@/components/tools/tool-layout";
 
 const { BEIGE } = TOOL_THEME;
 
 export function ToolsHub() {
+  const { locale } = useLocale();
+  const toolsList = useMemo(() => getToolsForLocale(locale), [locale]);
+  const h = toolStrings(locale);
+  const hubTitle = dictionaries[locale].tools.hubTitle;
+
   return (
     <div className="min-h-screen pt-16 sm:pt-20" style={{ background: BEIGE }}>
       <header className="grid items-end gap-8 border-b border-black/10 px-4 py-12 sm:grid-cols-[1fr_auto] sm:px-10 sm:py-16">
@@ -17,19 +25,15 @@ export function ToolsHub() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         >
-          <p className="mb-3 text-[0.54rem] font-extrabold uppercase tracking-[0.22em] text-[#111]/35">
-            ✦ Utilidades digitales
-          </p>
+          <p className="mb-3 text-[0.54rem] font-extrabold uppercase tracking-[0.22em] text-[#111]/35">{h.hubEyebrow}</p>
           <h1 className="font-accent text-[clamp(2.5rem,9vw,6rem)] leading-[0.88] tracking-tight text-[#111]">
-            Herramientas
+            {hubTitle}
             <br />
             <span className="text-[#FF6FAF]" style={{ fontStyle: "italic" }}>
-              gratuitas.
+              {h.hubAccent}
             </span>
           </h1>
-          <p className="mt-4 max-w-md text-sm leading-relaxed text-[#111]/50">
-            Utilidades simples para resolver cosas rápido. Sin registro. Misma lógica que en melonoriaga.com, adaptadas acá.
-          </p>
+          <p className="mt-4 max-w-md text-sm leading-relaxed text-[#111]/50">{h.hubIntro}</p>
         </motion.div>
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
@@ -38,14 +42,14 @@ export function ToolsHub() {
           className="pb-2 text-center sm:text-right"
         >
           <div className="font-accent text-[clamp(3rem,6vw,5rem)] leading-none text-[#111]/[0.06]">
-            0{TOOLS_LIST.length}
+            0{toolsList.length}
           </div>
-          <p className="-mt-1 text-[0.46rem] font-extrabold uppercase tracking-[0.2em] text-[#111]/25">herramientas</p>
+          <p className="-mt-1 text-[0.46rem] font-extrabold uppercase tracking-[0.2em] text-[#111]/25">{h.hubCountSuffix}</p>
         </motion.div>
       </header>
 
       <div className="grid gap-4 px-4 py-10 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 sm:px-10">
-        {TOOLS_LIST.map((tool, i) => {
+        {toolsList.map((tool, i) => {
           const Icon = tool.icon;
           return (
             <motion.div key={tool.slug} initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.55, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}>
@@ -65,7 +69,7 @@ export function ToolsHub() {
                   <p className="text-[0.68rem] leading-snug text-[#111]/38">{tool.detail}</p>
                 </div>
                 <div className="mt-auto flex items-center gap-1 text-[0.58rem] font-extrabold uppercase tracking-[0.14em] text-[#111]/40">
-                  Usar herramienta
+                  {h.hubUseBtn}
                   <ArrowRight size={12} strokeWidth={2} className="transition-transform group-hover:translate-x-1" />
                 </div>
               </Link>
@@ -75,9 +79,9 @@ export function ToolsHub() {
       </div>
 
       <footer className="flex flex-wrap items-center justify-between gap-4 border-t border-black/10 px-4 py-8 sm:px-10">
-        <p className="text-[0.58rem] tracking-[0.1em] text-[#111]/30">¿Necesitás otra utilidad? Escribinos por contacto.</p>
+        <p className="text-[0.58rem] tracking-[0.1em] text-[#111]/30">{h.hubFooterLead}</p>
         <Link href="/#contacto" className="text-[0.58rem] font-extrabold uppercase tracking-[0.14em] text-[#FF6FAF]">
-          Contactar ✦
+          {h.hubFooterContact}
         </Link>
       </footer>
     </div>

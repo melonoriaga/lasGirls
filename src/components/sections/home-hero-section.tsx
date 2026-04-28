@@ -9,11 +9,14 @@ import Aurora from "@/components/Aurora";
 import { RotatingText } from "@/components/RotatingText";
 import { HeroBrandMarquee } from "@/components/sections/hero-brand-marquee";
 import { HeroStickerMotion } from "@/components/sections/hero-sticker-motion";
+import { useDictionary, useLocale } from "@/i18n/locale-provider";
 
 gsap.registerPlugin(ScrollTrigger);
 
 export function HomeHeroSection() {
   const scopeRef = useRef<HTMLElement | null>(null);
+  const h = useDictionary().hero;
+  const { locale } = useLocale();
 
   useLayoutEffect(() => {
     if (!scopeRef.current) return;
@@ -179,7 +182,7 @@ export function HomeHeroSection() {
       revertMatchMedia?.();
       ctx.revert();
     };
-  }, []);
+  }, [locale]);
 
   return (
     <section
@@ -217,11 +220,11 @@ export function HomeHeroSection() {
                   md:max-w-none md:text-[clamp(4.9rem,10.5vw,7rem)]
                   lg:text-[clamp(5.4rem,10.8vw,7.9rem)]"
               >
-                <span className="block">SOLUCIONES DIGITALES</span>
+                <span className="block">{h.line1a}</span>
                 <span className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2 leading-[1] md:gap-x-4">
-                  <span>QUE</span>
+                  <span>{h.line1b}</span>
                   <RotatingText
-                    texts={["FUNCIONAN", "VENDEN", "ESCALAN"]}
+                    texts={[...h.rotating]}
                     mainClassName="inline-flex items-center overflow-hidden rounded-2xl bg-[#ff3ea5] px-3 py-1.5 text-white sm:px-5 sm:py-2 md:px-7 md:py-3"
                     staggerFrom="last"
                     staggerDuration={0.025}
@@ -238,20 +241,12 @@ export function HomeHeroSection() {
                   md:text-[clamp(2rem,5vw,3rem)]
                   lg:text-[clamp(3rem,3vw,4rem)]"
               >
-                Mandale cumbia visual
+                {h.accent}
               </p>
 
               <div className="hero-soft-line mt-8 h-[3px] w-full max-w-full bg-black md:max-w-[52ch]" />
-              <div className="hero-soft-line mt-5 w-full mr-10 text-base font-regular normal-case leading-snug tracking-wide text-black/85 lg:text-lg">
-                <p>
-                  Las girls 💖🧉 somos software, brand y product factory;
-                  <br />
-                  junto a nuestro team diseñamos, construimos y lanzamos productos digitales completos
-                  <br />
-                  de la idea a algo que funciona—: branding, UX/UI, desarrollo, sistemas y contenido, todo conectado.
-                  <br />
-                  No somos una agencia más: nos metemos con vos en el proceso y te acompañamos para convertir tu idea en algo real.
-                </p>
+              <div className="hero-soft-line mt-5 w-full mr-10 whitespace-pre-line text-base font-regular normal-case leading-snug tracking-wide text-black/85 lg:text-lg">
+                <p>{h.body}</p>
               </div>
 
               <div className="hero-soft-line mt-6 flex w-full justify-center md:hidden">
@@ -265,13 +260,13 @@ export function HomeHeroSection() {
                   href="#contacto"
                   className="hero-cta hero-cta--dark hero-cta-morph flex w-full shrink-0 justify-center md:inline-flex md:w-auto"
                 >
-                  <span className="hero-cta-morph__label">HABLEMOS DE TU IDEA</span>
+                  <span className="hero-cta-morph__label">{h.ctaPrimary}</span>
                 </Link>
                 <Link
                   href="#servicios"
                   className="hero-cta hero-cta--light flex w-full shrink-0 justify-center md:inline-flex md:w-auto"
                 >
-                  VER CÓMO TRABAJAMOS
+                  {h.ctaSecondary}
                 </Link>
               </div>
             </div>

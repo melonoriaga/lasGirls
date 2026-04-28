@@ -29,12 +29,11 @@ export const editorialMembers: EditorialTeamMember[] = [
     blendMultiply: false,
     skills: ["Identidad visual", "Branding", "Diseno para redes"],
     bio: [
-      "Soy disenadora publicitaria y actualmente Head of Brand en WIZARDS (Las Vegas), especializada en tecnologia y desarrollo orientado a la industria de videojuegos.",
-      "A lo largo del tiempo forme parte de la organizacion de eventos internacionales como TED Talks y FuckupNights.",
-      "Tambien me desarrollo como oradora, dando charlas y talleres sobre diseno, marca personal y comunicacion en eventos y universidades.",
-      "Participo de forma activa como panelista en el programa de streaming Desayuno con Disenadores, junto a Universidad de Palermo, Trimarchi y Pantone Argentina.",
-      "Actualmente soy embajadora y representante en Europa de WEN (Women Entrepreneur Network), comunidad internacional con base en Florida, USA.",
-      "Soy host y presentadora oficial del MADFA (Madrid Film Awards), festival calificador de IMDB que reconoce a creadores audiovisuales de Europa y del resto del mundo.",
+      "Hey sexy!, soy Jean, Diseñadora publicitaria y Head of Brand, especializada en tecnología y desarrollo de marcas en Europa/USA/Latam.",
+      "Soy la Host y presentadora oficial del MADFA (Madrid Film Awards), festival calificador de IMDb con una categoría con nominación a los premios Óscar que reconoce a creadores audiovisuales de Europa y del resto del mundo.",
+      "También formo parte de la organización de eventos internacionales como TED Talks y FuckupNights.",
+      "Participo como panelista en el programa de streaming Desayuno con Diseñadores todos los jueves en vivo por YouTube/Twitch/TikTok, un programa auspiciado por la Universidad de Palermo, Trimarchi y Pantone Argentina.",
+      "Soy además embajadora/mentora actual y representante en Europa de WEN (Women Entrepreneur Network), comunidad internacional con base en Florida, USA.",
     ],
     quote: "Las marcas son personas, y cada una de ellas tiene una historia que contar.",
     expertise: [

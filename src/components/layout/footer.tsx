@@ -1,11 +1,16 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
+import { LanguageSwitcher } from "@/components/i18n/language-switcher";
+import { useLocale } from "@/i18n/locale-provider";
 
 export function Footer() {
+  const { t } = useLocale();
+
   return (
     <footer className="relative overflow-hidden border-t-4 border-black bg-[#0d0d0d] text-[#fff8f0]">
       <div className="relative mx-auto min-h-[86vh] max-w-[1600px]">
-        {/* Wordmark en el centro visual del bloque — separado del sticker inferior */}
         <div className="pointer-events-none absolute left-1/2 top-[36%] z-[25] flex w-full -translate-x-1/2 -translate-y-1/2 justify-center px-4 sm:top-[39%] md:top-[40%] lg:top-[41%]">
           <h2 className="max-w-[min(96vw,1200px)] text-center font-accent text-[14vw] leading-[0.85] text-[#ff5faf] sm:text-[12vw] md:text-[10.5vw] lg:text-[min(9rem,11vw)]">
             Las Girls+
@@ -13,18 +18,27 @@ export function Footer() {
         </div>
 
         <div className="absolute left-[4vw] top-[8vh] z-[3] max-w-[280px] space-y-4">
-          <p className="font-accent text-4xl text-[#ff89c0]">hablemos.</p>
+          <p className="font-accent text-4xl text-[#ff89c0]">{t("footer.taglineHeading")}</p>
           <p className="text-xs leading-relaxed text-white/65">
-            Transformamos ideas en productos digitales que convierten. Desde una landing puntual
-            hasta una arquitectura completa de marca + sitio + operación.
+            {t("footer.taglineBody")}
           </p>
           <div className="h-px w-full bg-[#ff89c0]/25" />
           <nav className="space-y-1">
-            <Link href="/#servicios" className="footer-link">SERVICIOS</Link>
-            <Link href="/#metodologia" className="footer-link">PROCESO</Link>
-            <Link href="/#equipo" className="footer-link">EQUIPO</Link>
-            <Link href="/#contacto" className="footer-link">CONTACTO</Link>
-            <Link href="/blog" className="footer-link">BLOG</Link>
+            <Link href="/#servicios" className="footer-link">
+              {t("footer.navServicios")}
+            </Link>
+            <Link href="/#metodologia" className="footer-link">
+              {t("footer.navProceso")}
+            </Link>
+            <Link href="/#equipo" className="footer-link">
+              {t("footer.navEquipo")}
+            </Link>
+            <Link href="/#contacto" className="footer-link">
+              {t("footer.navContacto")}
+            </Link>
+            <Link href="/blog" className="footer-link">
+              {t("footer.navBlog")}
+            </Link>
           </nav>
         </div>
 
@@ -32,11 +46,16 @@ export function Footer() {
           <a href="mailto:hola@lasgirls.com" className="footer-pill bg-[#ff5faf] text-black">
             hola@lasgirls.com
           </a>
-          <a href="https://www.instagram.com/lasgirls.plus?igsh=MWdyZXEybXYyOW9tOQ%3D%3D&utm_source=qr" target="_blank" rel="noreferrer" className="footer-pill border border-[#fff8f0] bg-transparent text-[#fff8f0]">
+          <a
+            href="https://www.instagram.com/lasgirls.plus?igsh=MWdyZXEybXYyOW9tOQ%3D%3D&utm_source=qr"
+            target="_blank"
+            rel="noreferrer"
+            className="footer-pill border border-[#fff8f0] bg-transparent text-[#fff8f0]"
+          >
             instagram
           </a>
           <Link href="/#contacto" className="footer-cta">
-            empezar proyecto +
+            {t("footer.ctaStart")}
           </Link>
         </div>
 
@@ -51,11 +70,18 @@ export function Footer() {
         </div>
       </div>
 
-      <div className="relative z-[4] flex flex-wrap items-center justify-between gap-2 border-t border-[#ff89c0]/20 px-6 py-3 text-[10px] uppercase tracking-[0.16em] text-white/50">
-        <p>© {new Date().getFullYear()} LAS GIRLS+ · TODOS LOS DERECHOS RESERVADOS</p>
-        <div className="flex items-center gap-4">
-          <Link href="/privacy-policy" className="hover:text-[#ff89c0]">Privacidad</Link>
-          <Link href="/terms" className="hover:text-[#ff89c0]">Términos</Link>
+      <div className="relative z-[4] flex flex-wrap items-center justify-between gap-3 border-t border-[#ff89c0]/20 px-6 py-3 text-[10px] uppercase tracking-[0.16em] text-white/50">
+        <p>© {new Date().getFullYear()} {t("footer.rights")}</p>
+        <div className="flex flex-wrap items-center justify-center gap-4">
+          <LanguageSwitcher variant="footer" compact />
+          <div className="flex items-center gap-4">
+            <Link href="/privacy-policy" className="hover:text-[#ff89c0]">
+              {t("footer.privacy")}
+            </Link>
+            <Link href="/terms" className="hover:text-[#ff89c0]">
+              {t("footer.terms")}
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

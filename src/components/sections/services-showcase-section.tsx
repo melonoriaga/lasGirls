@@ -4,26 +4,7 @@ import { useEffect, useRef } from "react";
 import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { homeContent, serviceCards } from "@/content/site/home";
-
-const INTRO_COPY =
-  "Estos son algunos de los trabajos que realizamos junto a nuestra red de aliados estratégicos. Según el proyecto, formamos el equipo necesario para diseñar, desarrollar y lanzar productos reales.";
-
-const EDITORIAL_GENERAL =
-  "No trabajamos solo ejecutando lo que nos piden. Muchas veces llegan ideas que parecen claras, pero primero hay que ordenar, priorizar y llevarlas a un sistema construible de verdad.";
-
-const EDITORIAL_REALIDAD =
-  "No todo lo que parece simple de construir, lo es. Bajamos a tierra tiempos, costos y decisiones técnicas para evitar inversiones prematuras.";
-
-const EDITORIAL_ACOMPANAMIENTO =
-  "Acompañamos desde el punto en el que estás. No necesitás saber programar ni tener todo definido para transformar una idea en producto real.";
-
-const ERRORES_COMUNES = [
-  "Pensar que una app es el primer paso",
-  "Querer resolver todo de una vez",
-  "Copiar estructuras que no aplican",
-  "No definir qué validar primero",
-] as const;
+import { useDictionary, useLocale } from "@/i18n/locale-provider";
 
 const EDITORIAL_IMAGES = [
   "/DECO/deco001.png",
@@ -54,11 +35,15 @@ function TextNoiseOverlay() {
   );
 }
 
+/** Service grid + editorial wall (home). Copy from i18n dictionaries. */
 export function ServicesShowcaseSection() {
   const sectionRef = useRef<HTMLElement | null>(null);
-  const services = serviceCards.slice(0, 6);
-  const featuredCombos = homeContent.featuredCombos.slice(0, 6);
-  const whyItems = homeContent.why.slice(0, 4);
+  const { locale } = useLocale();
+  const d = useDictionary();
+  const G = d.servicesGrid;
+  const services = d.cards.slice(0, 6);
+  const featuredCombos = d.featuredCombos.slice(0, 6);
+  const whyItems = d.why.slice(0, 4);
 
   useEffect(() => {
     if (!sectionRef.current) return;
@@ -189,7 +174,7 @@ export function ServicesShowcaseSection() {
     }, sectionRef);
 
     return () => ctx.revert();
-  }, []);
+  }, [locale]);
 
   if (services.length < 6) return null;
 
@@ -203,22 +188,22 @@ export function ServicesShowcaseSection() {
         <div className="svc-module relative overflow-hidden border-b border-black px-4 py-3 lg:col-span-12 lg:px-8">
           <TextNoiseOverlay />
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[0.6rem] uppercase tracking-[0.22em] text-black/75 md:text-[0.66rem]">
-            <span>archivo</span>
+            <span>{G.eyebrowArchive[0]}</span>
             <span className="svc-line-draw h-px w-8 bg-black/60" />
-            <span>servicios</span>
+            <span>{G.eyebrowArchive[1]}</span>
             <span className="svc-line-draw h-px w-8 bg-black/60" />
-            <span>red de aliadas</span>
+            <span>{G.eyebrowArchive[2]}</span>
           </div>
         </div>
 
         <header className="svc-module relative overflow-hidden border-b border-black bg-[#f3eee8] p-5 md:p-7 lg:col-span-8 lg:border-r lg:p-10">
           <TextNoiseOverlay />
           <h2 className="svc-title font-display text-[clamp(2.2rem,11vw,8.8rem)] uppercase leading-[0.9] tracking-[-0.018em] text-black">
-            LO QUE
+            {G.mainTitleLines[0]}
             <br />
-            PODEMOS
+            {G.mainTitleLines[1]}
             <br />
-            CONSTRUIR
+            {G.mainTitleLines[2]}
           </h2>
           <div className="svc-line-draw mt-5 h-[2px] w-24 bg-black" />
         </header>
@@ -226,11 +211,11 @@ export function ServicesShowcaseSection() {
         <div className="svc-module relative overflow-hidden border-b border-black bg-[#efe7dd] p-5 md:p-7 lg:col-span-4 lg:p-8">
           <TextNoiseOverlay />
           <p className="svc-copy max-w-[31ch] text-[0.9rem] uppercase leading-[1.45] tracking-[0.065em] text-black md:text-[1.04rem]">
-            {INTRO_COPY}
+            {G.intro}
           </p>
-          <p className="svc-copy mt-4 text-[0.76rem] uppercase leading-[1.45] tracking-[0.065em] text-black/88 md:text-[0.84rem]">{EDITORIAL_GENERAL}</p>
+          <p className="svc-copy mt-4 text-[0.76rem] uppercase leading-[1.45] tracking-[0.065em] text-black/88 md:text-[0.84rem]">{G.editorialGeneral}</p>
           <p className="svc-copy mt-4 border-t border-black pt-3 text-[0.78rem] uppercase leading-[1.45] tracking-[0.07em] text-black/85 md:text-[0.86rem]">
-            {homeContent.servicesDisclaimer}
+            {d.servicesDisclaimer}
           </p>
         </div>
 
@@ -239,7 +224,7 @@ export function ServicesShowcaseSection() {
           <span className="svc-parallax-num pointer-events-none absolute right-3 top-2 font-display text-[clamp(5rem,14vw,10rem)] leading-none text-black/10">
             01
           </span>
-          <p className="svc-kicker font-mono text-[0.58rem] uppercase tracking-[0.2em] text-black/70">archivo 01 / principal</p>
+          <p className="svc-kicker font-mono text-[0.58rem] uppercase tracking-[0.2em] text-black/70">{G.kickerPrincipal}</p>
           <h3 className="svc-title mt-4 w-full font-display text-[clamp(2.4rem,8.5vw,6.6rem)] uppercase leading-[0.9] tracking-[-0.015em] text-black">
             {services[0].title}
           </h3>
@@ -267,7 +252,7 @@ export function ServicesShowcaseSection() {
             <Image src={EDITORIAL_IMAGES[0]} alt={services[0].title} fill className="object-cover object-center" sizes="(max-width: 1024px) 100vw, 42vw" />
           </div>
           <div className="mt-3 border-t border-black pt-2">
-            <p className="svc-kicker font-mono text-[0.56rem] uppercase tracking-[0.2em] text-black/70">combinación destacada</p>
+            <p className="svc-kicker font-mono text-[0.56rem] uppercase tracking-[0.2em] text-black/70">{G.kickerFeatured}</p>
             <p className="svc-copy mt-1 text-[0.74rem] uppercase leading-[1.45] tracking-[0.07em] text-black">{featuredCombos[0]}</p>
           </div>
         </article>
@@ -284,7 +269,7 @@ export function ServicesShowcaseSection() {
           <span className="svc-parallax-num pointer-events-none absolute right-3 top-1 font-display text-[clamp(4.6rem,13vw,9rem)] leading-none text-black/10">
             02
           </span>
-          <p className="svc-kicker font-mono text-[0.58rem] uppercase tracking-[0.2em] text-black/70">network / design / dev / launch</p>
+          <p className="svc-kicker font-mono text-[0.58rem] uppercase tracking-[0.2em] text-black/70">{G.kickerNetwork}</p>
           <h3 className="svc-title mt-4 max-w-[14ch] font-display text-[clamp(1.85rem,6.4vw,4.9rem)] uppercase leading-[0.92] tracking-[-0.014em] text-black">
             {services[1].title}
           </h3>
@@ -294,11 +279,11 @@ export function ServicesShowcaseSection() {
           <p className="svc-copy mt-3 max-w-[40ch] text-[0.9rem] uppercase leading-[1.46] tracking-[0.058em] text-black md:text-[1.03rem]">
             {services[1].description}
           </p>
-          <p className="svc-copy mt-3 text-[0.76rem] uppercase leading-[1.44] tracking-[0.062em] text-black/88">{EDITORIAL_REALIDAD}</p>
+          <p className="svc-copy mt-3 text-[0.76rem] uppercase leading-[1.44] tracking-[0.062em] text-black/88">{G.editorialReality}</p>
           <p className="svc-copy mt-3 border-t border-black pt-2 text-[0.76rem] uppercase leading-[1.45] tracking-[0.06em] text-black/88">{services[1].solves}</p>
           <div className="mt-5 flex items-center justify-between border-t border-black pt-2">
-            <span className="font-mono text-[0.58rem] uppercase tracking-[0.2em] text-black/70">las girls edit.</span>
-            <span className="font-mono text-[0.58rem] uppercase tracking-[0.2em] text-black/70">service dossier</span>
+            <span className="font-mono text-[0.58rem] uppercase tracking-[0.2em] text-black/70">{G.footerEdit[0]}</span>
+            <span className="font-mono text-[0.58rem] uppercase tracking-[0.2em] text-black/70">{G.footerEdit[1]}</span>
           </div>
         </article>
 
@@ -311,22 +296,22 @@ export function ServicesShowcaseSection() {
             {services[2].title}
           </h3>
           <p className="svc-copy relative z-10 mt-3 text-[0.95rem] uppercase leading-[1.4] tracking-[0.064em] text-black/92 md:text-[1.08rem]">{services[2].microcopy}</p>
-          <p className="svc-copy relative z-10 mt-3 border-t border-black pt-2 text-[0.86rem] uppercase leading-[1.42] tracking-[0.058em] text-black/88 md:text-[0.98rem]">{EDITORIAL_ACOMPANAMIENTO}</p>
+          <p className="svc-copy relative z-10 mt-3 border-t border-black pt-2 text-[0.86rem] uppercase leading-[1.42] tracking-[0.058em] text-black/88 md:text-[0.98rem]">{G.editorialAccompany}</p>
         </article>
 
         <article className="svc-module relative overflow-hidden border-b border-black bg-[#f3eee8] p-5 md:p-7 lg:col-span-6 lg:border-r lg:p-8">
           <TextNoiseOverlay />
-          <p className="svc-kicker font-mono text-[0.58rem] uppercase tracking-[0.2em] text-black/70">servicio / 03</p>
+          <p className="svc-kicker font-mono text-[0.58rem] uppercase tracking-[0.2em] text-black/70">{G.kickerService03}</p>
           <p className="svc-copy mt-3 w-full text-[1.16rem] uppercase leading-[1.42] tracking-[0.054em] text-black md:text-[1.35rem]">
             {services[2].description}
           </p>
           <div className="mt-3 grid gap-2 border-t border-black pt-2">
             <p className="text-[0.92rem] uppercase leading-[1.4] tracking-[0.056em] text-black/92 md:text-[1.02rem]">
-              <span className="font-mono mr-2 text-[0.56rem] tracking-[0.2em] text-black/70">resuelve</span>
+              <span className="font-mono mr-2 text-[0.56rem] tracking-[0.2em] text-black/70">{G.labelResuelve}</span>
               {services[2].solves}
             </p>
             <p className="text-[0.92rem] uppercase leading-[1.4] tracking-[0.056em] text-black/92 md:text-[1.02rem]">
-              <span className="font-mono mr-2 text-[0.56rem] tracking-[0.2em] text-black/70">ejemplos</span>
+              <span className="font-mono mr-2 text-[0.56rem] tracking-[0.2em] text-black/70">{G.labelEjemplos}</span>
               {services[2].examples}
             </p>
           </div>
@@ -351,7 +336,7 @@ export function ServicesShowcaseSection() {
 
         <article className="svc-module relative overflow-hidden border-b border-black bg-[#f3eee8] p-5 md:p-7 lg:col-span-6 lg:border-r lg:p-9">
           <TextNoiseOverlay />
-          <p className="svc-kicker font-mono text-[0.58rem] uppercase tracking-[0.2em] text-black/70">archivo 04</p>
+          <p className="svc-kicker font-mono text-[0.58rem] uppercase tracking-[0.2em] text-black/70">{G.kickerArchivo04}</p>
           <h3 className="svc-title mt-4 max-w-[14ch] font-display text-[clamp(1.9rem,6.1vw,4.6rem)] uppercase leading-[0.92] tracking-[-0.014em] text-black">
             {services[3].title}
           </h3>
@@ -401,7 +386,7 @@ export function ServicesShowcaseSection() {
 
             <article className="relative overflow-hidden border-b border-black bg-[#f3eee8] p-5 md:p-7 lg:col-span-6 lg:border-b-0 lg:border-r lg:p-10">
               <TextNoiseOverlay />
-              <p className="svc-kicker font-mono text-[0.58rem] uppercase tracking-[0.2em] text-black/70">cierre / 06</p>
+              <p className="svc-kicker font-mono text-[0.58rem] uppercase tracking-[0.2em] text-black/70">{G.kickerCierre}</p>
               <h3 className="svc-title mt-4 max-w-[15ch] font-display text-[clamp(2rem,6.6vw,5rem)] uppercase leading-[0.9] tracking-[-0.014em] text-black">
                 {services[5].title}
               </h3>
@@ -411,8 +396,8 @@ export function ServicesShowcaseSection() {
               </p>
               <p className="mt-3 border-t border-black pt-2 text-[0.78rem] uppercase leading-[1.43] tracking-[0.06em] text-black/88">{services[5].examples}</p>
               <div className="mt-6 flex items-center justify-between border-t border-black pt-2">
-                <span className="font-mono text-[0.58rem] uppercase tracking-[0.2em] text-black/70">las girls editorial system</span>
-                <span className="font-mono text-[0.58rem] uppercase tracking-[0.2em] text-black/70">issue 2026</span>
+                <span className="font-mono text-[0.58rem] uppercase tracking-[0.2em] text-black/70">{G.footerEditorial[0]}</span>
+                <span className="font-mono text-[0.58rem] uppercase tracking-[0.2em] text-black/70">{G.footerEditorial[1]}</span>
               </div>
             </article>
 

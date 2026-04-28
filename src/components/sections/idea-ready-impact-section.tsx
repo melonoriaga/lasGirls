@@ -5,12 +5,15 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
 import CurvedLoop from "@/components/CurvedLoop";
+import { useDictionary, useLocale } from "@/i18n/locale-provider";
 
 gsap.registerPlugin(ScrollTrigger);
 
 /** Full-viewport “your idea, ready today” poster block (headline + callout + sticker). */
 export function IdeaReadyImpactSection() {
   const sectionRef = useRef<HTMLElement | null>(null);
+  const { locale } = useLocale();
+  const i = useDictionary().ideaImpact;
 
   useLayoutEffect(() => {
     const el = sectionRef.current;
@@ -75,7 +78,7 @@ export function IdeaReadyImpactSection() {
     }, el);
 
     return () => ctx.revert();
-  }, []);
+  }, [locale]);
 
   return (
     <section
@@ -84,11 +87,11 @@ export function IdeaReadyImpactSection() {
       className="relative isolate flex h-[100dvh]  overflow-hidden  bg-black  items-center justify-center"
     >
       <div className="impact-fade relative h-[78%] w-[88%] rounded-[1.75rem] bg-[#f5a8cc] px-5 py-5 sm:h-[72%] sm:w-[84%] sm:px-10 sm:py-10 lg:h-[70%] lg:w-[80%] lg:rounded-[2.5rem] lg:px-16 lg:py-14">
-        <p className="font-mono text-[10px] font-bold uppercase tracking-[0.32em] text-black/65 md:text-[11px] mb-4">02 - Idea Ready Impact</p>
+        <p className="font-mono text-[10px] font-bold uppercase tracking-[0.32em] text-black/65 md:text-[11px] mb-4">{i.kicker}</p>
 
         <div className="pointer-events-none absolute inset-0 z-[1] flex items-center justify-center opacity-90 overflow-hidden">
           <CurvedLoop
-            marqueeText="TU IDEA LISTA HOY ✦ "
+            marqueeText={i.curved}
             speed={1.2}
             curveAmount={260}
             interactive={false}
@@ -99,13 +102,13 @@ export function IdeaReadyImpactSection() {
 
         <div className="relative z-[6]">
           <h2 className="font-display text-[clamp(2.4rem,11vw,14rem)] uppercase leading-[0.85] tracking-[-0.03em] text-black">
-            TU IDEA
+            {i.title}
           </h2>
 
           <h2
             className="impact-line font-accent -mt-6 text-[clamp(2.2rem,12vw,10rem)] leading-[0.8] text-[#FF6FAF] -rotate-[6deg] translate-x-[10px] translate-y-[-6px] [-webkit-text-stroke:6px_white] [paint-order:stroke_fill] sm:-mt-10 sm:translate-x-[50px] sm:translate-y-[-14px] sm:[-webkit-text-stroke:12px_white] lg:translate-x-[120px] lg:translate-y-[-24px] lg:[-webkit-text-stroke:26px_white]"
           >
-            Lista hoy
+            {i.subtitle}
           </h2>
         </div>
 
@@ -115,15 +118,15 @@ export function IdeaReadyImpactSection() {
             style={{ borderStyle: "dashed", borderWidth: "3px" }}
           >
             <p className="text-[0.58rem] font-bold uppercase tracking-[0.18em] text-black sm:text-[0.62rem] lg:text-[0.7rem]">
-              SIN VUELTAS
+              {i.ribbon}
             </p>
 
             <p className="mt-1 font-accent text-[0.9rem] italic text-white sm:text-[1rem] lg:text-[1.15rem]">
-              No necesitas meses y meses de reuniones.
+              {i.line1}
             </p>
 
             <p className="mt-1.5 text-[0.7rem] font-semibold uppercase leading-snug tracking-[0.15em] text-black/95 sm:text-[0.8rem] lg:text-[1rem]">
-              Si ya tenés marca, textos e imágenes, lo bajamos a tierra rápido y con criterio.
+              {i.line2}
             </p>
           </div>
         </div>

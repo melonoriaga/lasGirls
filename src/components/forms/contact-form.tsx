@@ -9,6 +9,7 @@ import {
   type LeadFormValues,
   type LeadParsed,
 } from "@/lib/validations/lead";
+import { useDictionary } from "@/i18n/locale-provider";
 
 type Panel = "whatsapp" | "email";
 
@@ -32,6 +33,9 @@ const CARD_BG = "#F3EEE8";
 const PANEL_BG = "#EFE7DD";
 
 export function ContactForm() {
+  const f = useDictionary().contactForm;
+  const iq = f.inquiries;
+
   const [panel, setPanel] = useState<Panel>("whatsapp");
   const [successMessage, setSuccessMessage] = useState("");
   const [whatsappSubmitted, setWhatsappSubmitted] = useState(false);
@@ -70,17 +74,14 @@ export function ContactForm() {
 
     if (!response.ok) {
       form.setError("root", {
-        message:
-          "No pudimos enviar tu consulta ahora. Probá nuevamente en unos minutos o escribinos por WhatsApp.",
+        message: f.errorSend,
       });
       setIsSending(false);
       return;
     }
 
     form.reset();
-    setSuccessMessage(
-      "Gracias por escribirnos. Vamos a revisar tu consulta y responderte lo antes posible. Si tu idea todavía está verde, no pasa nada: también acompañamos esa etapa.",
-    );
+    setSuccessMessage(f.thankYou);
     setIsSending(false);
   });
 
@@ -99,16 +100,14 @@ export function ContactForm() {
       serviceInterest: [],
       budgetRange: "",
       projectStage: "solo_idea",
-      message: "Solicita contacto inicial por WhatsApp.",
+      message: f.whatsappInternalNote,
       source: "form-whatsapp",
       preferredContactMethod: "whatsapp",
       acceptsPrivacy: true,
     });
 
     if (!response.ok) {
-      setWaError(
-        "No pudimos guardar tu solicitud. Probá de nuevo en un momento.",
-      );
+      setWaError(f.errorWa);
       setIsSending(false);
       return;
     }
@@ -168,7 +167,7 @@ export function ContactForm() {
               : "text-black/55 group-hover:translate-x-1 group-hover:text-black"
           }`}
         >
-          {active ? "↓ activo" : "→ usar"}
+          {active ? f.tabActive : f.tabInactive}
         </span>
       </button>
     );
@@ -196,15 +195,15 @@ export function ContactForm() {
         className="absolute -top-3 left-6 z-20 px-2 font-mono text-[10px] uppercase tracking-[0.2em] text-black/60"
         style={{ backgroundColor: CARD_BG }}
       >
-        / Formulario de contacto
+        {f.formEyebrow}
       </span>
 
       {/* ─── TAB 01 — WHATSAPP ─── */}
       {renderTab(
         "whatsapp",
         "01",
-        "WhatsApp",
-        "Quiero que me contacten por WhatsApp.",
+        f.tab01Title,
+        f.tab01Sub,
       )}
 
       {panel === "whatsapp" &&
@@ -215,15 +214,14 @@ export function ContactForm() {
           >
             <div className="mx-auto max-w-xl text-center">
               <span className="inline-flex bg-[#ff3ea5] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-black">
-                Solicitud recibida
+                {f.requestReceived}
               </span>
               <h3 className="mt-5 font-display text-3xl font-black uppercase leading-tight text-black md:text-5xl">
-                Te escribimos en breve
+                {f.waSuccessTitleTe}
                 <span className="text-[#ff3ea5]">.</span>
               </h3>
               <p className="mx-auto mt-4 max-w-[55ch] text-sm text-black/75 md:text-base">
-                Te vamos a escribir por WhatsApp para entender bien tu proyecto
-                y acompañarte desde esta etapa.
+                {f.waSuccessBody}
               </p>
               <div className="mt-7 flex flex-wrap justify-center gap-3">
                 <button
@@ -231,7 +229,7 @@ export function ContactForm() {
                   className="border-2 border-black/60 bg-transparent px-5 py-3 font-display text-xs font-bold uppercase tracking-widest text-black transition-colors hover:border-black hover:bg-black hover:text-[#F3EEE8]"
                   onClick={() => setWhatsappSubmitted(false)}
                 >
-                  Cerrar
+                  {f.btnClose}
                 </button>
                 <button
                   type="button"
@@ -243,7 +241,7 @@ export function ContactForm() {
                     setWaPhone("");
                   }}
                 >
-                  Enviar otro número
+                  {f.btnAnother}
                 </button>
               </div>
             </div>
@@ -255,16 +253,16 @@ export function ContactForm() {
             onSubmit={onWhatsAppSubmit}
           >
             <div>
-              <label className={labelClassName}>Nombre</label>
+              <label className={labelClassName}>{f.labelName}</label>
               <input
                 className={inputClassName}
-                placeholder="Ej. María González"
+                placeholder={f.phName}
                 value={waName}
                 onChange={(event) => setWaName(event.target.value)}
               />
             </div>
             <div>
-              <label className={labelClassName}>WhatsApp</label>
+              <label className={labelClassName}>{f.labelWhatsapp}</label>
               <input
                 className={inputClassName}
                 placeholder="+54 9 11 2345-6789"
@@ -278,7 +276,7 @@ export function ContactForm() {
                 disabled={isSending || !waName || !waPhone}
                 className={submitClassName}
               >
-                {isSending ? "Enviando..." : "Enviar solicitud"}
+                {isSending ? f.btnSending : f.btnSendWa}
                 <span className="transition-transform group-hover:translate-x-1">
                   →
                 </span>
@@ -293,7 +291,7 @@ export function ContactForm() {
         ))}
 
       {/* ─── TAB 02 — EMAIL ─── */}
-      {renderTab("email", "02", "Email", "Quiero que me contacten por email.")}
+      {renderTab("email", "02", f.tab02Title, f.tab02Sub)}
 
       {panel === "email" && (
         <form
@@ -302,73 +300,73 @@ export function ContactForm() {
           onSubmit={onEmailSubmit}
         >
           <div>
-            <label className={labelClassName}>Nombre completo</label>
+            <label className={labelClassName}>{f.fullNameLabel}</label>
             <input
               className={inputClassName}
-              placeholder="Nombre y apellido"
+              placeholder={f.phFullName}
               autoComplete="name"
               {...form.register("fullName")}
             />
           </div>
           <div>
-            <label className={labelClassName}>Email</label>
+            <label className={labelClassName}>{f.emailLabel}</label>
             <input
               className={inputClassName}
               type="email"
-              placeholder="nombre@ejemplo.com"
+              placeholder={f.phEmail}
               autoComplete="email"
               {...form.register("email")}
             />
           </div>
           <div>
-            <label className={labelClassName}>Tipo de consulta</label>
+            <label className={labelClassName}>{f.inquiryLabel}</label>
             <select className={selectClassName} {...form.register("inquiryType")}>
               <option value="" disabled className="text-black/40">
-                Seleccioná tipo de consulta
+                {f.inquiryPlaceholder}
               </option>
               <option className="bg-[#F3EEE8]" value="consulta_general">
-                Consulta general
+                {iq.general}
               </option>
               <option className="bg-[#F3EEE8]" value="cotizar_servicio">
-                Quiero cotizar un servicio
+                {iq.quote}
               </option>
               <option className="bg-[#F3EEE8]" value="definir_estrategia">
-                Necesito ayuda para definir qué hacer
+                {iq.strategy}
               </option>
               <option className="bg-[#F3EEE8]" value="branding">
-                Branding
+                {iq.branding}
               </option>
               <option className="bg-[#F3EEE8]" value="sitio_web">
-                Sitio web
+                {iq.web}
               </option>
               <option className="bg-[#F3EEE8]" value="app">
-                App
+                {iq.app}
               </option>
               <option className="bg-[#F3EEE8]" value="redes_contenido">
-                Redes / contenido
+                {iq.socials}
               </option>
               <option className="bg-[#F3EEE8]" value="marketing_seo">
-                Marketing / pauta / SEO
+                {iq.marketing}
               </option>
               <option className="bg-[#F3EEE8]" value="otro">
-                Otro
+                {iq.other}
               </option>
             </select>
           </div>
           <div>
-            <label className={labelClassName}>Teléfono</label>
+            <label className={labelClassName}>{f.phoneLabel}</label>
             <input
               className={inputClassName}
-              placeholder="+54 9 ..."
+              placeholder={f.phPhone}
               autoComplete="tel"
               {...form.register("phone")}
             />
           </div>
           <div className="md:col-span-2">
-            <label className={labelClassName}>Mensaje</label>
+            <label className={labelClassName}>{f.msgLabel}</label>
             <textarea
               className={textareaClassName}
-              placeholder="Contanos tu idea, en qué etapa estás y qué necesitás."
+              placeholder={f.msgPlaceholder}
               {...form.register("message")}
             />
           </div>
@@ -393,7 +391,7 @@ export function ContactForm() {
               disabled={isSending}
               className={submitClassName}
             >
-              {isSending ? "Enviando..." : "Enviar consulta"}
+              {isSending ? f.sendingEmail : f.btnSendEmail}
               <span className="transition-transform group-hover:translate-x-1">
                 →
               </span>
@@ -407,7 +405,7 @@ export function ContactForm() {
           {successMessage && (
             <div className="border-l-2 border-[#ff3ea5] bg-[#ff3ea5]/15 px-4 py-3 text-sm text-black md:col-span-2">
               <span className="mb-1 block font-mono text-[10px] uppercase tracking-[0.18em] text-black">
-                ✓ Recibido
+                {f.recvBadge}
               </span>
               {successMessage}
             </div>

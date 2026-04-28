@@ -3,20 +3,26 @@
 import Link from "next/link";
 import { motion } from "motion/react";
 import { ArrowRight } from "lucide-react";
-import { TOOLS_LIST } from "@/components/tools/tools-data";
+import { useMemo } from "react";
+import { getToolsForLocale } from "@/components/tools/tools-data";
+import { useDictionary, useLocale } from "@/i18n/locale-provider";
 
 const BEIGE = "#F4EDE6";
-const INK = "#111111";
 const PINK = "#FF6FAF";
 
 export function ToolsTeaser() {
+  const { locale } = useLocale();
+  const toolsList = useMemo(() => getToolsForLocale(locale), [locale]);
+  const d = useDictionary();
+  const te = d.toolsTeaser;
+
   return (
-    <section className="border-y-[3px] border-[#111]" style={{ background: INK }}>
+    <section className="border-y-[3px] border-[#111]" style={{ background: "#111" }}>
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.08] px-4 py-3 sm:px-10">
         <span className="text-[0.42rem] font-extrabold uppercase tracking-[0.26em]" style={{ color: PINK }}>
-          ✦ Herramientas gratuitas
+          {te.bandLabel}
         </span>
-        <span className="text-[0.42rem] font-bold uppercase tracking-[0.16em] text-white/25">Sin registro · Gratis</span>
+        <span className="text-[0.42rem] font-bold uppercase tracking-[0.16em] text-white/25">{te.meta}</span>
       </div>
 
       <div className="grid min-h-[clamp(110px,18vh,160px)] md:grid-cols-[minmax(140px,240px)_1fr_1fr_1fr]">
@@ -32,19 +38,20 @@ export function ToolsTeaser() {
             className="flex h-full min-h-[120px] flex-col justify-between p-5 text-left transition-colors hover:bg-[#FF6FAF]/[0.08] md:min-h-0"
           >
             <div className="font-accent text-[clamp(1.3rem,3vw,2.2rem)] leading-[0.9]" style={{ color: BEIGE }}>
-              Ver
+              {te.verTodas1}
               <br />
-              <span className="text-[#FF6FAF]">todas</span>
+              <span className="text-[#FF6FAF]">{te.verTodas2}</span>
             </div>
             <div className="flex items-center gap-1 text-[0.46rem] font-extrabold uppercase tracking-[0.18em] text-white/30">
-              Herramientas
+              {te.linkTools}
               <ArrowRight size={10} strokeWidth={2.5} />
             </div>
           </Link>
         </motion.div>
 
-        {TOOLS_LIST.map((tool, i) => {
+        {toolsList.map((tool, i) => {
           const Icon = tool.icon;
+
           return (
             <motion.div
               key={tool.slug}
@@ -52,7 +59,7 @@ export function ToolsTeaser() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.08 + i * 0.08 }}
-              className={`border-b border-white/[0.08] p-5 transition-colors hover:bg-[#FF6FAF]/10 md:border-b-0 ${i < TOOLS_LIST.length - 1 ? "md:border-r md:border-white/[0.08]" : ""}`}
+              className={`border-b border-white/[0.08] p-5 transition-colors hover:bg-[#FF6FAF]/10 md:border-b-0 ${i < toolsList.length - 1 ? "md:border-r md:border-white/[0.08]" : ""}`}
             >
               <Link href={`/herramientas/${tool.slug}`} className="flex h-full flex-col justify-between gap-3">
                 <div className="flex items-start gap-3">
@@ -67,7 +74,7 @@ export function ToolsTeaser() {
                   </div>
                 </div>
                 <div className="flex items-center gap-1 text-[0.44rem] font-extrabold uppercase tracking-[0.16em] text-white/30">
-                  Usar gratis
+                  {te.usarGratis}
                   <ArrowRight size={10} strokeWidth={2.5} className="text-white/30" />
                 </div>
               </Link>

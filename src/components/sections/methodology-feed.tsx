@@ -4,8 +4,8 @@ import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { homeContent } from "@/content/site/home";
 import { Noise } from "@/components/Noise";
+import { useDictionary, useLocale } from "@/i18n/locale-provider";
 const SCRAMBLE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
 const ASSETS = {
@@ -38,21 +38,29 @@ type FeedCardSpec = {
   stickers: StickerSpec[];
 };
 
-const blocks = homeContent.methodology.blocks;
-
 const WATERMARK_CLASS =
   "right-[3%] bottom-[-2%] left-auto top-auto translate-x-0 translate-y-0 text-right font-display text-[clamp(6.5rem,28vw,12rem)]";
 
-const CARD_SPECS: FeedCardSpec[] = [
-  {
-    indexLabel: "01",
-    title: "DIAGNÓSTICO Y\nPRIMERA MEET",
-    body: blocks[0]?.description ?? "",
-    cardBg: "#F3EEE8",
-    cutBg: "#E5DDD3",
-    bodyShellClass: "ml-0 mr-3 md:mr-4",
-    watermarkClass: WATERMARK_CLASS,
-    stickers: [
+function buildCardSpecs(methodology: {
+  card1Title: string;
+  card2Title: string;
+  card3Title: string;
+  block1: string;
+  block2: string;
+  block3: string;
+}): FeedCardSpec[] {
+  const { card1Title, card2Title, card3Title, block1, block2, block3 } = methodology;
+
+  return [
+    {
+      indexLabel: "01",
+      title: card1Title,
+      body: block1,
+      cardBg: "#F3EEE8",
+      cutBg: "#E5DDD3",
+      bodyShellClass: "ml-0 mr-3 md:mr-4",
+      watermarkClass: WATERMARK_CLASS,
+      stickers: [
       {
         src: ASSETS.s11,
         w: 1026,
@@ -75,8 +83,8 @@ const CARD_SPECS: FeedCardSpec[] = [
   },
   {
     indexLabel: "02",
-    title: "DEFINIMOS QUÉ\nVA PRIMERO",
-    body: blocks[1]?.description ?? "",
+    title: card2Title,
+    body: block2,
     cardBg: "#EFE7DD",
     cutBg: "#E3DBD1",
     bodyShellClass: "mr-0 ",
@@ -98,8 +106,8 @@ const CARD_SPECS: FeedCardSpec[] = [
   },
   {
     indexLabel: "03",
-    title: "ROADMAP Y\nCONSTRUCCIÓN",
-    body: blocks[2]?.description ?? "",
+    title: card3Title,
+    body: block3,
     cardBg: "#F5EFE6",
     cutBg: "#E8E1D7",
     bodyShellClass: "ml-1 mr-5 md:ml-2 md:mr-6",
@@ -119,7 +127,8 @@ const CARD_SPECS: FeedCardSpec[] = [
       },
     ],
   },
-];
+  ];
+}
 
 function StickerDecor({ spec }: { spec: StickerSpec }) {
   return (
@@ -295,6 +304,10 @@ export function MethodologyFeed() {
   const [activeCard, setActiveCard] = useState<string | null>(null);
   const sectionRef = useRef<HTMLElement | null>(null);
   const cardsRef = useRef<HTMLDivElement | null>(null);
+  const { locale } = useLocale();
+  const d = useDictionary();
+  const m = d.methodology;
+  const CARD_SPECS = useMemo(() => buildCardSpecs(m), [m]);
 
   useLayoutEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
@@ -344,7 +357,7 @@ export function MethodologyFeed() {
     });
 
     return () => mm.revert();
-  }, []);
+  }, [locale]);
 
   return (
     <section
@@ -354,12 +367,12 @@ export function MethodologyFeed() {
     >
       <div className="mx-auto max-w-[1600px]">
         <header className="mb-10 max-w-3xl md:mb-14 lg:mb-16">
-          <p className="font-mono text-[10px] font-bold uppercase tracking-[0.32em] text-black/65 md:text-[11px]">03 - Procesos</p>
+          <p className="font-mono text-[10px] font-bold uppercase tracking-[0.32em] text-black/65 md:text-[11px]">{m.eyebrow}</p>
           <h2 className="mt-3 font-display text-[clamp(2.5rem,9vw,4.75rem)] font-black uppercase leading-[0.9] tracking-[-0.03em] text-black">
-            TRABAJAR CON NOSOTRAS
+            {m.title}
           </h2>
           <p className="font-accent mt-3 text-[clamp(1.65rem,4.5vw,2.75rem)] leading-[0.98] text-black">
-            Es así de simple.
+            {m.subtitle}
           </p>
         </header>
 

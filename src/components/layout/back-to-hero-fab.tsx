@@ -3,6 +3,7 @@
 import { ChevronUp } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useLocale } from "@/i18n/locale-provider";
 
 type LenisLike = {
   scrollTo: (
@@ -36,6 +37,7 @@ function scrollToHero() {
  */
 export function BackToHeroFab() {
   const pathname = usePathname();
+  const { t } = useLocale();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -63,7 +65,7 @@ export function BackToHeroFab() {
   return (
     <button
       type="button"
-      aria-label="Volver al hero"
+      aria-label={t("fab.ariaBack")}
       tabIndex={visible ? 0 : -1}
       onClick={scrollToHero}
       className={
