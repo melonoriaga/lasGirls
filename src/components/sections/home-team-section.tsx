@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import DecryptedText from "@/components/DecryptedText";
@@ -13,7 +14,7 @@ gsap.registerPlugin(ScrollTrigger);
 /** Home strategic team section — editorial / brutalist layout with the
  *  Jean & Mel ProfileCards plus an extended copy block describing the
  *  network model. */
-export function HomeTeamSection() {
+export function HomeTeamSection({ sectionId = "equipo" }: { sectionId?: string }) {
   const sectionRef = useRef<HTMLElement | null>(null);
   const tm = useDictionary().team;
   const specialistTags = tm.tags;
@@ -80,7 +81,7 @@ export function HomeTeamSection() {
 
   return (
     <section
-      id="equipo"
+      id={sectionId}
       ref={sectionRef}
       className="brutal-section section-shell relative overflow-hidden border-t-2 border-black bg-[#0b0b0b] py-24 text-[#fff8f0] md:py-32"
     >
@@ -202,19 +203,28 @@ export function HomeTeamSection() {
                   {tm.equipoCrece}
                 </p>
 
-                <ul className="mt-6 flex flex-wrap gap-2.5">
-                  {specialistTags.map((tag, i) => (
-                    <li
-                      key={tag}
-                      className={`inline-flex items-center gap-2 border-2 px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.12em] transition-colors ${i % 2 === 0
-                        ? "border-[#ff3ea5] bg-[#ff3ea5]/10 text-[#ff8ec7] hover:bg-[#ff3ea5] hover:text-black"
-                        : "border-white/40 bg-transparent text-white/85 hover:border-white hover:bg-white hover:text-black"
-                        }`}
-                    >
-                      <span className="text-[8px]">◆</span>
-                      {tag}
-                    </li>
-                  ))}
+                <ul className="mt-6 flex flex-wrap gap-2">
+                  {specialistTags.map((tag: string, i: number) => {
+                    const accent = i % 2 === 0;
+                    return (
+                      <li
+                        key={tag}
+                        className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.085em] transition-colors ${accent
+                          ? "border-[#ff3ea5]/90 bg-black/35 text-[#fecfe3] hover:border-[#ff3ea5] hover:bg-[#ff3ea5]/15"
+                          : "border-white/22 bg-black/35 text-white/52 hover:border-white/38 hover:bg-white/6"
+                          }`}
+                      >
+                        <span
+                          aria-hidden
+                          className={`text-[7px] leading-none ${accent ? "text-[#ff3ea5]" : "text-white/45"
+                            }`}
+                        >
+                          ◆
+                        </span>
+                        {tag}
+                      </li>
+                    );
+                  })}
                 </ul>
 
                 <div className="mt-7 flex items-center justify-between border-t border-white/10 pt-4 text-[10px] uppercase tracking-[0.18em] text-white/50">
@@ -256,6 +266,27 @@ export function HomeTeamSection() {
               <span className="whitespace-pre-line">{tm.quoteRest}</span>
             </p>
           </blockquote>
+
+          <div className="brutal-reveal flex flex-col items-start gap-5 border-t border-white/10 pt-7 sm:flex-row sm:items-end sm:justify-between">
+            <Link
+              href="/team"
+              className="hero-cta hero-cta--dark inline-flex w-full justify-center text-center no-underline sm:w-auto"
+            >
+              {tm.teamCta}
+            </Link>
+
+            <div className="max-w-md text-left sm:text-right">
+              <p className="font-mono text-[10px] uppercase leading-relaxed tracking-[0.18em] text-white/45">
+                {tm.aboutPrompt}
+              </p>
+              <Link
+                href="/about"
+                className="mt-2 inline-flex text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-white/70 underline decoration-white/20 underline-offset-4 transition hover:text-[#f4ede6] hover:decoration-[#f4ede6]/60"
+              >
+                {tm.aboutCta}
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </section>

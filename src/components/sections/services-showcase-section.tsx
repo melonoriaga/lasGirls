@@ -219,73 +219,68 @@ export function ServicesShowcaseSection() {
           </p>
         </div>
 
-        <article className="svc-module relative order-2 overflow-hidden border-b border-black bg-[#f3eee8] p-5 md:p-7 lg:order-2 lg:col-span-8 lg:p-10">
-          <TextNoiseOverlay />
-          <span className="svc-parallax-num pointer-events-none absolute right-3 top-2 font-display text-[clamp(5rem,14vw,10rem)] leading-none text-black/10">
-            01
-          </span>
-          <p className="svc-kicker font-mono text-[0.58rem] uppercase tracking-[0.2em] text-black/70">{G.kickerPrincipal}</p>
-          <h3 className="svc-title mt-4 w-full font-display text-[clamp(2.4rem,8.5vw,6.6rem)] uppercase leading-[0.9] tracking-[-0.015em] text-black">
-            {services[0].title}
-          </h3>
-          <p className="svc-copy mt-3 w-full text-[0.96rem] uppercase leading-[1.42] tracking-[0.07em] text-black/88 md:text-[1.1rem]">
-            {services[0].microcopy}
-          </p>
-          <p className="svc-copy mt-4 w-full text-[1.04rem] uppercase leading-[1.45] tracking-[0.058em] text-black md:text-[1.22rem]">
-            {services[0].description}
-          </p>
-          {/* <div className="mt-6 grid gap-4 border-t border-black pt-3 md:grid-cols-2">
-            <div>
-              <p className="font-mono text-[0.56rem] uppercase tracking-[0.2em] text-black/70">resuelve</p>
-              <p className="mt-1 text-[0.84rem] uppercase leading-[1.45] tracking-[0.058em] text-black/92 md:text-[0.94rem]">{services[0].solves}</p>
+        {/* Rows 01–02: order stays in inner grids only so 01→06 keep editorial order on the outer grid */}
+        <div className="col-span-12 grid grid-cols-1 border-b border-black lg:grid-cols-12">
+          <article className="svc-module relative order-2 overflow-hidden border-b border-black bg-[#f3eee8] p-5 md:p-7 lg:order-2 lg:col-span-8 lg:border-b-0 lg:border-r lg:p-10">
+            <TextNoiseOverlay />
+            <span className="svc-parallax-num pointer-events-none absolute right-3 top-2 font-display text-[clamp(5rem,14vw,10rem)] leading-none text-black/10">
+              01
+            </span>
+            <p className="svc-kicker font-mono text-[0.58rem] uppercase tracking-[0.2em] text-black/70">{G.kickerPrincipal}</p>
+            <h3 className="svc-title mt-4 w-full font-display text-[clamp(2.4rem,8.5vw,6.6rem)] uppercase leading-[0.9] tracking-[-0.015em] text-black">
+              {services[0].title}
+            </h3>
+            <p className="svc-copy mt-3 w-full text-[0.96rem] uppercase leading-[1.42] tracking-[0.07em] text-black/88 md:text-[1.1rem]">
+              {services[0].microcopy}
+            </p>
+            <p className="svc-copy mt-4 w-full text-[1.04rem] uppercase leading-[1.45] tracking-[0.058em] text-black md:text-[1.22rem]">
+              {services[0].description}
+            </p>
+            <div className="svc-line-draw mt-6 h-px w-full bg-black" />
+          </article>
+
+          <article className="svc-module order-1 border-b border-black bg-[#eae3d8] p-4 lg:order-1 lg:col-span-4 lg:border-b-0 lg:border-r lg:p-5">
+            <div className="svc-image-panel relative aspect-square max-h-[430px] overflow-hidden border border-black">
+              <Image src={EDITORIAL_IMAGES[0]} alt={services[0].title} fill className="object-cover object-center" sizes="(max-width: 1024px) 100vw, 42vw" />
             </div>
-            <div>
-              <p className="font-mono text-[0.56rem] uppercase tracking-[0.2em] text-black/70">ejemplos</p>
-              <p className="mt-1 text-[0.84rem] uppercase leading-[1.45] tracking-[0.058em] text-black/92 md:text-[0.94rem]">{services[0].examples}</p>
+            <div className="mt-3 border-t border-black pt-2">
+              <p className="svc-kicker font-mono text-[0.56rem] uppercase tracking-[0.2em] text-black/70">{G.kickerFeatured}</p>
+              <p className="svc-copy mt-1 text-[0.74rem] uppercase leading-[1.45] tracking-[0.07em] text-black">{featuredCombos[0]}</p>
             </div>
-          </div> */}
-          <div className="svc-line-draw mt-6 h-px w-full bg-black" />
-        </article>
+          </article>
+        </div>
 
-        <article className="svc-module order-1 border-b border-black bg-[#eae3d8] p-4 lg:order-1 lg:col-span-4 lg:border-r lg:p-5">
-          <div className="svc-image-panel relative aspect-square max-h-[430px] overflow-hidden border border-black">
-            <Image src={EDITORIAL_IMAGES[0]} alt={services[0].title} fill className="object-cover object-center" sizes="(max-width: 1024px) 100vw, 42vw" />
-          </div>
-          <div className="mt-3 border-t border-black pt-2">
-            <p className="svc-kicker font-mono text-[0.56rem] uppercase tracking-[0.2em] text-black/70">{G.kickerFeatured}</p>
-            <p className="svc-copy mt-1 text-[0.74rem] uppercase leading-[1.45] tracking-[0.07em] text-black">{featuredCombos[0]}</p>
-          </div>
-        </article>
+        <div className="col-span-12 grid grid-cols-1 border-b border-black lg:grid-cols-12">
+          <article className="svc-module order-2 border-b border-black bg-[#efe7dd] p-4 lg:order-2 lg:col-span-4 lg:border-b-0 lg:border-r lg:p-5">
+            <div className="svc-image-panel relative aspect-square overflow-hidden border border-black">
+              <Image src={EDITORIAL_IMAGES[1]} alt={services[1].title} fill className="object-cover object-center" sizes="(max-width: 1024px) 100vw, 33vw" />
+            </div>
+            <p className="svc-copy mt-3 border-t border-black pt-2 text-[0.76rem] uppercase leading-[1.45] tracking-[0.065em] text-black/90">{services[1].microcopy}</p>
+          </article>
 
-        <article className="svc-module order-2 border-b border-black bg-[#efe7dd] p-4 lg:order-2 lg:col-span-4 lg:p-5">
-          <div className="svc-image-panel relative aspect-square overflow-hidden border border-black">
-            <Image src={EDITORIAL_IMAGES[1]} alt={services[1].title} fill className="object-cover object-center" sizes="(max-width: 1024px) 100vw, 33vw" />
-          </div>
-          <p className="svc-copy mt-3 border-t border-black pt-2 text-[0.76rem] uppercase leading-[1.45] tracking-[0.065em] text-black/90">{services[1].microcopy}</p>
-        </article>
-
-        <article className="svc-module relative order-1 overflow-hidden border-b border-black bg-[#f3eee8] p-5 md:p-7 lg:order-1 lg:col-span-8 lg:border-r lg:p-9">
-          <TextNoiseOverlay />
-          <span className="svc-parallax-num pointer-events-none absolute right-3 top-1 font-display text-[clamp(4.6rem,13vw,9rem)] leading-none text-black/10">
-            02
-          </span>
-          <p className="svc-kicker font-mono text-[0.58rem] uppercase tracking-[0.2em] text-black/70">{G.kickerNetwork}</p>
-          <h3 className="svc-title mt-4 max-w-[14ch] font-display text-[clamp(1.85rem,6.4vw,4.9rem)] uppercase leading-[0.92] tracking-[-0.014em] text-black">
-            {services[1].title}
-          </h3>
-          <p className="svc-copy mt-2 max-w-[34ch] text-[0.84rem] uppercase leading-[1.43] tracking-[0.07em] text-black/85 md:text-[0.94rem]">
-            {services[1].microcopy}
-          </p>
-          <p className="svc-copy mt-3 max-w-[40ch] text-[0.9rem] uppercase leading-[1.46] tracking-[0.058em] text-black md:text-[1.03rem]">
-            {services[1].description}
-          </p>
-          <p className="svc-copy mt-3 text-[0.76rem] uppercase leading-[1.44] tracking-[0.062em] text-black/88">{G.editorialReality}</p>
-          <p className="svc-copy mt-3 border-t border-black pt-2 text-[0.76rem] uppercase leading-[1.45] tracking-[0.06em] text-black/88">{services[1].solves}</p>
-          <div className="mt-5 flex items-center justify-between border-t border-black pt-2">
-            <span className="font-mono text-[0.58rem] uppercase tracking-[0.2em] text-black/70">{G.footerEdit[0]}</span>
-            <span className="font-mono text-[0.58rem] uppercase tracking-[0.2em] text-black/70">{G.footerEdit[1]}</span>
-          </div>
-        </article>
+          <article className="svc-module relative order-1 overflow-hidden border-b border-black bg-[#f3eee8] p-5 md:p-7 lg:order-1 lg:col-span-8 lg:border-b-0 lg:border-r lg:p-9">
+            <TextNoiseOverlay />
+            <span className="svc-parallax-num pointer-events-none absolute right-3 top-1 font-display text-[clamp(4.6rem,13vw,9rem)] leading-none text-black/10">
+              02
+            </span>
+            <p className="svc-kicker font-mono text-[0.58rem] uppercase tracking-[0.2em] text-black/70">{G.kickerNetwork}</p>
+            <h3 className="svc-title mt-4 max-w-[14ch] font-display text-[clamp(1.85rem,6.4vw,4.9rem)] uppercase leading-[0.92] tracking-[-0.014em] text-black">
+              {services[1].title}
+            </h3>
+            <p className="svc-copy mt-2 max-w-[34ch] text-[0.84rem] uppercase leading-[1.43] tracking-[0.07em] text-black/85 md:text-[0.94rem]">
+              {services[1].microcopy}
+            </p>
+            <p className="svc-copy mt-3 max-w-[40ch] text-[0.9rem] uppercase leading-[1.46] tracking-[0.058em] text-black md:text-[1.03rem]">
+              {services[1].description}
+            </p>
+            <p className="svc-copy mt-3 text-[0.76rem] uppercase leading-[1.44] tracking-[0.062em] text-black/88">{G.editorialReality}</p>
+            <p className="svc-copy mt-3 border-t border-black pt-2 text-[0.76rem] uppercase leading-[1.45] tracking-[0.06em] text-black/88">{services[1].solves}</p>
+            <div className="mt-5 flex items-center justify-between border-t border-black pt-2">
+              <span className="font-mono text-[0.58rem] uppercase tracking-[0.2em] text-black/70">{G.footerEdit[0]}</span>
+              <span className="font-mono text-[0.58rem] uppercase tracking-[0.2em] text-black/70">{G.footerEdit[1]}</span>
+            </div>
+          </article>
+        </div>
 
         <article className="svc-module relative overflow-hidden border-b border-black bg-[#eae3d8] p-5 md:p-7 lg:col-span-3 lg:border-r lg:p-7">
           <TextNoiseOverlay />
@@ -336,6 +331,9 @@ export function ServicesShowcaseSection() {
 
         <article className="svc-module relative overflow-hidden border-b border-black bg-[#f3eee8] p-5 md:p-7 lg:col-span-6 lg:border-r lg:p-9">
           <TextNoiseOverlay />
+          <span className="svc-parallax-num pointer-events-none absolute right-3 top-2 font-display text-[clamp(4.6rem,13vw,9rem)] leading-none text-black/10">
+            04
+          </span>
           <p className="svc-kicker font-mono text-[0.58rem] uppercase tracking-[0.2em] text-black/70">{G.kickerArchivo04}</p>
           <h3 className="svc-title mt-4 max-w-[14ch] font-display text-[clamp(1.9rem,6.1vw,4.6rem)] uppercase leading-[0.92] tracking-[-0.014em] text-black">
             {services[3].title}
@@ -359,6 +357,9 @@ export function ServicesShowcaseSection() {
           <span className="svc-parallax-num pointer-events-none absolute right-2 top-[-4%] font-display text-[clamp(4.8rem,13vw,9rem)] leading-none text-black/10">
             05
           </span>
+          <p className="svc-kicker relative z-10 font-mono text-[0.58rem] uppercase tracking-[0.2em] text-black/70">
+            {G.kickerService05}
+          </p>
           <h3 className="svc-title relative z-10 mt-10 font-display text-[clamp(1.45rem,4.8vw,3.3rem)] uppercase leading-[0.92] tracking-[-0.012em] text-black">
             {services[4].title}
           </h3>
@@ -376,7 +377,7 @@ export function ServicesShowcaseSection() {
                 <Image src={EDITORIAL_IMAGES[4]} alt={services[5].title} fill className="object-cover object-center" sizes="(max-width: 1024px) 100vw, 25vw" />
               </div>
               <div className="mt-3 grid gap-1 border-t border-black pt-2">
-                {whyItems.slice(1, 3).map((item) => (
+                {whyItems.map((item) => (
                   <p key={item} className="text-[0.68rem] uppercase leading-[1.4] tracking-[0.07em] text-black/88">
                     {item}
                   </p>
@@ -386,6 +387,9 @@ export function ServicesShowcaseSection() {
 
             <article className="relative overflow-hidden border-b border-black bg-[#f3eee8] p-5 md:p-7 lg:col-span-6 lg:border-b-0 lg:border-r lg:p-10">
               <TextNoiseOverlay />
+              <span className="svc-parallax-num pointer-events-none absolute right-6 top-4 font-display text-[clamp(4.2rem,12vw,8rem)] leading-none text-black/10 lg:right-10">
+                06
+              </span>
               <p className="svc-kicker font-mono text-[0.58rem] uppercase tracking-[0.2em] text-black/70">{G.kickerCierre}</p>
               <h3 className="svc-title mt-4 max-w-[15ch] font-display text-[clamp(2rem,6.6vw,5rem)] uppercase leading-[0.9] tracking-[-0.014em] text-black">
                 {services[5].title}

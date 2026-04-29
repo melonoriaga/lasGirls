@@ -51,7 +51,7 @@ export function ContactStickerFloat({ className = "" }: Props) {
   return (
     <div
       ref={rootRef}
-      className={`relative flex justify-center lg:sticky lg:top-28 lg:justify-end ${className}`}
+      className={`relative flex w-full max-w-[300px] items-center justify-center lg:mx-0 lg:max-w-none lg:justify-end ${className}`}
     >
       <div ref={revealRef} className="relative will-change-transform">
         <div className="contact-sticker-float-inner relative">

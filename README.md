@@ -41,6 +41,8 @@ NEXT_PUBLIC_FIREBASE_PROJECT_ID=
 NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
 NEXT_PUBLIC_FIREBASE_APP_ID=
+# GA4: Firebase Console → Project settings → app web → measurementId (G-xxxx)
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=
 
 FIREBASE_CLIENT_EMAIL=
 FIREBASE_PRIVATE_KEY=
@@ -61,8 +63,9 @@ npm run dev
 1. Crear proyecto Firebase.
 2. Activar Auth (Email/Password).
 3. Crear Firestore y Storage.
-4. Cargar `firestore.rules`, `firestore.indexes.json`, `storage.rules`.
-5. Crear cuenta de servicio y completar variables `FIREBASE_*`.
+4. En **Google Analytics** (vincular GA4 al proyecto o activarlo al crear Firebase), copiar el **Measurement ID** (`G-xxxx`) en `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID` (aparece en Project settings → General → tu app web).
+5. Cargar `firestore.rules`, `firestore.indexes.json`, `storage.rules`.
+6. Crear cuenta de servicio y completar variables `FIREBASE_*`.
 
 ## Flujo de usuarios admin (sin signup público)
 

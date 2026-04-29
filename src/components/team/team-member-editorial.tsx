@@ -4,8 +4,8 @@ import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo } from "react";
 import type { ReactNode } from "react";
-import type { EditorialTeamMember } from "@/content/team/editorial-members";
-import { resolveEditorialMember } from "@/content/team/resolve-editorial-member";
+import type { EditorialTeamMember } from "@/content/teamSetup/editorial-members";
+import { resolveEditorialMember } from "@/content/teamSetup/resolve-editorial-member";
 import { dictionaries } from "@/i18n/messages";
 import { useLocale } from "@/i18n/locale-provider";
 
@@ -369,24 +369,24 @@ export function TeamMemberEditorial({ member, others }: Props) {
             {others.map((other, i) => {
               const o = resolveEditorialMember(other, locale);
               return (
-              <motion.button
-                key={other.id}
-                className="tm-other"
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
-                onClick={() => router.push(`/team/${other.slug}`)}
-                style={{ background: "transparent", border: "none", borderRight: i < others.length - 1 ? "1px solid rgba(17,17,17,0.12)" : "none", padding: "clamp(1.2rem,2.5vw,2rem)", cursor: "pointer", textAlign: "left", opacity: 0.65, display: "flex", flexDirection: "column", alignItems: "center", gap: "0.75rem" }}
-              >
-                <img src={other.image} alt={other.name} style={{ width: "100%", height: "clamp(120px,16vh,200px)", objectFit: "contain", objectPosition: "bottom", display: "block", filter: "grayscale(40%)", transition: "filter .3s" }} />
-                <div style={{ width: "100%" }}>
-                  <div style={{ fontFamily: "var(--font-display), sans-serif", fontSize: "clamp(1.4rem,2.8vw,2.2rem)", color: INK, letterSpacing: "0.02em", textAlign: "left" }}>{other.name}</div>
-                  <div style={{ marginTop: "0.15rem" }}>
-                    <Label>{o.role}</Label>
+                <motion.button
+                  key={other.id}
+                  className="tm-other"
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: i * 0.1 }}
+                  onClick={() => router.push(`/team/${other.slug}`)}
+                  style={{ background: "transparent", border: "none", borderRight: i < others.length - 1 ? "1px solid rgba(17,17,17,0.12)" : "none", padding: "clamp(1.2rem,2.5vw,2rem)", cursor: "pointer", textAlign: "left", opacity: 0.65, display: "flex", flexDirection: "column", alignItems: "center", gap: "0.75rem" }}
+                >
+                  <img src={other.image} alt={other.name} style={{ width: "100%", height: "clamp(120px,16vh,200px)", objectFit: "contain", objectPosition: "bottom", display: "block", filter: "grayscale(40%)", transition: "filter .3s" }} />
+                  <div style={{ width: "100%" }}>
+                    <div style={{ fontFamily: "var(--font-display), sans-serif", fontSize: "clamp(1.4rem,2.8vw,2.2rem)", color: INK, letterSpacing: "0.02em", textAlign: "left" }}>{other.name}</div>
+                    <div style={{ marginTop: "0.15rem" }}>
+                      <Label>{o.role}</Label>
+                    </div>
                   </div>
-                </div>
-              </motion.button>
+                </motion.button>
               );
             })}
           </div>

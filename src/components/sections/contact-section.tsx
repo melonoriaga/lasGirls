@@ -1,8 +1,27 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { ContactForm } from "@/components/forms/contact-form";
-import { ContactStickerFloat } from "@/components/sections/contact-sticker-float";
 import { useDictionary } from "@/i18n/locale-provider";
+
+function ContactStickerSkeleton() {
+  return (
+    <div
+      className="relative mx-auto flex w-full max-w-[300px] items-center justify-center lg:mx-0 lg:max-w-none lg:justify-end"
+      aria-hidden
+    >
+      <div className="h-[min(70vw,240px)] w-[min(70vw,240px)] rounded-2xl bg-black/[0.06] lg:h-[min(320px,24vw)] lg:w-[min(320px,24vw)]" />
+    </div>
+  );
+}
+
+const ContactStickerFloat = dynamic(
+  () =>
+    import("@/components/sections/contact-sticker-float").then(
+      (m) => m.ContactStickerFloat,
+    ),
+  { ssr: false, loading: ContactStickerSkeleton },
+);
 
 type ContactSectionProps = {
   id?: string;
@@ -34,9 +53,10 @@ export function ContactSection({ id }: ContactSectionProps) {
             {cp.subtitle}
           </p>
 
-          <div className="mt-2 flex flex-wrap gap-2.5">
+          <div className="mt-2 flex flex-wrap gap-2">
             {[
-              { label: "Email", value: "hola@lasgirls.com", href: "mailto:hola@lasgirls.com" },
+              { label: "Jean", value: "jean@lasgirlsplus.com", href: "mailto:jean@lasgirlsplus.com" },
+              { label: "Mel", value: "mel@lasgirlsplus.com", href: "mailto:mel@lasgirlsplus.com" },
               {
                 label: "WhatsApp",
                 value: cp.waValue,
@@ -47,28 +67,42 @@ export function ContactSection({ id }: ContactSectionProps) {
                 value: "@lasgirls.plus",
                 href: "https://www.instagram.com/lasgirls.plus?igsh=MWdyZXEybXYyOW9tOQ%3D%3D&utm_source=qr",
               },
-            ].map((channel) => (
+            ].map((channel, i) => {
+              const accent = i % 2 === 0;
+              return (
               <a
-                key={channel.label}
+                key={`${channel.label}-${channel.value}`}
                 href={channel.href}
                 target={channel.href.startsWith("http") ? "_blank" : undefined}
                 rel={channel.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                className="group inline-flex items-center gap-2 border-2 border-black/80 bg-[#F3EEE8] px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-black shadow-[0_6px_0_0_rgba(0,0,0,0.9)] transition-transform hover:-translate-y-[2px] hover:shadow-[0_8px_0_0_rgba(0,0,0,0.9)]"
+                className={`group inline-flex items-center gap-1.5 rounded-full border px-3.5 py-2 font-mono text-[10px] font-medium uppercase tracking-[0.085em] transition-colors ${
+                  accent
+                    ? "border-black/40 bg-black/10 text-black/80 hover:border-black/55 hover:bg-black/[0.14]"
+                    : "border-black/25 bg-black/[0.06] text-black/58 hover:border-black/40 hover:bg-black/10"
+                }`}
               >
-                <span className="text-[8px] text-black/70">◆</span>
+                <span
+                  aria-hidden
+                  className={`text-[7px] leading-none ${accent ? "text-black/45" : "text-black/35"}`}
+                >
+                  ◆
+                </span>
                 <span className="opacity-70">{channel.label}</span>
-                <span className="text-black">/</span>
+                <span className="text-black/35">/</span>
                 <span>{channel.value}</span>
               </a>
-            ))}
+              );
+            })}
           </div>
         </header>
 
-        <div className="grid w-full grid-cols-1 items-start gap-12 lg:grid-cols-3 lg:gap-14 xl:gap-16">
+        <div className="grid w-full grid-cols-1 items-start gap-12 lg:grid-cols-3 lg:items-center lg:gap-14 xl:gap-16">
           <div className="min-w-0 lg:col-span-2">
             <ContactForm />
           </div>
-          <ContactStickerFloat className="mx-auto w-full max-w-[300px] lg:col-span-1 lg:mx-0 lg:max-w-none" />
+          <div className="flex w-full items-center justify-center lg:justify-end">
+            <ContactStickerFloat />
+          </div>
         </div>
 
         <div className="flex items-center gap-3 border-t-2 border-black/80 pt-5 text-[10px] uppercase tracking-[0.2em] text-black/60">

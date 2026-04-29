@@ -14,7 +14,7 @@ export function VipLanyardCTAs() {
         <button
           type="button"
           onClick={() => setOpen("redeem")}
-          className="group inline-flex w-full items-center justify-center gap-2 bg-[#ff3ea5] px-6 py-3.5 font-display text-sm font-bold uppercase tracking-widest text-white transition-colors hover:bg-[#ff3ea5]/90 sm:w-auto"
+          className="group inline-flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-[#ff3ea5] bg-[#ff3ea5] px-7 py-3.5 font-display text-sm font-extrabold uppercase tracking-widest text-black shadow-[0_10px_28px_-6px_rgba(255,62,165,0.45)] transition hover:brightness-110 active:scale-[0.99] sm:w-auto"
         >
           Usar mi VIP code
           <span className="transition-transform group-hover:translate-x-1" aria-hidden>
@@ -24,7 +24,7 @@ export function VipLanyardCTAs() {
         <button
           type="button"
           onClick={() => setOpen("want")}
-          className="inline-flex w-full items-center justify-center gap-2 border-2 border-white/30 px-6 py-3.5 font-display text-sm font-bold uppercase tracking-widest text-white transition-colors hover:border-white hover:bg-white hover:text-black sm:w-auto"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-white/35 bg-transparent px-7 py-3.5 font-display text-sm font-bold uppercase tracking-widest text-white transition hover:border-white/55 hover:bg-white/10 sm:w-auto"
         >
           Quiero mi VIP code
         </button>

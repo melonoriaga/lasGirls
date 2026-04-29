@@ -24,7 +24,7 @@ export function Footer() {
           </p>
           <div className="h-px w-full bg-[#ff89c0]/25" />
           <nav className="space-y-1">
-            <Link href="/#servicios" className="footer-link">
+            <Link href="/services" className="footer-link">
               {t("footer.navServicios")}
             </Link>
             <Link href="/#metodologia" className="footer-link">
@@ -43,14 +43,23 @@ export function Footer() {
         </div>
 
         <div className="absolute right-[4vw] top-[8vh] z-[3] flex flex-col items-end gap-3">
-          <a href="mailto:hola@lasgirls.com" className="footer-pill bg-[#ff5faf] text-black">
-            hola@lasgirls.com
+          <a
+            href="mailto:jean@lasgirlsplus.com"
+            className="footer-pill bg-[#ff3ea5] text-black transition-[filter] hover:brightness-110"
+          >
+            jean@lasgirlsplus.com
+          </a>
+          <a
+            href="mailto:mel@lasgirlsplus.com"
+            className="footer-pill bg-[#ff3ea5] text-black transition-[filter] hover:brightness-110"
+          >
+            mel@lasgirlsplus.com
           </a>
           <a
             href="https://www.instagram.com/lasgirls.plus?igsh=MWdyZXEybXYyOW9tOQ%3D%3D&utm_source=qr"
             target="_blank"
             rel="noreferrer"
-            className="footer-pill border border-[#fff8f0] bg-transparent text-[#fff8f0]"
+            className="footer-pill border-2 border-[#fff8f0] bg-transparent text-[#fff8f0] transition-colors hover:bg-[#fff8f0]/10"
           >
             instagram
           </a>

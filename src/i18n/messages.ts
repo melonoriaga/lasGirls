@@ -17,6 +17,7 @@ function messagesEs() {
       services: "Servicios",
       team: "Team",
       blog: "Blog",
+      tools: "Herramientas",
       contact: "Contacto",
     },
     breadcrumbAria: "Migas de pan",
@@ -153,18 +154,19 @@ Te acompañamos en cada decisión, en cada entrega y en cada paso hasta que eso 
         "Copiar estructuras que no aplican",
         "No definir qué validar primero",
       ],
-      eyebrowArchive: ["archivo", "servicios", "red de aliadas"],
+      eyebrowArchive: ["servicios", "integración", "red de aliadas"],
       mainTitleLines: ["LO QUE", "PODEMOS", "CONSTRUIR"],
-      kickerPrincipal: "archivo 01 / principal",
+      kickerPrincipal: "01 · principal",
       kickerNetwork: "network / design / dev / launch",
       kickerFeatured: "combinación destacada",
       footerEdit: ["las girls edit.", "service dossier"],
       kickerService03: "servicio / 03",
+      kickerService05: "servicio / 05",
       labelResuelve: "resuelve",
       labelEjemplos: "ejemplos",
-      kickerArchivo04: "archivo 04",
+      kickerArchivo04: "04 · integración",
       kickerCierre: "cierre / 06",
-      footerEditorial: ["las girls editorial system", "issue 2026"],
+      footerEditorial: ["las girls+", "grid 2026"],
     },
     cards: [
       {
@@ -253,6 +255,9 @@ Te acompañamos en cada decisión, en cada entrega y en cada paso hasta que eso 
       quoteRest:
         ",\n              pero detrás hay un equipo completo trabajando para que funcione.",
       quotePrefix: 'Tenés una sola ',
+      teamCta: "Conocé al equipo",
+      aboutPrompt: "¿Querés saber cómo arrancó todo?",
+      aboutCta: "Leer la historia",
       profileAvailable: "Disponible",
       profileContact: "Ver perfil",
     },
@@ -464,25 +469,98 @@ Te acompañamos en cada decisión, en cada entrega y en cada paso hasta que eso 
       calcComputedSuffix: "(calculado)",
       calcCustomHint: "(personalizado)",
     },
-    teamPage: {
-      metadataTitle: "Equipo",
-      metadataDescription:
-        "Conocé a Jean, Mel y la red de especialistas que acompaña cada proyecto.",
-      badge: "equipo",
-      headline: "Team",
-      intro:
-        "Jean y Mel son la cara visible de Las Girls+. Según cada desafío, sumamos una red de especialistas en desarrollo, diseño, branding, social media, contenido y audiovisual.",
-      extendedEyebrow: "01 — Crew extendido",
-      extendedLead:
-        "Somos la cara de Las Girls+: hay mucho más detrás del día a día.",
-      extendedBody1:
-        "Movilizamos especialistas senior en desarrollo, diseño, estrategia, operación de producto, branding social y contenido.",
-      extendedBody2: "Vos hablás con nosotras. Nosotras armamos el roster y coordinamos cada frente.",
-      extendedBody3:
-        "Jean marca la línea estratégica y creativa para identidades vivas — charlas internacionales, MADFA en Madrid y un rol activo junto a colegios y comunidades.",
-      extendedBody4:
-        "Mel baja esa visión a producto digital concreto: full‑stack, performance y claridad hasta el deploy — código hecho para vender.",
-      profileCta: "Ver perfil",
+    teamLanding: {
+      hero: {
+        eyebrow: "TEAM · LAS GIRLS+",
+        headline: "NO SOMOS SOLO CARAS.",
+        headlineAccent: "SOMOS UN SISTEMA.",
+        subtitle:
+          "Las Girls somos Mel y Jean.\n\nPero lo que hacemos no se sostiene solas.",
+        lead:
+          "Cada proyecto que ves terminado…\ntiene muchas más manos detrás de las que se ven.",
+      },
+      founders: {
+        eyebrow: "LAS FUNDADORAS",
+        jean: {
+          eyebrowLocal: "FUNDADORA",
+          title: "JEAN — DONDE EMPIEZA TODO",
+          body:
+            "Todo arranca en una conversación.\n\nJean entiende lo que el cliente quiere, incluso cuando no sabe explicarlo.\nOrdena ideas, baja conceptos y encuentra dirección.\n\nConvierte dudas en claridad.\nY proyectos en decisiones.",
+          profileCta: "Ver perfil",
+        },
+        mel: {
+          eyebrowLocal: "FUNDADORA",
+          title: "MEL — DONDE TODO SE HACE REAL",
+          body:
+            "Después de la idea, viene lo difícil: hacerlo.\n\nMel transforma conceptos en productos.\nDiseña, estructura y desarrolla sistemas que funcionan de verdad.\n\nLo que antes era una idea…\npasa a ser algo que existe.",
+          profileCta: "Ver perfil",
+        },
+      },
+      bridge: "PERO ESTO NO TERMINA ACÁ.",
+      introExtended: {
+        title: "NO SOMOS SOLO NOSOTRAS",
+        paragraphs: [
+          "Las Girls es un sistema.",
+          "Armamos equipos según cada proyecto. Sumamos personas según lo que se necesita.",
+          "No trabajamos con una estructura fija. Trabajamos con el mejor equipo posible para cada caso.",
+        ],
+      },
+      gridEyebrow: "SETUP REAL",
+      gridFrontend: {
+        eyebrow: "FRONTEND & PRODUCTO",
+        hook: `Equipo de desarrollo que se arma por proyecto.`,
+        rest: [
+          "Apps, sitios, software. Cada persona entra donde mejor rinde.",
+          "Hay quienes destacan en animaciones. Otros en experiencia de usuario. Otros en performance.",
+          "No todos hacen todo. Cada uno hace lo que mejor sabe hacer.",
+        ],
+      },
+      gridBackend: {
+        eyebrow: "BACKEND & INFRAESTRUCTURA",
+        hook: "Más de 12 años trabajando en tecnología.",
+        rest: [
+          "Experiencia en sistemas complejos, CRMs, plataformas de juegos y arquitectura escalable.",
+          "No es solo código. Es hacer que todo funcione cuando crece.",
+        ],
+      },
+      gridPm: {
+        eyebrow: "OPERACIONES & ORGANIZACIÓN",
+        hook: "Las personas que no se ven… pero hacen que todo funcione.",
+        rest: ["Organizan proyectos, equipos y tiempos.", "Sin esto, nada escala."],
+      },
+      gridVideo: {
+        eyebrow: "VIDEO & CONTENIDO",
+        hook: "Desde piezas simples hasta contenido altamente animado.",
+        rest: ["Videos para redes, campañas, storytelling.", "Contenido que no solo se ve bien… funciona."],
+      },
+      gridFinances: {
+        eyebrow: "FINANZAS & ESTRATEGIA",
+        hook: "Cada proyecto encuentra su equilibrio.",
+        rest: [
+          "No todos los presupuestos son iguales. No todas las ideas tienen los mismos recursos.",
+          "El objetivo es uno: hacer que el proyecto pase.",
+        ],
+      },
+      gridSocial: {
+        eyebrow: "REDES & COMUNICACIÓN",
+        hook: "Personas que entienden cómo hablar.",
+        rest: [
+          "Qué decir, cuándo y cómo. Estrategia, contenido y presencia.",
+          "Porque no alcanza con estar. Hay que conectar.",
+        ],
+      },
+      quoteBlockLines: ["Las Girls es un sistema.", "El equipo se arma según el proyecto."],
+      howWeWorkTitle: "NO VENDEMOS HORAS. ARMAMOS EQUIPOS.",
+      howWeWorkBody: [
+        "Recibimos proyectos. Analizamos lo que necesitan.",
+        "Y armamos el equipo ideal para resolverlo.",
+        "No es una estructura fija. Es un sistema que se adapta.",
+      ],
+      closingTitle: "LO QUE VES, ES SOLO UNA PARTE",
+      closingLead:
+        "Detrás de cada producto hay estrategia, código, diseño, contenido y decisiones.\n\nNosotras damos la cara. Pero el trabajo es colectivo.",
+      closingPreCta: "Si tenés una idea, hay un equipo para hacerla realidad.",
+      closingCta: "Trabajemos juntas.",
     },
     teamEditorial: {
       specialties: "Especialidades",
@@ -527,16 +605,133 @@ Te acompañamos en cada decisión, en cada entrega y en cada paso hasta que eso 
     },
     fab: { ariaBack: "Volver al hero" },
     aboutPage: {
-      tag: "about",
-      title: "Estrategia, criterio y ejecución con personalidad.",
-      description:
-        "Las Girls+ acompaña proyectos en distintas escalas con una lógica flexible: diagnóstico, roadmap y ejecución por frentes de trabajo según necesidad real.",
-      principles: [
-        "No imponemos un proceso lineal para todos.",
-        "Tomamos decisiones con base estratégica, no por tendencia.",
-        "Diseño y tecnología trabajan juntas desde el inicio.",
-        "Cada entrega busca impacto real en negocio y comunicación.",
-      ],
+      hero: {
+        eyebrow: "QUIÉNES SOMOS",
+        headlineLine1: "NO SOMOS UNA AGENCIA.",
+        headlineLine2: "SOMOS DOS MENTES QUE HACEN QUE LAS COSAS PASEN.",
+        subtitle:
+          "Las Girls somos Mel y Jean. Dos perfiles distintos, una misma obsesión: convertir ideas en productos que funcionan, venden y crecen.",
+        short1: "No venimos a “hacerte un diseño lindo”.",
+        short2: "Venimos a entender qué querés construir… y hacerlo realidad.",
+      },
+      intro: {
+        segmented: [
+          [
+            { text: "Hay ideas que llevan tantos años " },
+            { text: "dando vueltas en tu cabeza", italic: true },
+            { text: " que ya deberían " },
+            { text: "pagar alquiler", italic: true },
+            { text: "." },
+          ],
+          [
+            { text: "Proyectos que sentís con el estómago: ", italic: true },
+            {
+              text: "sabés que explotarían afuera, pero nadie te dibujó cómo meterlos en el mundo real.",
+            },
+          ],
+          [
+            { text: "En ese momento el plan no es esperar mágicamente ni pedir perdón: " },
+            { text: "aparece Las Girls", italic: true },
+            { text: "." },
+          ],
+          [
+            {
+              text: "No somos cuatro personas en llamada: somos la mezcla explícita de estrategia, branding, producto y desarrollo. Del ",
+            },
+            { text: "¿y si…?", italic: true },
+            {
+              text: " a algo que mostrás, usás, vendés… y hasta te da ganas de mandarlo por historia.",
+            },
+          ],
+        ],
+      },
+      duo: {
+        eyebrow: "LAS DOS CARAS",
+        jean: {
+          title: "JEAN — CONEXIÓN HUMANA",
+          sticker: "Convierte conversaciones en oportunidades.",
+          body:
+            "Jean entiende a las personas. Sabe leer lo que un cliente necesita incluso cuando no lo puede explicar. Se mueve en ventas, comunicación, branding y marketing. Negocia, baja ideas, ordena el caos y construye claridad. Donde otros ven dudas, ella encuentra dirección.",
+          tags: ["Branding", "Comunicación", "Marketing", "Ventas", "Estrategia"],
+        },
+        mel: {
+          title: "MEL — CONSTRUCCIÓN DIGITAL",
+          sticker: "Convierte ideas en productos reales.",
+          body:
+            "Mel escucha lo que imaginás… y lo convierte en algo que funciona. No se queda en lo conceptual. Diseña, estructura y desarrolla productos digitales que existen, se usan y escalan. Lo que antes era una idea, después de pasar por Mel, es un sistema.",
+          tags: ["IT / Desarrollo", "Producto", "UX/UI", "Sistemas", "Escalabilidad"],
+        },
+      },
+      match: {
+        title: "CUANDO ESTO SE JUNTA, PASA ALGO RARO",
+        paragraphs: [
+          "No es común encontrar a alguien que piense como vos. Menos alguien que trabaje al mismo ritmo.",
+          "Antes de conocernos, ya nos lo decían: “Tenés que conocerla, es igual que vos.”",
+          "Cuando finalmente pasó, fue inmediato. Misma forma de pensar. Misma obsesión por crear. Misma intensidad para ejecutar.",
+        ],
+      },
+      story: {
+        title: "CÓMO ARRANCÓ TODO",
+        entries: [
+          {
+            heading: "2019 — Primer cruce",
+            body: "Nos conocimos trabajando en proyectos dentro de una misma compañía. Ya veníamos “recomendadas” una a la otra.",
+          },
+          {
+            heading: "2020–2024 — Proyectos cruzados",
+            body: "Jean se fue a Madrid. Seguimos trabajando juntas en distintos proyectos: sitios, juegos, productos digitales. No siempre coincidíamos, pero cuando lo hacíamos, funcionaba demasiado bien.",
+          },
+          {
+            heading: "2025 — Primer encuentro real",
+            body: "Viaje a Madrid. Primera vez cara a cara. La química profesional que ya existía… se confirmó.",
+          },
+          {
+            heading: "Fin de 2025 — Primer proyecto juntas como dupla",
+            body: "Tomamos un proyecto en conjunto. Salió bien. Muy bien.",
+          },
+          {
+            heading: "2026 — Nacen Las Girls",
+            body: "Dejamos de decir “algún día” y empezamos a hacerlo real. Sitio, redes, clientes, proyectos. Y esto recién empieza.",
+          },
+        ],
+      },
+      caps: {
+        title: "HACEMOS TODO LO QUE NECESITÁS PARA CRECER",
+        lead: "No trabajamos por partes. Trabajamos en el todo.",
+        bullets: [
+          "Identidad de marca",
+          "UX/UI",
+          "Desarrollo web",
+          "Apps móviles",
+          "Sistemas internos",
+          "Automatizaciones",
+          "Contenido y redes",
+          "Estrategia digital",
+        ],
+        closer: "Desde una placa para redes… hasta un producto completo listo para escalar.",
+      },
+      squad: {
+        title: "NO ESTAMOS SOLAS",
+        teamCta: "Ver el equipo",
+        paragraphs: [
+          "Las caras visibles somos nosotras. Pero detrás hay un equipo.",
+          "Trabajamos con desarrolladores, diseñadores, editores, estrategas. Personas que sumamos según lo que cada proyecto necesita.",
+          "No somos una estructura rígida. Somos un sistema flexible que se arma para que tu proyecto funcione.",
+        ],
+      },
+      philosophy: {
+        title: "NO HACEMOS COSAS GENÉRICAS",
+        lines: [
+          "No creemos en plantillas.",
+          "No creemos en soluciones vacías.",
+          "Creemos en productos que se sienten propios. Que tienen sentido. Y que dan ganas de mostrarlos.",
+        ],
+      },
+      finale: {
+        title: "SI TENÉS UNA IDEA, YA TENÉS ALGO",
+        lead: "Ahora falta alguien que la entienda y la haga real.",
+        cta: "Trabajemos juntas.",
+      },
     },
     servicesPage: {
       h1: "Servicios",
@@ -555,6 +750,7 @@ function messagesEn() {
       services: "Services",
       team: "Team",
       blog: "Blog",
+      tools: "Tools",
       contact: "Contact",
     },
     breadcrumbAria: "Breadcrumb",
@@ -690,18 +886,19 @@ Guidance at each milestone until what you envisioned exists in the real world.`,
         "Copy/pasting workflows that aren’t yours",
         "Skipping the first validation target",
       ],
-      eyebrowArchive: ["archive", "services", "allied network"],
+      eyebrowArchive: ["services", "integration", "allied network"],
       mainTitleLines: ["WHAT WE", "CAN BUILD", "TOGETHER"],
-      kickerPrincipal: "folder 01 / primary",
+      kickerPrincipal: "01 · primary",
       kickerNetwork: "network / design / dev / launch",
       kickerFeatured: "highlighted combo",
       footerEdit: ["las girls edit.", "service dossier"],
       kickerService03: "service / 03",
+      kickerService05: "service / 05",
       labelResuelve: "solves",
       labelEjemplos: "examples",
-      kickerArchivo04: "folder 04",
+      kickerArchivo04: "04 · integration",
       kickerCierre: "finale / 06",
-      footerEditorial: ["las girls editorial system", "issue 2026"],
+      footerEditorial: ["las girls+", "grid 2026"],
     },
     cards: [
       {
@@ -782,6 +979,9 @@ Guidance at each milestone until what you envisioned exists in the real world.`,
       quoteRest:
         ",\n              while a multidisciplinary crew keeps momentum behind you.",
       quotePrefix: "You have a single ",
+      teamCta: "Meet the team",
+      aboutPrompt: "Want to know how it all started?",
+      aboutCta: "Read the story",
       profileAvailable: "Available",
       profileContact: "View profile",
     },
@@ -991,25 +1191,98 @@ Guidance at each milestone until what you envisioned exists in the real world.`,
       calcComputedSuffix: "(calculated)",
       calcCustomHint: "(custom)",
     },
-    teamPage: {
-      metadataTitle: "Team",
-      metadataDescription:
-        "Meet Jean, Mel, and the specialist network powering every Las Girls+ build.",
-      badge: "team",
-      headline: "Team",
-      intro:
-        "Jean and Mel are the face of Las Girls+. For each challenge we plug in seasoned specialists spanning development, branding, UX, social storytelling, AV, operations, and experimentation.",
-      extendedEyebrow: "01 — Extended crew",
-      extendedLead:
-        "We’re the face of Las Girls+—and there’s more behind the scenes.",
-      extendedBody1:
-        "We mobilise senior specialists spanning dev, design, strategy, product ops—whoever ships the outcome fastest.",
-      extendedBody2: "You talk with us—we architect and coordinate the roster.",
-      extendedBody3:
-        "Jean fronts brand narratives with global pedigree—MADFA, TED-style stages, alliances with Palermo Uni, Pantone LATAM chapters, and WEN’s European roster.",
-      extendedBody4:
-        "Mel carries that ethos into resilient software—full‑stack deployments, ruthless clarity, optimisation before launch hype.",
-      profileCta: "View profile",
+    teamLanding: {
+      hero: {
+        eyebrow: "TEAM · LAS GIRLS+",
+        headline: "WE’RE NOT JUST FACES.",
+        headlineAccent: "WE’RE A SYSTEM.",
+        subtitle:
+          "Las Girls are Mel and Jean.\n\nWhat we ship doesn’t rest on us alone.",
+        lead:
+          "Every finished project you see…\nhas many more hands behind it than meet the eye.",
+      },
+      founders: {
+        eyebrow: "FOUNDERS",
+        jean: {
+          eyebrowLocal: "CO-FOUNDER",
+          title: "JEAN — WHERE IT ALL STARTS",
+          body:
+            "It starts in a conversation.\n\nJean understands what clients want—even when they can’t quite say it.\nShe orders ideas, grounds concepts, and finds direction.\n\nShe turns doubt into clarity.\nAnd projects into decisions.",
+          profileCta: "See profile",
+        },
+        mel: {
+          eyebrowLocal: "CO-FOUNDER",
+          title: "MEL — WHERE IT BECOMES REAL",
+          body:
+            "After the idea comes the hard part: making it.\n\nMel turns concepts into products.\nShe designs, structures, and builds systems that actually work.\n\nWhat used to be an idea…\nbecomes something that exists.",
+          profileCta: "See profile",
+        },
+      },
+      bridge: "BUT IT DOESN’T STOP HERE.",
+      introExtended: {
+        title: "WE’RE NOT JUST THE TWO OF US",
+        paragraphs: [
+          "Las Girls is a system.",
+          "We build teams per project. We add people based on what’s needed.",
+          "We don’t run a fixed org chart. We run the best possible team for each case.",
+        ],
+      },
+      gridEyebrow: "REAL SETUPS",
+      gridFrontend: {
+        eyebrow: "FRONTEND & PRODUCT",
+        hook: `A dev team assembled per project.`,
+        rest: [
+          "Apps, sites, software. Everyone plugs in where they shine.",
+          "Some lead on motion. Others on UX. Others on performance.",
+          "Nobody does everything. Everyone does what they do best.",
+        ],
+      },
+      gridBackend: {
+        eyebrow: "BACKEND & INFRASTRUCTURE",
+        hook: "12+ years in technology.",
+        rest: [
+          "Complex systems, CRMs, game platforms, scalable architecture.",
+          "It’s not just code. It’s making it all work as things grow.",
+        ],
+      },
+      gridPm: {
+        eyebrow: "OPERATIONS & ORGANIZATION",
+        hook: "The people you don’t see… who keep everything running.",
+        rest: ["They organize projects, teams, and timelines.", "Without this, nothing scales."],
+      },
+      gridVideo: {
+        eyebrow: "VIDEO & CONTENT",
+        hook: "From simple pieces to highly animated work.",
+        rest: ["Social, campaigns, storytelling.", "Content that doesn’t just look good—it works."],
+      },
+      gridFinances: {
+        eyebrow: "FINANCE & STRATEGY",
+        hook: "Every project finds its balance.",
+        rest: [
+          "Not every budget is the same. Not every idea has the same runway.",
+          "One goal: make the project happen.",
+        ],
+      },
+      gridSocial: {
+        eyebrow: "SOCIAL & COMMUNICATION",
+        hook: "People who know how to speak.",
+        rest: [
+          "What to say, when, and how. Strategy, content, presence.",
+          "Showing up isn’t enough—you have to connect.",
+        ],
+      },
+      quoteBlockLines: ["Las Girls is a system.", "The team forms around the project."],
+      howWeWorkTitle: "WE DON’T SELL HOURS. WE BUILD TEAMS.",
+      howWeWorkBody: [
+        "We take on projects. We unpack what they need.",
+        "Then we assemble the right team to solve it.",
+        "It’s not a fixed structure. It’s a system that adapts.",
+      ],
+      closingTitle: "WHAT YOU SEE IS ONLY PART OF IT",
+      closingLead:
+        "Behind every product there’s strategy, code, design, content, and decisions.\n\nWe’re the face of it. The work is collective.",
+      closingPreCta: "If you have an idea, there’s a team ready to make it real.",
+      closingCta: "Let’s work together.",
     },
     teamEditorial: {
       specialties: "Specialties",
@@ -1030,73 +1303,73 @@ Guidance at each milestone until what you envisioned exists in the real world.`,
       alsoTeam: "Also on the team",
     },
     editorialOverridesEn: {
-        jean: {
-          role: "BRANDING & DESIGN",
-          roleLabel: "Head of Brand & Creative Direction",
-          tagline: "brands worth falling for.",
-          headline: "It's not\njust design—\nit's [[Identity]]",
-          skills: ["Visual identity", "Branding", "Social design"],
-          bio: [
-            "Hey sexy! I'm Jean—advertising designer and Head of Brand focused on tech-forward brand systems across Europe, the US, and Latin America.",
-            "I'm the host and presenter of MADFA (Madrid Film Awards)—an IMDb-qualifying festival with pathways toward Oscar-category recognition spanning audiovisual storytellers globally.",
-            "I also help produce international moments like TED and Fuckup Nights.",
-            "Every Thursday you'll find me on Desayuno con Diseñadores live via YouTube, Twitch, TikTok—with Universidad de Palermo, Trimarchi Festival, Pantone Argentina among our supporters.",
-            "I'm ambassador/mentor and European delegate for WEN (Women Entrepreneur Network), rooted in Florida, USA.",
-          ],
-          quote:
-            "Brands behave like humans—every one carries a storyline worth unpacking.",
-          expertise: [
-            {
-              label: "BRANDING",
-              desc: "High-contrast visuals paired with ruthless strategic clarity—you own unmistakable swagger.",
-            },
-            {
-              label: "COMMUNICATION",
-              desc: "I help distill what you truly need to articulate so resonance outpaces noise.",
-            },
-            {
-              label: "STRATEGY",
-              desc: "Momentum with guardrails—I ensure each decision ladders to commercial truth.",
-            },
-            {
-              label: "MENTORING",
-              desc: "Partnerships calibrated for sustainable growth—with discipline, pacing, optimism.",
-            },
-          ],
-        },
-        mel: {
-          role: "PRODUCT BUILDER",
-          roleLabel: "Full-stack Engineer & Product Architect",
-          tagline: "code that monetises ambition.",
-          headline: "The mind\nbehind the\ncode.",
-          skills: ["React & Node.js", "Landing systems", "Web apps", "UI/UX"],
-          bio: [
-            "I'm obsessed with stitching digital experiences end-to-end—architecture through launch polish.",
-            "Conversion, clarity, and performance lead my builds—beautiful means nothing unless it survives production reality.",
-            "Strategy, engineering, rigorous product instincts keep ideas tethered—scalable instrumentation first.",
-            "I shepherd releases from discovery to launch—with technical fidelity and ruthless business calibration.",
-          ],
-          quote:
-            "Shipping code matters only when we're shipping usable, durable, monetisable artefacts.",
-          expertise: [
-            {
-              label: "FRONTEND",
-              desc: "React / Next ecosystems with editorial sophistication—rapid, accessible skins that stay on-brand.",
-            },
-            {
-              label: "BACKEND",
-              desc: "Node.js, APIs, data layers tuned for elasticity while remaining maintainable long-term.",
-            },
-            {
-              label: "PRODUCT",
-              desc: "Architectural instincts paired with ruthless prioritisation so scope maps to observable outcomes.",
-            },
-            {
-              label: "UX / UI",
-              desc: "Clarity-forward interactions—beautiful surfaces must accelerate conversion—not wallpaper it.",
-            },
-          ],
-        },
+      jean: {
+        role: "BRANDING & DESIGN",
+        roleLabel: "Head of Brand & Creative Direction",
+        tagline: "brands worth falling for.",
+        headline: "It's not\njust design—\nit's [[Identity]]",
+        skills: ["Visual identity", "Branding", "Social design"],
+        bio: [
+          "Hey sexy! I'm Jean—advertising designer and Head of Brand focused on tech-forward brand systems across Europe, the US, and Latin America.",
+          "I'm the host and presenter of MADFA (Madrid Film Awards)—an IMDb-qualifying festival with pathways toward Oscar-category recognition spanning audiovisual storytellers globally.",
+          "I also help produce international moments like TED and Fuckup Nights.",
+          "Every Thursday you'll find me on Desayuno con Diseñadores live via YouTube, Twitch, TikTok—with Universidad de Palermo, Trimarchi Festival, Pantone Argentina among our supporters.",
+          "I'm ambassador/mentor and European delegate for WEN (Women Entrepreneur Network), rooted in Florida, USA.",
+        ],
+        quote:
+          "Brands behave like humans—every one carries a storyline worth unpacking.",
+        expertise: [
+          {
+            label: "BRANDING",
+            desc: "High-contrast visuals paired with ruthless strategic clarity—you own unmistakable swagger.",
+          },
+          {
+            label: "COMMUNICATION",
+            desc: "I help distill what you truly need to articulate so resonance outpaces noise.",
+          },
+          {
+            label: "STRATEGY",
+            desc: "Momentum with guardrails—I ensure each decision ladders to commercial truth.",
+          },
+          {
+            label: "MENTORING",
+            desc: "Partnerships calibrated for sustainable growth—with discipline, pacing, optimism.",
+          },
+        ],
+      },
+      mel: {
+        role: "PRODUCT BUILDER",
+        roleLabel: "Full-stack Engineer & Product Architect",
+        tagline: "code that monetises ambition.",
+        headline: "The mind\nbehind the\ncode.",
+        skills: ["React & Node.js", "Landing systems", "Web apps", "UI/UX"],
+        bio: [
+          "I'm obsessed with stitching digital experiences end-to-end—architecture through launch polish.",
+          "Conversion, clarity, and performance lead my builds—beautiful means nothing unless it survives production reality.",
+          "Strategy, engineering, rigorous product instincts keep ideas tethered—scalable instrumentation first.",
+          "I shepherd releases from discovery to launch—with technical fidelity and ruthless business calibration.",
+        ],
+        quote:
+          "Shipping code matters only when we're shipping usable, durable, monetisable artefacts.",
+        expertise: [
+          {
+            label: "FRONTEND",
+            desc: "React / Next ecosystems with editorial sophistication—rapid, accessible skins that stay on-brand.",
+          },
+          {
+            label: "BACKEND",
+            desc: "Node.js, APIs, data layers tuned for elasticity while remaining maintainable long-term.",
+          },
+          {
+            label: "PRODUCT",
+            desc: "Architectural instincts paired with ruthless prioritisation so scope maps to observable outcomes.",
+          },
+          {
+            label: "UX / UI",
+            desc: "Clarity-forward interactions—beautiful surfaces must accelerate conversion—not wallpaper it.",
+          },
+        ],
+      },
     },
     vip: {
       codeUnavailable: "That code isn’t available.",
@@ -1124,16 +1397,131 @@ Guidance at each milestone until what you envisioned exists in the real world.`,
     },
     fab: { ariaBack: "Back to hero" },
     aboutPage: {
-      tag: "about",
-      title: "Strategy, backbone, flair.",
-      description:
-        "Las Girls+ supports initiatives at varying scales—with flexible choreography: diagnostics, roadmap, phased execution calibrated to urgency.",
-      principles: [
-        "No forced linear playbook for everyone.",
-        "Choices grounded in narrative + evidence—not gimmicks.",
-        "Design & engineering riff together early.",
-        "Every sprint aims for observable business resonance.",
-      ],
+      hero: {
+        eyebrow: "WHO WE ARE",
+        headlineLine1: "WE’RE NOT AN AGENCY.",
+        headlineLine2: "WE’RE TWO MINDS THAT MAKE THINGS HAPPEN.",
+        subtitle:
+          "We’re Las Girls—Mel & Jean. Two different profiles. One obsession: turn ideas into products that work, sell, and scale.",
+        short1: "We didn’t show up to sell a “pretty deck.”",
+        short2: "We’re here to understand what you want to build—and make it happen.",
+      },
+      intro: {
+        segmented: [
+          [
+            { text: "Some ideas have squatted in your head so long they should be " },
+            { text: "paying rent", italic: true },
+            { text: "." },
+          ],
+          [
+            { text: "You feel the project in your bones", italic: true },
+            {
+              text: "—you know it would detonate in public—but nobody gave you the map to earth it.",
+            },
+          ],
+          [
+            { text: "That’s when “someday” stops being cute and we walk in: " },
+            { text: "Las Girls, volume up", italic: true },
+            { text: "." },
+          ],
+          [
+            {
+              text: "We’re not four freelancers in a trench coat: strategy, brand, product, and engineering in one swing—from ",
+            },
+            { text: "midnight shower thought", italic: true },
+            {
+              text: " to something you launch, sell, and flex without apologizing.",
+            },
+          ],
+        ],
+      },
+      duo: {
+        eyebrow: "THE TWO SIDES",
+        jean: {
+          title: "JEAN — HUMAN CONNECTION",
+          sticker: "Turns conversations into opportunity.",
+          body:
+            "Jean reads humans. Even when prospects can’t name it, she feels what buyers need—fast. Sales, comms, brand, marketing: she brokers clarity, trims noise, spins chaos into direction.",
+          tags: ["Branding", "Comms", "Marketing", "Sales", "Strategy"],
+        },
+        mel: {
+          title: "MEL — DIGITAL BUILDING",
+          sticker: "Turns ideas into real products.",
+          body:
+            "Mel listens to what you imagine…and ships systems that behave. UX, architecture, motion to production—ideas leave her desk as scalable digital products—not decks.",
+          tags: ["Eng / Dev", "Product", "UX/UI", "Systems", "Scale"],
+        },
+      },
+      match: {
+        title: "WHEN THESE TWO LOCK IN, WEIRD MAGIC HAPPENS",
+        paragraphs: [
+          "Rare to meet someone wired like you. Rarer someone who keeps cadence.",
+          "Before we met, mutual friends kept insisting: ‘You two have to collide.’",
+          "When we finally synced, it snapped—same shorthand, obsession, build velocity.",
+        ],
+      },
+      story: {
+        title: "HOW IT STARTED",
+        entries: [
+          {
+            heading: "2019 — First overlap",
+            body: "We met inside one company rolling multiple tracks. Whisper network already flagged us toward each other.",
+          },
+          {
+            heading: "2020–2024 — Satellite projects",
+            body: "Jean lands in Madrid. We still riff on sites, playful builds, MVPs—even when agendas didn’t line up.",
+          },
+          {
+            heading: "2025 — Eyes finally locked",
+            body: "London-Madrid meet. The kinetic respect we predicted? Confirmed offline.",
+          },
+          {
+            heading: "Late 2025 — First duet project",
+            body: "We took one contract together. Quietly crushed it.",
+          },
+          {
+            heading: "2026 — Las Girls goes loud",
+            body: "We stopped vending ‘some day,’ launched the brand, stacked clients—and this is barely act one.",
+          },
+        ],
+      },
+      caps: {
+        title: "EVERYTHING YOU NEED TO GROW",
+        lead: "We don’t chop work into souvenirs. We think in wholes.",
+        bullets: [
+          "Brand identity",
+          "UX / UI",
+          "Web builds",
+          "Mobile apps",
+          "Internal ops systems",
+          "Automations",
+          "Content / social cadence",
+          "Digital strategy",
+        ],
+        closer: "From a single social plaque…to a scalable product-ready stack.",
+      },
+      squad: {
+        title: "WE’RE NOT TWO SOLO ACTS",
+        teamCta: "Meet the team",
+        paragraphs: [
+          "You mostly see Jean & Mel. Behind us is elastic crew-power.",
+          "Devs, motion, editors, strat partners—wired in whenever the roadmap demands.",
+          "No rigid pyramid—just adaptable muscle shaped per project DNA.",
+        ],
+      },
+      philosophy: {
+        title: "GENERIC DOESN’T SHIP HERE",
+        lines: [
+          "Templates aren’t scripture.",
+          "Empty solutions aren’t products.",
+          "We obsess over artefacts that feel owned—worth flexing outward.",
+        ],
+      },
+      finale: {
+        title: "IF YOU HAVE AN IDEA, YOU ALREADY HAVE SOMETHING",
+        lead: "What’s missing is someone who gets it—and ships it.",
+        cta: "Let’s build it together.",
+      },
     },
     servicesPage: {
       h1: "Services",

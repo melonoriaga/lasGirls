@@ -15,14 +15,14 @@ import {
   isValidHex,
   normalizeHexInput,
   textColor,
-import { dictionaries } from "@/i18n/messages";
-import { useLocale } from "@/i18n/locale-provider";
+} from "@/lib/tools/color-math";
+import { useDictionary } from "@/i18n/locale-provider";
 
 const { INK, PINK } = TOOL_THEME;
 
 function Swatch({ hex, label, large = false }: { hex: string; label?: string; large?: boolean }) {
-  const { locale } = useLocale();
-  const tm = useMemo(() => dictionaries[locale].tools as unknown as Record<string, string>, [locale]);
+  const dict = useDictionary();
+  const tm = useMemo(() => dict.tools as unknown as Record<string, string>, [dict]);
   const [copied, setCopied] = useState(false);
 
   const copy = useCallback(() => {
@@ -130,9 +130,9 @@ function drawPalettePng(
 }
 
 export function ColorPaletteTool() {
-  const { locale } = useLocale();
-  const tm = useMemo(() => dictionaries[locale].tools as unknown as Record<string, string>, [locale]);
-  const toolName = dictionaries[locale].tools.paleta.name;
+  const dict = useDictionary();
+  const tm = useMemo(() => dict.tools as unknown as Record<string, string>, [dict]);
+  const toolName = dict.tools.paleta.name;
 
   const [hex, setHex] = useState("#FF6FAF");
   const [input, setInput] = useState("#FF6FAF");
@@ -212,7 +212,7 @@ export function ColorPaletteTool() {
           </div>
           <div className="hidden h-9 w-px bg-black/10 sm:block" />
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[0.44rem] font-extrabold uppercase tracking-[0.18em] text-[#111]/28">Ejemplos:</span>
+            <span className="text-[0.44rem] font-extrabold uppercase tracking-[0.18em] text-[#111]/28">{tm.paletteExamplesLabel}</span>
             {SEED_COLORS.map((c) => (
               <button
                 key={c}
@@ -234,10 +234,10 @@ export function ColorPaletteTool() {
         </motion.div>
 
         <div className="rounded-lg border border-black/10 bg-[#F4EDE6]/80 p-5">
-          <SectionLabel>Colores custom (incluidos en la exportación)</SectionLabel>
+          <SectionLabel>{tm.paletteCustomColours}</SectionLabel>
           <div className="flex flex-wrap items-end gap-3">
             <div className="flex flex-col gap-1">
-              <span className="text-[0.5rem] font-bold uppercase tracking-[0.12em] text-[#111]/40">HEX</span>
+              <span className="text-[0.5rem] font-bold uppercase tracking-[0.12em] text-[#111]/40">{tm.paletteHexField}</span>
               <input
                 type="text"
                 value={extraInput}
@@ -251,7 +251,7 @@ export function ColorPaletteTool() {
               onClick={addCustomColor}
               className="border-[1.5px] border-[#111] bg-[#111] px-4 py-2 text-[0.65rem] font-extrabold uppercase tracking-[0.12em] text-[#F4EDE6]"
             >
-              Agregar
+              {tm.paletteAddBtn}
             </button>
           </div>
           {customColors.length > 0 ? (
@@ -269,10 +269,10 @@ export function ColorPaletteTool() {
         </div>
 
         <div className="rounded-lg border border-black/10 p-5">
-          <SectionLabel>Exportar imagen (PNG)</SectionLabel>
+          <SectionLabel>{tm.paletteExportLegend}</SectionLabel>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <label className="flex flex-col gap-1 text-[0.65rem] font-semibold text-[#111]/70">
-              Ancho (100–1000)
+              {tm.paletteExportWidth}
               <input
                 type="number"
                 min={100}
@@ -283,7 +283,7 @@ export function ColorPaletteTool() {
               />
             </label>
             <label className="flex flex-col gap-1 text-[0.65rem] font-semibold text-[#111]/70">
-              Alto (100–1000)
+              {tm.paletteExportHeight}
               <input
                 type="number"
                 min={100}
@@ -295,10 +295,10 @@ export function ColorPaletteTool() {
             </label>
             <label className="flex cursor-pointer items-center gap-2 text-sm text-[#111]/80">
               <input type="checkbox" checked={exportTransparent} onChange={(e) => setExportTransparent(e.target.checked)} />
-              Fondo transparente
+              {tm.paletteExportTransparentBg}
             </label>
             <label className={`flex flex-col gap-1 text-[0.65rem] font-semibold text-[#111]/70 ${exportTransparent ? "opacity-40" : ""}`}>
-              Color de fondo (si no es transparente)
+              {tm.paletteExportSolidBgColour}
               <input type="color" value={exportBg} disabled={exportTransparent} onChange={(e) => setExportBg(e.target.value)} className="h-10 w-full max-w-[120px] cursor-pointer disabled:cursor-not-allowed" />
             </label>
           </div>
@@ -308,12 +308,12 @@ export function ColorPaletteTool() {
             className="mt-4 inline-flex items-center gap-2 border-0 bg-[#111] px-5 py-3 text-[0.68rem] font-extrabold uppercase tracking-[0.12em] text-[#F4EDE6]"
           >
             <Download size={16} />
-            Descargar PNG ({allForExport.length} muestras)
+            {tm.paletteDownloadSamples.replace("{count}", String(allForExport.length))}
           </button>
         </div>
 
         <div>
-          <SectionLabel>Base</SectionLabel>
+          <SectionLabel>{tm.paletteSwatchSection}</SectionLabel>
           <div className="grid grid-cols-1 border border-black/10 sm:grid-cols-[min(100%,280px)_1fr]">
             <Swatch hex={hex} large />
             <div className="flex flex-col justify-center gap-1 border-t border-black/10 p-4 sm:border-l sm:border-t-0">
@@ -339,36 +339,36 @@ export function ColorPaletteTool() {
         </div>
 
         <div>
-          <SectionLabel>Tints — claro → base</SectionLabel>
+          <SectionLabel>{tm.paletteTints}</SectionLabel>
           <div className="grid grid-cols-5 sm:grid-cols-9">{tints.map((t, i) => <Swatch key={i} hex={t} />)}</div>
         </div>
 
         <div className="grid grid-cols-5 sm:grid-cols-9">
-          <Swatch hex={hex} label="BASE" />
+          <Swatch hex={hex} label={tm.paletteLegendBaseMark} />
           {Array.from({ length: 8 }).map((_, i) => (
             <div key={i} className="h-[60px] border-r border-black/[0.04] bg-black/[0.025]" />
           ))}
         </div>
 
         <div>
-          <SectionLabel>Shades — base → oscuro</SectionLabel>
+          <SectionLabel>{tm.paletteShades}</SectionLabel>
           <div className="grid grid-cols-5 sm:grid-cols-9">{shades.map((s, i) => <Swatch key={i} hex={s} />)}</div>
         </div>
 
         {customColors.length > 0 ? (
           <div>
-            <SectionLabel>Tus colores extra</SectionLabel>
+            <SectionLabel>{tm.paletteExtraCustom}</SectionLabel>
             <div className="flex flex-wrap gap-2">{customColors.map((c) => <Swatch key={c} hex={c} large />)}</div>
           </div>
         ) : null}
 
         <div>
-          <SectionLabel>Armonías</SectionLabel>
+          <SectionLabel>{tm.paletteHarmonies}</SectionLabel>
           <div className="grid gap-4 sm:grid-cols-3">
             {[
-              { label: "Complementario", colors: [comp] },
-              { label: "Análogos", colors: [ana1, ana2] },
-              { label: "Triádicos", colors: [tri1, tri2] },
+              { label: tm.harmComp, colors: [comp] },
+              { label: tm.harmAnalogous, colors: [ana1, ana2] },
+              { label: tm.harmTriadic, colors: [tri1, tri2] },
             ].map((g) => (
               <div key={g.label}>
                 <div className="mb-2 text-[0.44rem] font-extrabold uppercase tracking-[0.18em] text-[#111]/30">{g.label}</div>
@@ -386,7 +386,7 @@ export function ColorPaletteTool() {
 
         <div className="flex gap-2 border border-black/10 px-4 py-3 text-sm text-[#111]/45">
           <span className="text-[#FF6FAF]">✦</span>
-          <p className="m-0 leading-relaxed">Clic en una muestra copia el HEX. La grilla exportada incluye tints, base, shades, armonías y tus colores custom.</p>
+          <p className="m-0 leading-relaxed">{tm.paletteTip}</p>
         </div>
       </div>
     </ToolLayout>

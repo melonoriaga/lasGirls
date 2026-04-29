@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { TeamLandingContent } from "@/components/team/team-landing";
+import { TeamEditorialLanding } from "@/components/team/editorial/team-editorial-landing";
 import { buildMetadata } from "@/lib/seo/metadata";
 
 export const metadata: Metadata = buildMetadata({
@@ -7,8 +7,10 @@ export const metadata: Metadata = buildMetadata({
   description:
     "Jean, Mel y una red de especialistas para cada proyecto. Crew extendido: branding, tech, producto y contenido.",
   path: "/team",
+  image: "/seo/team.jpeg",
+  imageAlt: "Team Las Girls+",
 });
 
 export default function TeamPage() {
-  return <TeamLandingContent />;
+  return <TeamEditorialLanding />;
 }

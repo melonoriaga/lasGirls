@@ -34,7 +34,7 @@ export function LanyardCardSection() {
 
         <div className="order-1 flex flex-col gap-7 lg:order-2 lg:col-span-5">
           <div className="flex items-center gap-4">
-            <span className="inline-flex bg-[#ff3ea5] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-black">
+            <span className="inline-flex rounded-xl bg-[#ff3ea5] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-black">
               {Ly.eyebrow}
             </span>
             <span className="hidden h-px flex-1 bg-white/15 md:block" />

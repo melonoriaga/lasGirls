@@ -1,5 +1,5 @@
 import { dictionaries, type Locale } from "@/i18n/messages";
-import type { EditorialTeamMember } from "@/content/team/editorial-members";
+import type { EditorialTeamMember } from "@/content/teamSetup/editorial-members";
 
 /** Merges English copy from messages when `locale === "en"`. */
 export function resolveEditorialMember(member: EditorialTeamMember, locale: Locale): EditorialTeamMember {

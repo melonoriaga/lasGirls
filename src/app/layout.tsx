@@ -4,6 +4,7 @@ import "@/app/globals.css";
 import { buildMetadata } from "@/lib/seo/metadata";
 import { cn } from "@/lib/utils";
 import { LocaleProvider } from "@/i18n/locale-provider";
+import { FirebaseAnalyticsInit } from "@/components/analytics/firebase-analytics-init";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -49,6 +50,7 @@ export default function RootLayout({
         <link rel="mask-icon" href="/brand/stickers/sticker-6.png?v=lg7" color="#ff5faf" />
       </head>
       <body>
+        <FirebaseAnalyticsInit />
         <LocaleProvider>{children}</LocaleProvider>
       </body>
     </html>

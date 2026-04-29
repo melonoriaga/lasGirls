@@ -47,7 +47,7 @@ export const editorialMembers: EditorialTeamMember[] = [
     id: "mel",
     slug: "mel",
     name: "MEL",
-    fullName: "MEL ONORIAGA",
+    fullName: "MEL",
     role: "CREADORA DE PRODUCTOS",
     roleLabel: "Desarrolladora Fullstack & Creadora de Productos",
     tagline: "código que convierte.",

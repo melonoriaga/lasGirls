@@ -27,7 +27,7 @@ const labelClassName =
   "mb-1.5 block font-mono text-[10px] uppercase tracking-[0.18em] text-black/60";
 
 const submitClassName =
-  "group inline-flex min-h-[52px] min-w-[180px] items-center justify-center gap-2 border-2 border-black bg-black px-6 font-display text-sm font-bold uppercase tracking-widest text-[#F3EEE8] transition-colors hover:bg-[#ff3ea5] hover:text-black disabled:cursor-not-allowed disabled:opacity-60";
+  "group inline-flex min-h-[52px] min-w-[180px] items-center justify-center gap-2 rounded-2xl border-2 border-[#ff3ea5] bg-[#ff3ea5] px-7 font-display text-xs font-extrabold uppercase tracking-widest text-black shadow-[0_10px_28px_-6px_rgba(255,62,165,0.45)] transition hover:brightness-110 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60";
 
 const CARD_BG = "#F3EEE8";
 const PANEL_BG = "#EFE7DD";
@@ -213,7 +213,7 @@ export function ContactForm() {
             style={{ backgroundColor: PANEL_BG }}
           >
             <div className="mx-auto max-w-xl text-center">
-              <span className="inline-flex bg-[#ff3ea5] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-black">
+              <span className="inline-flex rounded-xl bg-[#ff3ea5] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-black">
                 {f.requestReceived}
               </span>
               <h3 className="mt-5 font-display text-3xl font-black uppercase leading-tight text-black md:text-5xl">
@@ -226,14 +226,14 @@ export function ContactForm() {
               <div className="mt-7 flex flex-wrap justify-center gap-3">
                 <button
                   type="button"
-                  className="border-2 border-black/60 bg-transparent px-5 py-3 font-display text-xs font-bold uppercase tracking-widest text-black transition-colors hover:border-black hover:bg-black hover:text-[#F3EEE8]"
+                  className="rounded-2xl border-2 border-black/60 bg-transparent px-6 py-3 font-display text-xs font-bold uppercase tracking-widest text-black transition-colors hover:border-black hover:bg-black hover:text-[#F3EEE8]"
                   onClick={() => setWhatsappSubmitted(false)}
                 >
                   {f.btnClose}
                 </button>
                 <button
                   type="button"
-                  className="bg-[#ff3ea5] px-5 py-3 font-display text-xs font-bold uppercase tracking-widest text-black transition-colors hover:bg-black hover:text-[#F3EEE8]"
+                  className="rounded-2xl border-2 border-[#ff3ea5] bg-[#ff3ea5] px-6 py-3 font-display text-xs font-bold uppercase tracking-widest text-black shadow-[0_8px_20px_-6px_rgba(255,62,165,0.4)] transition hover:brightness-110"
                   onClick={() => {
                     setWhatsappSubmitted(false);
                     setWaError("");

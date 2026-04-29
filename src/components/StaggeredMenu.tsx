@@ -427,7 +427,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
     }
   }, [playClose, animateIcon, animateColor, animateText, onMenuClose]);
 
-  React.useEffect(() => {
+  useLayoutEffect(() => {
     if (forceScrolled) return;
     const update = () => {
       setScrolled(window.scrollY > scrollThreshold);
@@ -785,6 +785,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                       href={it.link}
                       aria-label={it.ariaLabel}
                       data-index={idx + 1}
+                      onClick={() => closeMenu()}
                     >
                       <span className="sm-panel-itemLabel inline-block [transform-origin:50%_100%] will-change-transform">
                         {it.label}
