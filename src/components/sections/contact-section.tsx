@@ -1,44 +1,114 @@
+"use client";
+
+import dynamic from "next/dynamic";
 import { ContactForm } from "@/components/forms/contact-form";
-import { ContactDecorationSticker } from "@/components/sections/contact-decoration-sticker";
-import { contactPageContent } from "@/content/site/contact";
+import { useDictionary } from "@/i18n/locale-provider";
+
+function ContactStickerSkeleton() {
+  return (
+    <div
+      className="relative mx-auto flex w-full max-w-[300px] items-center justify-center lg:mx-0 lg:max-w-none lg:justify-end"
+      aria-hidden
+    >
+      <div className="h-[min(70vw,240px)] w-[min(70vw,240px)] rounded-2xl bg-black/[0.06] lg:h-[min(320px,24vw)] lg:w-[min(320px,24vw)]" />
+    </div>
+  );
+}
+
+const ContactStickerFloat = dynamic(
+  () =>
+    import("@/components/sections/contact-sticker-float").then(
+      (m) => m.ContactStickerFloat,
+    ),
+  { ssr: false, loading: ContactStickerSkeleton },
+);
 
 type ContactSectionProps = {
   id?: string;
 };
 
 export function ContactSection({ id }: ContactSectionProps) {
+  const d = useDictionary();
+  const c = d.contactSection;
+  const cp = d.contactPage;
+
   return (
-    <section id={id} className="relative min-h-screen w-full overflow-hidden border-y-2 border-black bg-[#f4ede6]">
-      <div className="relative z-10 flex min-h-screen w-full flex-col justify-center px-0 py-20">
-        <div className="mx-auto w-full max-w-[1280px] px-4 md:px-8">
-          <header className="mb-8 md:mb-10">
-            <h1 className="font-display text-[12vw] uppercase leading-[0.84] text-black md:text-[6rem]">
-              CONTACT
-            </h1>
-            <p className="mt-3 max-w-[64ch] text-sm text-black/75 md:text-base">{contactPageContent.subtitle}</p>
-            <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-black/65">
-              Primera consulta sin costo
-            </p>
-            <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2">
-              {contactPageContent.channels.map((channel) => (
-                <a
-                  key={channel.label}
-                  href={channel.href}
-                  className="text-xs uppercase tracking-[0.12em] text-[#ff2f9d] underline decoration-black/35 underline-offset-4"
+    <section
+      id={id}
+      className="relative w-full overflow-hidden border-t-2 border-black bg-[#ff6faf] px-4 py-16 text-black sm:px-6 md:py-20 lg:px-10 lg:py-24"
+    >
+      <div className="relative z-10 mx-auto flex w-full max-w-[1600px] flex-col gap-14 md:gap-16">
+        <header className="flex max-w-3xl flex-col gap-4">
+          <p className="font-mono text-[10px] font-bold uppercase tracking-[0.32em] text-black/65 md:text-[11px]">
+            {c.kicker}
+          </p>
+          <h2 className="font-display text-[clamp(2.5rem,9vw,4.75rem)] font-black uppercase leading-[0.9] tracking-[-0.03em] text-black">
+            {c.h2a}
+            <span className="text-black">{c.h2period}</span>
+          </h2>
+          <p className="font-accent text-[clamp(1.65rem,4.5vw,2.75rem)] leading-[0.98] text-black">
+            {c.accent}
+          </p>
+          <p className="max-w-[60ch] text-base leading-[1.6] text-black/75 md:text-lg">
+            {cp.subtitle}
+          </p>
+
+          <div className="mt-2 flex flex-wrap gap-2">
+            {[
+              { label: "Jean", value: "jean@lasgirlsplus.com", href: "mailto:jean@lasgirlsplus.com" },
+              { label: "Mel", value: "mel@lasgirlsplus.com", href: "mailto:mel@lasgirlsplus.com" },
+              {
+                label: "WhatsApp",
+                value: cp.waValue,
+                href: "https://wa.me/5493586003572",
+              },
+              {
+                label: "Instagram",
+                value: "@lasgirls.plus",
+                href: "https://www.instagram.com/lasgirls.plus?igsh=MWdyZXEybXYyOW9tOQ%3D%3D&utm_source=qr",
+              },
+            ].map((channel, i) => {
+              const accent = i % 2 === 0;
+              return (
+              <a
+                key={`${channel.label}-${channel.value}`}
+                href={channel.href}
+                target={channel.href.startsWith("http") ? "_blank" : undefined}
+                rel={channel.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                className={`group inline-flex items-center gap-1.5 rounded-full border px-3.5 py-2 font-mono text-[10px] font-medium uppercase tracking-[0.085em] transition-colors ${
+                  accent
+                    ? "border-black/40 bg-black/10 text-black/80 hover:border-black/55 hover:bg-black/[0.14]"
+                    : "border-black/25 bg-black/[0.06] text-black/58 hover:border-black/40 hover:bg-black/10"
+                }`}
+              >
+                <span
+                  aria-hidden
+                  className={`text-[7px] leading-none ${accent ? "text-black/45" : "text-black/35"}`}
                 >
-                  {channel.label}: {channel.value}
-                </a>
-              ))}
-            </div>
-          </header>
+                  ◆
+                </span>
+                <span className="opacity-70">{channel.label}</span>
+                <span className="text-black/35">/</span>
+                <span>{channel.value}</span>
+              </a>
+              );
+            })}
+          </div>
+        </header>
 
-          <ContactForm />
+        <div className="grid w-full grid-cols-1 items-start gap-12 lg:grid-cols-3 lg:items-center lg:gap-14 xl:gap-16">
+          <div className="min-w-0 lg:col-span-2">
+            <ContactForm />
+          </div>
+          <div className="flex w-full items-center justify-center lg:justify-end">
+            <ContactStickerFloat />
+          </div>
         </div>
-      </div>
 
-      <div className="pointer-events-none absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_72%,rgba(255,111,175,0.16),transparent_45%)]" />
-        <ContactDecorationSticker />
+        <div className="flex items-center gap-3 border-t-2 border-black/80 pt-5 text-[10px] uppercase tracking-[0.2em] text-black/60">
+          <span className="font-mono">{c.footerLine}</span>
+          <span className="ml-auto font-mono">{c.reply}</span>
+        </div>
       </div>
     </section>
   );

@@ -3,8 +3,13 @@ export const contactPageContent = {
   subtitle:
     "Si todavía no sabés qué servicio necesitás, también está perfecto. Te ayudamos a definir el mejor camino.",
   channels: [
-    { label: "Email", value: "hola@lasgirls.com", href: "mailto:hola@lasgirls.com" },
-    { label: "WhatsApp", value: "+54 9 11 0000-0000", href: "https://wa.me/5491100000000" },
-    { label: "Instagram", value: "@lasgirlsplus", href: "https://instagram.com/lasgirlsplus" },
+    { label: "Jean", value: "jean@lasgirlsplus.com", href: "mailto:jean@lasgirlsplus.com" },
+    { label: "Mel", value: "mel@lasgirlsplus.com", href: "mailto:mel@lasgirlsplus.com" },
+    { label: "WhatsApp", value: "Escribinos", href: "https://wa.me/5493586003572" },
+    {
+      label: "Instagram",
+      value: "@lasgirls.plus",
+      href: "https://www.instagram.com/lasgirls.plus?igsh=MWdyZXEybXYyOW9tOQ%3D%3D&utm_source=qr",
+    },
   ],
 };

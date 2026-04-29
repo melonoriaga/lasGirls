@@ -1,26 +1,21 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
+import CurvedLoop from "@/components/CurvedLoop";
+import { useDictionary, useLocale } from "@/i18n/locale-provider";
 
 gsap.registerPlugin(ScrollTrigger);
-
-const STICKER_POSES = [
-  { x: 0, y: 0, r: 0 },
-  { x: -18, y: -10, r: -6 },
-  { x: 14, y: -16, r: 8 },
-  { x: -10, y: 12, r: -9 },
-  { x: 22, y: 8, r: 7 },
-];
 
 /** Full-viewport “your idea, ready today” poster block (headline + callout + sticker). */
 export function IdeaReadyImpactSection() {
   const sectionRef = useRef<HTMLElement | null>(null);
-  const [poseIndex, setPoseIndex] = useState(0);
+  const { locale } = useLocale();
+  const i = useDictionary().ideaImpact;
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = sectionRef.current;
     if (!el) return;
 
@@ -68,56 +63,84 @@ export function IdeaReadyImpactSection() {
           scrub: 0.9,
         },
       });
+
+      const charInner = el.querySelector<HTMLElement>(".impact-char-float");
+      if (charInner) {
+        gsap.to(charInner, {
+          keyframes: [
+            { y: -26, rotate: 4, duration: 2.6, ease: "sine.inOut" },
+            { y: 12, rotate: -3, duration: 2.6, ease: "sine.inOut" },
+            { y: 0, rotate: 0, duration: 2.2, ease: "sine.inOut" },
+          ],
+          repeat: -1,
+        });
+      }
     }, el);
 
     return () => ctx.revert();
-  }, []);
+  }, [locale]);
 
   return (
     <section
       id="impact-poster"
       ref={sectionRef}
-      className="relative isolate flex h-[100dvh] items-center justify-center overflow-hidden border-t-2 border-black bg-black px-4 py-6 lg:px-8 lg:py-8"
+      className="relative isolate flex h-[100dvh]  overflow-hidden  bg-black  items-center justify-center"
     >
-      <div className="impact-fade relative h-full w-full max-w-[1200px] overflow-hidden rounded-[2.5rem] bg-[#f5a8cc] px-8 py-8 lg:rounded-[3rem] lg:px-12 lg:py-10">
+      <div className="impact-fade relative h-[78%] w-[88%] rounded-[1.75rem] bg-[#f5a8cc] px-5 py-5 sm:h-[72%] sm:w-[84%] sm:px-10 sm:py-10 lg:h-[70%] lg:w-[80%] lg:rounded-[2.5rem] lg:px-16 lg:py-14">
+        <p className="font-mono text-[10px] font-bold uppercase tracking-[0.32em] text-black/65 md:text-[11px] mb-4">{i.kicker}</p>
+
+        <div className="pointer-events-none absolute inset-0 z-[1] flex items-center justify-center opacity-90 overflow-hidden">
+          <CurvedLoop
+            marqueeText={i.curved}
+            speed={1.2}
+            curveAmount={260}
+            interactive={false}
+            fill="#FC92C1"
+            className="font-display font-black"
+          />
+        </div>
+
         <div className="relative z-[6]">
-          <h2 className="impact-line impact-line--top font-display text-[clamp(3.5rem,11vw,9rem)] uppercase leading-[0.85] tracking-[-0.03em] text-black">
-            TU IDEA
+          <h2 className="font-display text-[clamp(2.4rem,11vw,14rem)] uppercase leading-[0.85] tracking-[-0.03em] text-black">
+            {i.title}
           </h2>
+
           <h2
-            className="impact-line font-accent -mt-1 text-[clamp(3rem,10vw,8rem)] leading-[0.9] text-[#ff2f9d]"
-            style={{ WebkitTextStroke: "5px white", paintOrder: "stroke fill" }}
+            className="impact-line font-accent -mt-6 text-[clamp(2.2rem,12vw,10rem)] leading-[0.8] text-[#FF6FAF] -rotate-[6deg] translate-x-[10px] translate-y-[-6px] [-webkit-text-stroke:6px_white] [paint-order:stroke_fill] sm:-mt-10 sm:translate-x-[50px] sm:translate-y-[-14px] sm:[-webkit-text-stroke:12px_white] lg:translate-x-[120px] lg:translate-y-[-24px] lg:[-webkit-text-stroke:26px_white]"
           >
-            Lista hoy
+            {i.subtitle}
           </h2>
         </div>
 
-        <div className="impact-fade absolute bottom-8 left-8 z-[10] lg:bottom-10 lg:left-12">
-          <div className="max-w-[280px] rounded-xl border border-black/30 bg-[#f5a8cc]/60 px-4 py-3 backdrop-blur-sm">
-            <p className="text-[0.58rem] font-bold uppercase tracking-[0.18em] text-black">SIN VUELTAS</p>
-            <p className="mt-1 font-accent text-[1rem] italic text-black line-through">
-              No necesitas seis meses de reuniones.
+        <div className="impact-fade absolute bottom-4 left-4 z-[10] max-w-[calc(100%-2rem)] sm:bottom-10 sm:left-10 sm:max-w-none lg:bottom-14 lg:left-16">
+          <div
+            className="max-w-[240px] rounded-xl border border-black bg-[#FF6FAF] px-3 py-2.5 backdrop-blur-sm sm:max-w-[340px] sm:px-4 sm:py-3 lg:max-w-[420px] lg:px-5 lg:py-4"
+            style={{ borderStyle: "dashed", borderWidth: "3px" }}
+          >
+            <p className="text-[0.58rem] font-bold uppercase tracking-[0.18em] text-black sm:text-[0.62rem] lg:text-[0.7rem]">
+              {i.ribbon}
             </p>
-            <p className="mt-1.5 text-[0.6rem] font-semibold uppercase leading-snug tracking-[0.1em] text-black/90">
-              SI YA TENES MARCA, TEXTOS E IMAGENES, LO BAJAMOS A TIERRA RAPIDO Y CON CRITERIO.
+
+            <p className="mt-1 font-accent text-[0.9rem] italic text-white sm:text-[1rem] lg:text-[1.15rem]">
+              {i.line1}
+            </p>
+
+            <p className="mt-1.5 text-[0.7rem] font-semibold uppercase leading-snug tracking-[0.15em] text-black/95 sm:text-[0.8rem] lg:text-[1rem]">
+              {i.line2}
             </p>
           </div>
         </div>
 
-        <div
-          className="impact-char-wrap impact-fade absolute bottom-0 right-0 z-[8] h-[90%] w-[48%] max-w-[560px]"
-          onMouseEnter={() => setPoseIndex((i) => (i + 1) % STICKER_POSES.length)}
-          style={{
-            transform: `translate(${STICKER_POSES[poseIndex].x}px, ${STICKER_POSES[poseIndex].y}px) rotate(${STICKER_POSES[poseIndex].r}deg)`,
-          }}
-        >
-          <Image
-            src="/brand/stickers/STICKER19.png"
-            alt="Sticker Las Girls+"
-            fill
-            className="object-contain object-bottom"
-            priority={false}
-          />
+        <div className="impact-char-wrap pointer-events-none absolute -bottom-2 right-0 z-[8] h-full w-[48%] max-w-[760px] sm:-bottom-4 sm:right-[-100px] sm:w-[58%] lg:h-[110%] lg:w-[55%]">
+          <div className="impact-char-float impact-fade relative h-full w-full" style={{ transformOrigin: "50% 100%" }}>
+            <Image
+              src="/brand/stickers/STICKER19.png"
+              alt="Sticker Las Girls+"
+              fill
+              className="object-contain object-bottom"
+              priority={false}
+            />
+          </div>
         </div>
       </div>
     </section>

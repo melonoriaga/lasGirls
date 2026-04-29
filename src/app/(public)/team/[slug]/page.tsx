@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { TeamMemberEditorial } from "@/components/team/team-member-editorial";
-import { editorialMembers, editorialMembersBySlug } from "@/content/team/editorial-members";
+import { editorialMembers, editorialMembersBySlug } from "@/content/teamSetup/editorial-members";
 import { buildMetadata } from "@/lib/seo/metadata";
 
 type Props = {

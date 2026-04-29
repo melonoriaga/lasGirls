@@ -3,11 +3,39 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { leadSchema, type LeadFormInput } from "@/lib/validations/lead";
+import { Noise } from "@/components/Noise";
+import {
+  leadSchema,
+  type LeadFormValues,
+  type LeadParsed,
+} from "@/lib/validations/lead";
+import { useDictionary } from "@/i18n/locale-provider";
 
 type Panel = "whatsapp" | "email";
 
+/** Solo línea inferior (sin caja completa): inputs, email, select y textarea alineados. */
+const fieldBase =
+  "w-full rounded-none border-0 border-b-2 border-black/35 bg-transparent px-0 py-2.5 font-display text-base uppercase tracking-[0.02em] text-black shadow-none outline-none ring-0 transition-colors placeholder:text-black/45 placeholder:normal-case placeholder:tracking-normal placeholder:font-sans focus:border-black";
+
+const inputClassName = `${fieldBase}`;
+
+const selectClassName = `${fieldBase} cursor-pointer appearance-none bg-transparent pr-8`;
+
+const textareaClassName = `${fieldBase} min-h-[120px] resize-y`;
+
+const labelClassName =
+  "mb-1.5 block font-mono text-[10px] uppercase tracking-[0.18em] text-black/60";
+
+const submitClassName =
+  "group inline-flex min-h-[52px] min-w-[180px] items-center justify-center gap-2 rounded-2xl border-2 border-[#ff3ea5] bg-[#ff3ea5] px-7 font-display text-xs font-extrabold uppercase tracking-widest text-black shadow-[0_10px_28px_-6px_rgba(255,62,165,0.45)] transition hover:brightness-110 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60";
+
+const CARD_BG = "#F3EEE8";
+const PANEL_BG = "#EFE7DD";
+
 export function ContactForm() {
+  const f = useDictionary().contactForm;
+  const iq = f.inquiries;
+
   const [panel, setPanel] = useState<Panel>("whatsapp");
   const [successMessage, setSuccessMessage] = useState("");
   const [whatsappSubmitted, setWhatsappSubmitted] = useState(false);
@@ -16,10 +44,10 @@ export function ContactForm() {
   const [waName, setWaName] = useState("");
   const [waPhone, setWaPhone] = useState("");
 
-  const form = useForm<LeadFormInput>({
+  const form = useForm<LeadFormValues>({
     resolver: zodResolver(leadSchema),
     defaultValues: {
-      inquiryType: "consulta_general",
+      inquiryType: "",
       projectStage: "solo_idea",
       preferredContactMethod: "email",
       serviceInterest: [],
@@ -28,7 +56,7 @@ export function ContactForm() {
     },
   });
 
-  const submitLead = async (payload: LeadFormInput) => {
+  const submitLead = async (payload: LeadParsed) => {
     return fetch("/api/contact", {
       method: "POST",
       body: JSON.stringify(payload),
@@ -39,21 +67,21 @@ export function ContactForm() {
   const onEmailSubmit = form.handleSubmit(async (values) => {
     setIsSending(true);
     setSuccessMessage("");
-    const response = await submitLead({ ...values, acceptsPrivacy: true });
+    const response = await submitLead({
+      ...values,
+      acceptsPrivacy: true,
+    } as LeadParsed);
 
     if (!response.ok) {
       form.setError("root", {
-        message:
-          "No pudimos enviar tu consulta ahora. Probá nuevamente en unos minutos o escribinos por WhatsApp.",
+        message: f.errorSend,
       });
       setIsSending(false);
       return;
     }
 
     form.reset();
-    setSuccessMessage(
-      "Gracias por escribirnos. Vamos a revisar tu consulta y responderte lo antes posible. Si tu idea todavía está verde, no pasa nada: también acompañamos esa etapa.",
-    );
+    setSuccessMessage(f.thankYou);
     setIsSending(false);
   });
 
@@ -72,14 +100,14 @@ export function ContactForm() {
       serviceInterest: [],
       budgetRange: "",
       projectStage: "solo_idea",
-      message: "Solicita contacto inicial por WhatsApp.",
+      message: f.whatsappInternalNote,
       source: "form-whatsapp",
       preferredContactMethod: "whatsapp",
       acceptsPrivacy: true,
     });
 
     if (!response.ok) {
-      setWaError("No pudimos guardar tu solicitud. Probá de nuevo en un momento.");
+      setWaError(f.errorWa);
       setIsSending(false);
       return;
     }
@@ -90,157 +118,297 @@ export function ContactForm() {
     setIsSending(false);
   };
 
-  const inputClassName =
-    "w-full border-b border-black/40 bg-transparent px-0 py-2 text-sm text-black placeholder:text-black/45 focus:border-[#ff2f9d] focus:outline-none";
-  const labelClassName = "mb-1 block text-[11px] uppercase tracking-[0.16em] text-black/65";
-  const tabBaseClassName =
-    "w-full flex items-center gap-3 border-b border-black/20 px-4 py-4 text-left transition md:px-6 md:py-5";
-  const tabTitleClassName = "font-display text-4xl uppercase leading-[0.88] text-black md:text-6xl";
-
-  return (
-    <div className="overflow-hidden rounded-[22px] border border-black/20 bg-[#f2ece5]">
+  const renderTab = (
+    target: Panel,
+    number: string,
+    title: string,
+    subtitle: string,
+  ) => {
+    const active = panel === target;
+    return (
       <button
         type="button"
-        onClick={() => setPanel("whatsapp")}
-        className={`${tabBaseClassName} ${panel === "whatsapp" ? "bg-[#ffd6e8]" : "bg-[#f8d4de] hover:bg-[#f4c9d6]"}`}
+        onClick={() => setPanel(target)}
+        className={`group relative z-20 flex w-full items-center gap-4 border-b-2 border-black/25 px-5 py-5 text-left transition-colors md:px-8 md:py-7 ${
+          active
+            ? "bg-[#ff3ea5] text-black shadow-[inset_0_-3px_0_rgba(0,0,0,0.06)]"
+            : "bg-[#fde4f2] text-black hover:bg-[#fbcfe8] hover:shadow-[0_6px_0_0_rgba(0,0,0,0.07)] active:bg-[#f9b9dd]"
+        }`}
+        aria-expanded={active}
       >
-        <span className="text-[11px] uppercase tracking-[0.2em] text-black/60">01.</span>
-        <span className="grid gap-1">
-          <span className={tabTitleClassName}>WhatsApp</span>
-          <span className="text-xs text-black/65 md:text-[13px]">Quiero que me contacten por WhatsApp.</span>
+        <span
+          className={`font-mono text-[11px] font-bold uppercase tracking-[0.2em] ${
+            active ? "text-black/70" : "text-black/55"
+          }`}
+        >
+          {number}
         </span>
-        <span className="ml-auto hidden text-[11px] uppercase tracking-[0.12em] text-black/55 md:block">
-          [click para usar]
+        <span className="grid flex-1 gap-1">
+          <span
+            className={`font-display text-2xl uppercase leading-none tracking-tight md:text-4xl ${
+              active ? "text-black" : "text-black"
+            }`}
+          >
+            {title}
+          </span>
+          <span
+            className={`text-xs md:text-sm ${
+              active ? "text-black/70" : "text-black/60"
+            }`}
+          >
+            {subtitle}
+          </span>
+        </span>
+        <span
+          aria-hidden
+          className={`shrink-0 font-mono text-[10px] uppercase tracking-[0.16em] transition-transform md:text-[11px] ${
+            active
+              ? "translate-x-1 text-black"
+              : "text-black/55 group-hover:translate-x-1 group-hover:text-black"
+          }`}
+        >
+          {active ? f.tabActive : f.tabInactive}
         </span>
       </button>
+    );
+  };
+
+  return (
+    <div
+      className="relative overflow-hidden rounded-[18px] border-2 border-black/80 shadow-[0_10px_24px_rgba(17,17,17,0.14)]"
+      style={{ backgroundColor: CARD_BG }}
+    >
+      {/* Noise overlay (same recipe as methodology cards) */}
+      <div
+        className="pointer-events-none absolute inset-0 z-0 opacity-50 mix-blend-multiply"
+        aria-hidden
+      >
+        <Noise
+          patternSize={220}
+          patternRefreshInterval={3}
+          patternAlpha={28}
+        />
+      </div>
+
+      {/* Floating spec label */}
+      <span
+        className="absolute -top-3 left-6 z-20 px-2 font-mono text-[10px] uppercase tracking-[0.2em] text-black/60"
+        style={{ backgroundColor: CARD_BG }}
+      >
+        {f.formEyebrow}
+      </span>
+
+      {/* ─── TAB 01 — WHATSAPP ─── */}
+      {renderTab(
+        "whatsapp",
+        "01",
+        f.tab01Title,
+        f.tab01Sub,
+      )}
 
       {panel === "whatsapp" &&
         (whatsappSubmitted ? (
-          <div className="bg-[#ff8fc8] px-6 py-10 md:px-8 md:py-12">
-            <h3 className="text-center font-display text-4xl uppercase leading-[0.9] text-black md:text-5xl">
-              Solicitud de contacto enviada
-            </h3>
-            <p className="mx-auto mt-3 max-w-[55ch] text-center text-sm text-black/80 md:text-base">
-              Te vamos a escribir por WhatsApp en breve para entender bien tu proyecto y acompañarte desde
-              esta etapa.
-            </p>
-            <div className="mt-6 flex flex-wrap justify-center gap-3">
-              <button
-                type="button"
-                className="border-2 border-black bg-[#ffd6e8] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-black transition hover:-translate-x-[1px] hover:-translate-y-[1px] hover:shadow-[3px_3px_0_#111]"
-                onClick={() => setWhatsappSubmitted(false)}
-              >
-                Cerrar
-              </button>
-              <button
-                type="button"
-                className="border-2 border-black bg-black px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#ffd6e8] transition hover:-translate-x-[1px] hover:-translate-y-[1px] hover:shadow-[3px_3px_0_#111]"
-                onClick={() => {
-                  setWhatsappSubmitted(false);
-                  setWaError("");
-                  setWaName("");
-                  setWaPhone("");
-                }}
-              >
-                Enviar otro numero
-              </button>
+          <div
+            className="relative z-10 px-6 py-12 md:px-10 md:py-16"
+            style={{ backgroundColor: PANEL_BG }}
+          >
+            <div className="mx-auto max-w-xl text-center">
+              <span className="inline-flex rounded-xl bg-[#ff3ea5] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-black">
+                {f.requestReceived}
+              </span>
+              <h3 className="mt-5 font-display text-3xl font-black uppercase leading-tight text-black md:text-5xl">
+                {f.waSuccessTitleTe}
+                <span className="text-[#ff3ea5]">.</span>
+              </h3>
+              <p className="mx-auto mt-4 max-w-[55ch] text-sm text-black/75 md:text-base">
+                {f.waSuccessBody}
+              </p>
+              <div className="mt-7 flex flex-wrap justify-center gap-3">
+                <button
+                  type="button"
+                  className="rounded-2xl border-2 border-black/60 bg-transparent px-6 py-3 font-display text-xs font-bold uppercase tracking-widest text-black transition-colors hover:border-black hover:bg-black hover:text-[#F3EEE8]"
+                  onClick={() => setWhatsappSubmitted(false)}
+                >
+                  {f.btnClose}
+                </button>
+                <button
+                  type="button"
+                  className="rounded-2xl border-2 border-[#ff3ea5] bg-[#ff3ea5] px-6 py-3 font-display text-xs font-bold uppercase tracking-widest text-black shadow-[0_8px_20px_-6px_rgba(255,62,165,0.4)] transition hover:brightness-110"
+                  onClick={() => {
+                    setWhatsappSubmitted(false);
+                    setWaError("");
+                    setWaName("");
+                    setWaPhone("");
+                  }}
+                >
+                  {f.btnAnother}
+                </button>
+              </div>
             </div>
           </div>
         ) : (
-          <form className="grid gap-5 p-6 md:grid-cols-2 md:gap-6 md:p-10" onSubmit={onWhatsAppSubmit}>
+          <form
+            className="relative z-10 grid gap-6 p-6 md:grid-cols-2 md:gap-8 md:p-10"
+            style={{ backgroundColor: PANEL_BG }}
+            onSubmit={onWhatsAppSubmit}
+          >
             <div>
-              <label className={labelClassName}>Nombre</label>
-              <input className={inputClassName} placeholder="Tu nombre" value={waName} onChange={(event) => setWaName(event.target.value)} />
+              <label className={labelClassName}>{f.labelName}</label>
+              <input
+                className={inputClassName}
+                placeholder={f.phName}
+                value={waName}
+                onChange={(event) => setWaName(event.target.value)}
+              />
             </div>
             <div>
-              <label className={labelClassName}>WhatsApp</label>
-              <input className={inputClassName} placeholder="+54..." value={waPhone} onChange={(event) => setWaPhone(event.target.value)} />
+              <label className={labelClassName}>{f.labelWhatsapp}</label>
+              <input
+                className={inputClassName}
+                placeholder="+54 9 11 2345-6789"
+                value={waPhone}
+                onChange={(event) => setWaPhone(event.target.value)}
+              />
             </div>
-            <div className="md:col-span-2 flex justify-end">
+            <div className="flex justify-end md:col-span-2">
               <button
                 type="submit"
                 disabled={isSending || !waName || !waPhone}
-                className={`min-h-[48px] min-w-[160px] rounded-full border px-5 text-[11px] font-bold uppercase tracking-[0.16em] transition ${
-                  waName && waPhone
-                    ? "border-[#ff6faf] bg-[#ff6faf] text-white hover:border-[#ff5ea6] hover:bg-[#ff5ea6]"
-                    : "border-black/35 bg-transparent text-black/45"
-                } disabled:cursor-not-allowed disabled:opacity-85`}
+                className={submitClassName}
               >
-                {isSending ? "Enviando..." : "Submit"}
+                {isSending ? f.btnSending : f.btnSendWa}
+                <span className="transition-transform group-hover:translate-x-1">
+                  →
+                </span>
               </button>
             </div>
-            {waError && <p className="text-sm text-red-700 md:col-span-2">{waError}</p>}
+            {waError && (
+              <p className="border-l-2 border-red-600 bg-red-500/15 px-3 py-2 text-sm text-red-800 md:col-span-2">
+                {waError}
+              </p>
+            )}
           </form>
         ))}
 
-      <button
-        type="button"
-        onClick={() => setPanel("email")}
-        className={`${tabBaseClassName} ${panel === "email" ? "bg-[#ffd6e8]" : "bg-[#f8d4de] hover:bg-[#f4c9d6]"}`}
-      >
-        <span className="text-[11px] uppercase tracking-[0.2em] text-black/60">02.</span>
-        <span className="grid gap-1">
-          <span className={tabTitleClassName}>Email</span>
-          <span className="text-xs text-black/65 md:text-[13px]">Quiero que me contacten por email.</span>
-        </span>
-        <span className="ml-auto hidden text-[11px] uppercase tracking-[0.12em] text-black/55 md:block">
-          [click para usar]
-        </span>
-      </button>
+      {/* ─── TAB 02 — EMAIL ─── */}
+      {renderTab("email", "02", f.tab02Title, f.tab02Sub)}
 
       {panel === "email" && (
-        <form className="grid gap-5 p-6 md:grid-cols-2 md:gap-6 md:p-10" onSubmit={onEmailSubmit}>
+        <form
+          className="relative z-10 grid gap-6 p-6 md:grid-cols-2 md:gap-8 md:p-10"
+          style={{ backgroundColor: PANEL_BG }}
+          onSubmit={onEmailSubmit}
+        >
           <div>
-            <label className={labelClassName}>Nombre completo</label>
-            <input className={inputClassName} {...form.register("fullName")} />
+            <label className={labelClassName}>{f.fullNameLabel}</label>
+            <input
+              className={inputClassName}
+              placeholder={f.phFullName}
+              autoComplete="name"
+              {...form.register("fullName")}
+            />
           </div>
           <div>
-            <label className={labelClassName}>Email</label>
-            <input className={inputClassName} type="email" {...form.register("email")} />
+            <label className={labelClassName}>{f.emailLabel}</label>
+            <input
+              className={inputClassName}
+              type="email"
+              placeholder={f.phEmail}
+              autoComplete="email"
+              {...form.register("email")}
+            />
           </div>
           <div>
-            <label className={labelClassName}>Tipo de consulta</label>
-            <select className={inputClassName} {...form.register("inquiryType")}>
-              <option value="consulta_general">Consulta general</option>
-              <option value="cotizar_servicio">Quiero cotizar un servicio</option>
-              <option value="definir_estrategia">Necesito ayuda para definir qué hacer</option>
-              <option value="branding">Branding</option>
-              <option value="sitio_web">Sitio web</option>
-              <option value="app">App</option>
-              <option value="redes_contenido">Redes / contenido</option>
-              <option value="marketing_seo">Marketing / pauta / SEO</option>
-              <option value="otro">Otro</option>
+            <label className={labelClassName}>{f.inquiryLabel}</label>
+            <select className={selectClassName} {...form.register("inquiryType")}>
+              <option value="" disabled className="text-black/40">
+                {f.inquiryPlaceholder}
+              </option>
+              <option className="bg-[#F3EEE8]" value="consulta_general">
+                {iq.general}
+              </option>
+              <option className="bg-[#F3EEE8]" value="cotizar_servicio">
+                {iq.quote}
+              </option>
+              <option className="bg-[#F3EEE8]" value="definir_estrategia">
+                {iq.strategy}
+              </option>
+              <option className="bg-[#F3EEE8]" value="branding">
+                {iq.branding}
+              </option>
+              <option className="bg-[#F3EEE8]" value="sitio_web">
+                {iq.web}
+              </option>
+              <option className="bg-[#F3EEE8]" value="app">
+                {iq.app}
+              </option>
+              <option className="bg-[#F3EEE8]" value="redes_contenido">
+                {iq.socials}
+              </option>
+              <option className="bg-[#F3EEE8]" value="marketing_seo">
+                {iq.marketing}
+              </option>
+              <option className="bg-[#F3EEE8]" value="otro">
+                {iq.other}
+              </option>
             </select>
           </div>
           <div>
-            <label className={labelClassName}>Teléfono</label>
-            <input className={inputClassName} {...form.register("phone")} />
+            <label className={labelClassName}>{f.phoneLabel}</label>
+            <input
+              className={inputClassName}
+              placeholder={f.phPhone}
+              autoComplete="tel"
+              {...form.register("phone")}
+            />
           </div>
           <div className="md:col-span-2">
-            <label className={labelClassName}>Mensaje</label>
-            <textarea className={`${inputClassName} min-h-[120px] resize-y`} {...form.register("message")} />
+            <label className={labelClassName}>{f.msgLabel}</label>
+            <textarea
+              className={textareaClassName}
+              placeholder={f.msgPlaceholder}
+              {...form.register("message")}
+            />
           </div>
-          <input type="hidden" value="solo_idea" {...form.register("projectStage")} />
-          <input type="hidden" value="email" {...form.register("preferredContactMethod")} />
-          <input type="hidden" value="sitio-web" {...form.register("source")} />
-          <div className="md:col-span-2 flex justify-end">
+          <input
+            type="hidden"
+            value="solo_idea"
+            {...form.register("projectStage")}
+          />
+          <input
+            type="hidden"
+            value="email"
+            {...form.register("preferredContactMethod")}
+          />
+          <input
+            type="hidden"
+            value="sitio-web"
+            {...form.register("source")}
+          />
+          <div className="flex justify-end md:col-span-2">
             <button
               type="submit"
               disabled={isSending}
-              className="min-h-[48px] min-w-[160px] rounded-full border border-[#ff6faf] bg-[#ff6faf] px-5 text-[11px] font-bold uppercase tracking-[0.16em] text-white transition hover:border-[#ff5ea6] hover:bg-[#ff5ea6] disabled:cursor-not-allowed disabled:opacity-85"
+              className={submitClassName}
             >
-              {isSending ? "Enviando..." : "Submit"}
+              {isSending ? f.sendingEmail : f.btnSendEmail}
+              <span className="transition-transform group-hover:translate-x-1">
+                →
+              </span>
             </button>
           </div>
           {form.formState.errors.root?.message && (
-            <p className="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700 md:col-span-2">
+            <p className="border-l-2 border-red-600 bg-red-500/15 px-3 py-2 text-sm text-red-800 md:col-span-2">
               {form.formState.errors.root.message}
             </p>
           )}
           {successMessage && (
-            <p className="inline-block border-2 border-black bg-[#ff6faf] px-4 py-3 text-xs font-extrabold uppercase tracking-[0.14em] text-black shadow-[6px_6px_0_#111] md:col-span-2">
+            <div className="border-l-2 border-[#ff3ea5] bg-[#ff3ea5]/15 px-4 py-3 text-sm text-black md:col-span-2">
+              <span className="mb-1 block font-mono text-[10px] uppercase tracking-[0.18em] text-black">
+                {f.recvBadge}
+              </span>
               {successMessage}
-            </p>
+            </div>
           )}
         </form>
       )}

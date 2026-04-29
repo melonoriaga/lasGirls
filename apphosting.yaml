@@ -54,6 +54,8 @@ env:
     availability:
       - BUILD
       - RUNTIME
+  # Google Analytics (GA4): añadir en Firebase App Hosting como env `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID` = Measurement ID (`G-xxxx` desde Project settings → app web).
+
   # Grant access to secrets in Cloud Secret Manager.
   # You can create secrets with the CLI command `firebase apphosting:secrets:set <secretName>`.
   # See https://firebase.google.com/docs/app-hosting/configure#secret-parameters

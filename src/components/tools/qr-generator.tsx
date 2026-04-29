@@ -1,16 +1,15 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { QRCodeCanvas } from "qrcode.react";
 import { Download, Link, Type, Mail, Phone } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { ToolLayout, TOOL_THEME } from "@/components/tools/tool-layout";
+import { dictionaries } from "@/i18n/messages";
+import { useLocale } from "@/i18n/locale-provider";
 
 const { BEIGE, INK, PINK } = TOOL_THEME;
-
-/** Pie en PNG y vista previa salvo `?freeQr=true` en la URL. */
-const QR_ATTRIBUTION_LINE = "Qr gratis en lasgirlsplus.com";
 
 function compositeQrWithFooterPng(source: HTMLCanvasElement, footerText: string, footerBg: string): string {
   const w = source.width;
@@ -40,13 +39,6 @@ function compositeQrWithFooterPng(source: HTMLCanvasElement, footerText: string,
 
 type QRType = "url" | "text" | "email" | "phone";
 
-const TYPES: { id: QRType; label: string; icon: typeof Link; placeholder: string }[] = [
-  { id: "url", label: "URL", icon: Link, placeholder: "https://tudominio.com" },
-  { id: "text", label: "Texto", icon: Type, placeholder: "Cualquier texto..." },
-  { id: "email", label: "Email", icon: Mail, placeholder: "hola@ejemplo.com" },
-  { id: "phone", label: "Teléfono", icon: Phone, placeholder: "+54 9 11 0000 0000" },
-];
-
 function buildQRValue(type: QRType, value: string): string {
   if (!value.trim()) return " ";
   switch (type) {
@@ -61,25 +53,47 @@ function buildQRValue(type: QRType, value: string): string {
 
 const SIZES = [128, 192, 256, 320, 512, 640, 800, 1000];
 
-const PRESETS: { label: string; fg: string; bg: string }[] = [
-  { label: "Clásico", fg: "#111111", bg: "#FFFFFF" },
-  { label: "Beige", fg: "#111111", bg: "#F4EDE6" },
-  { label: "Rosa", fg: "#111111", bg: "#FF6FAF" },
-  { label: "Negro", fg: "#F4EDE6", bg: "#111111" },
-  { label: "Índigo", fg: "#FFFFFF", bg: "#4F46E5" },
-];
 
-/** Un clic: pone el color del QR y activa fondo transparente en el PNG. */
-const TRANSPARENT_QR_PRESETS: { label: string; fg: string; hint?: string }[] = [
-  { label: "Blanco", fg: "#FFFFFF", hint: "Para pegar sobre fondos oscuros" },
-  { label: "Negro", fg: "#111111", hint: "Sobre claros o estampas" },
-  { label: "Rosa", fg: "#FF6FAF", hint: "Marca Las Girls+" },
-];
 
 export function QRGenerator() {
   const searchParams = useSearchParams();
   const stripBranding = searchParams.get("freeQr")?.toLowerCase() === "true";
   const showAttribution = !stripBranding;
+
+  const { locale } = useLocale();
+  const tm = useMemo(() => dictionaries[locale].tools as unknown as Record<string, string>, [locale]);
+  const atrLine = tm.qrAttributionFooter ?? "Qr gratis en lasgirlsplus.com";
+  const toolQrName = dictionaries[locale].tools.qr.name;
+
+  const typesList = useMemo(
+    (): { id: QRType; label: string; icon: typeof Link; placeholder: string }[] => [
+      { id: "url", label: tm.typeUrl, icon: Link, placeholder: tm.phUrl },
+      { id: "text", label: tm.typeText, icon: Type, placeholder: tm.phText },
+      { id: "email", label: tm.typeEmail, icon: Mail, placeholder: tm.phEmail },
+      { id: "phone", label: tm.typePhone, icon: Phone, placeholder: tm.phPhone },
+    ],
+    [tm],
+  );
+
+  const PRESETS = useMemo(
+    () => [
+      { label: tm.presetClassic, fg: "#111111", bg: "#FFFFFF" },
+      { label: tm.presetBeige, fg: "#111111", bg: "#F4EDE6" },
+      { label: tm.presetPink, fg: "#111111", bg: "#FF6FAF" },
+      { label: tm.presetBlack, fg: "#F4EDE6", bg: "#111111" },
+      { label: tm.presetIndigo, fg: "#FFFFFF", bg: "#4F46E5" },
+    ],
+    [tm],
+  );
+
+  const TRANSPARENT_QR_PRESETS = useMemo(
+    () => [
+      { label: tm.transpWhite, fg: "#FFFFFF", hint: tm.transpHintDark },
+      { label: tm.transpBlack, fg: "#111111", hint: tm.transpHintLight },
+      { label: tm.transpPink, fg: "#FF6FAF", hint: tm.transpHintBrand },
+    ],
+    [tm],
+  );
 
   const [type, setType] = useState<QRType>("url");
   const [value, setValue] = useState("");
@@ -98,12 +112,12 @@ export function QRGenerator() {
   const download = useCallback(() => {
     const canvas = canvasRef.current?.querySelector("canvas");
     if (!canvas) return;
-    const url = showAttribution ? compositeQrWithFooterPng(canvas, QR_ATTRIBUTION_LINE, BEIGE) : canvas.toDataURL("image/png");
+    const url = showAttribution ? compositeQrWithFooterPng(canvas, atrLine, BEIGE) : canvas.toDataURL("image/png");
     const link = document.createElement("a");
     link.href = url;
     link.download = `qr-${type}-${size}px-${Date.now()}.png`;
     link.click();
-  }, [type, size, showAttribution]);
+  }, [type, size, showAttribution, atrLine]);
 
   const copyValue = () => {
     if (!hasValue) return;
@@ -134,29 +148,29 @@ export function QRGenerator() {
     setFgHexDraft(fgColor);
   }, [fgColor]);
 
-  const TypeIcon = TYPES.find((t) => t.id === type)?.icon ?? Link;
+  const TypeIcon = typesList.find((row) => row.id === type)?.icon ?? Link;
 
   return (
-    <ToolLayout toolName="Generador de QR">
+    <ToolLayout toolName={toolQrName}>
       <div className="px-4 py-10 sm:px-10 sm:py-14">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="mb-10 sm:mb-14">
-          <h1 className="font-accent text-[clamp(1.75rem,5vw,3.5rem)] uppercase leading-[0.9] tracking-tight text-[#111]">
-            Generador
+          <h1 className="font-accent text-[clamp(1.75rem,5vw,3.5rem)] leading-[0.9] tracking-tight text-[#111]">
+            {tm.qrPageTitle1}
             <br />
             <span className="text-[#FF6FAF]" style={{ fontStyle: "italic" }}>
-              de QR.
+              {tm.qrPageAccent}
             </span>
           </h1>
           <p className="mt-2 max-w-lg text-sm leading-relaxed text-[#111]/50">
-            Personalizá colores, tamaño hasta 1000×1000 px y fondo transparente para PNG.
+            {tm.qrIntro}{" "}
             {showAttribution ? (
               <>
-                {" "}
-                La imagen descargada incluye la leyenda «{QR_ATTRIBUTION_LINE}» debajo del código. Para PNG sin esa línea, abrí esta página con{" "}
-                <code className="rounded bg-black/5 px-1 py-0.5 font-mono text-[0.8em]">?freeQr=true</code> en la URL.
+                {tm.qrIntroAttribution.replace(/\{line\}/g, atrLine)}
+                <code className="rounded bg-black/5 px-1 py-0.5 font-mono text-[0.8em]">{tm.qrFreeQrParamHint}</code>
+                {locale === "es" ? " en la URL." : " to the URL."}
               </>
             ) : (
-              <> Modo sin leyenda en el PNG (freeQr).</>
+              <> {tm.qrIntroNoAttribution}</>
             )}
           </p>
         </motion.div>
@@ -164,18 +178,16 @@ export function QRGenerator() {
         <div className="grid items-start gap-8 lg:grid-cols-[minmax(280px,1fr)_minmax(260px,420px)] lg:gap-12">
           <div className="flex flex-col gap-6">
             <fieldset className="border-0 p-0">
-              <legend className="mb-2 block text-[0.52rem] font-extrabold uppercase tracking-[0.2em] text-[#111]/40">
-                Tipo de contenido
-              </legend>
+              <legend className="mb-2 block text-[0.52rem] font-extrabold uppercase tracking-[0.2em] text-[#111]/40">{tm.qrTypeLegend}</legend>
               <div className="flex flex-wrap gap-2">
-                {TYPES.map((t) => {
-                  const TIcon = t.icon;
-                  const active = type === t.id;
+                {typesList.map((tp) => {
+                  const TIcon = tp.icon;
+                  const active = type === tp.id;
                   return (
                     <button
-                      key={t.id}
+                      key={tp.id}
                       type="button"
-                      onClick={() => setType(t.id)}
+                      onClick={() => setType(tp.id)}
                       className="flex items-center gap-1.5 border-[1.5px] px-3 py-2 text-[0.65rem] font-bold uppercase tracking-[0.1em] transition-colors"
                       style={{
                         background: active ? INK : "transparent",
@@ -184,7 +196,7 @@ export function QRGenerator() {
                       }}
                     >
                       <TIcon size={11} strokeWidth={2} />
-                      {t.label}
+                      {tp.label}
                     </button>
                   );
                 })}
@@ -192,21 +204,21 @@ export function QRGenerator() {
             </fieldset>
 
             <div>
-              <label className="mb-2 block text-[0.52rem] font-extrabold uppercase tracking-[0.2em] text-[#111]/40">Contenido</label>
+              <label className="mb-2 block text-[0.52rem] font-extrabold uppercase tracking-[0.2em] text-[#111]/40">{tm.qrLabelContent}</label>
               <div className="relative">
                 <TypeIcon size={14} strokeWidth={1.5} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#111]/30" />
                 <input
                   type="text"
                   value={value}
                   onChange={(e) => setValue(e.target.value)}
-                  placeholder={TYPES.find((t) => t.id === type)?.placeholder}
+                  placeholder={typesList.find((tp) => tp.id === type)?.placeholder}
                   className="w-full border-[1.5px] border-black/20 bg-transparent py-3 pl-10 pr-3 text-sm text-[#111] outline-none focus:border-[#FF6FAF]"
                 />
               </div>
             </div>
 
             <div>
-              <label className="mb-2 block text-[0.52rem] font-extrabold uppercase tracking-[0.2em] text-[#111]/40">Fondo sólido</label>
+              <label className="mb-2 block text-[0.52rem] font-extrabold uppercase tracking-[0.2em] text-[#111]/40">{tm.qrLabelSolidBg}</label>
               <div className="flex flex-wrap gap-2">
                 {PRESETS.map((p) => (
                   <button
@@ -231,10 +243,8 @@ export function QRGenerator() {
             </div>
 
             <div>
-              <label className="mb-2 block text-[0.52rem] font-extrabold uppercase tracking-[0.2em] text-[#111]/40">
-                QR + fondo transparente (un clic)
-              </label>
-              <p className="mb-2 text-xs leading-snug text-[#111]/45">El PNG lleva canal alpha: solo se ven los módulos del QR en el color que elijas.</p>
+              <label className="mb-2 block text-[0.52rem] font-extrabold uppercase tracking-[0.2em] text-[#111]/40">{tm.qrLabelTransparentQr}</label>
+              <p className="mb-2 text-xs leading-snug text-[#111]/45">{tm.qrTransparentAlphaHelp}</p>
               <div className="flex flex-wrap gap-2">
                 {TRANSPARENT_QR_PRESETS.map((p) => {
                   const active = transparentBg && fgColor.toUpperCase() === p.fg.toUpperCase();
@@ -264,12 +274,12 @@ export function QRGenerator() {
 
             <label className="flex cursor-pointer items-center gap-2 text-sm text-[#111]/80">
               <input type="checkbox" checked={transparentBg} onChange={(e) => setTransparentBg(e.target.checked)} className="rounded border-black/30" />
-              Fondo transparente en el PNG (alpha)
+              {tm.qrCheckboxTransparent}
             </label>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="mb-1 block text-[0.52rem] font-extrabold uppercase tracking-[0.2em] text-[#111]/40">Color del QR</label>
+                <label className="mb-1 block text-[0.52rem] font-extrabold uppercase tracking-[0.2em] text-[#111]/40">{tm.qrLabelQrColor}</label>
                 <div className="flex flex-wrap items-center gap-2">
                   <input
                     type="color"
@@ -292,12 +302,12 @@ export function QRGenerator() {
                     onKeyDown={(e) => e.key === "Enter" && commitFgHex(fgHexDraft)}
                     placeholder="#FFFFFF"
                     className="min-w-0 flex-1 border-[1.5px] border-black/20 bg-transparent px-2 py-2 font-mono text-xs uppercase text-[#111] outline-none focus:border-[#FF6FAF]"
-                    aria-label="Color del QR en hexadecimal"
+                    aria-label={tm.qrAriaFgHex}
                   />
                 </div>
               </div>
               <div>
-                <label className="mb-1 block text-[0.52rem] font-extrabold uppercase tracking-[0.2em] text-[#111]/40">Fondo (si no es transparente)</label>
+                <label className="mb-1 block text-[0.52rem] font-extrabold uppercase tracking-[0.2em] text-[#111]/40">{tm.qrLabelBgSolid}</label>
                 <div className="flex items-center gap-2">
                   <input
                     type="color"
@@ -309,15 +319,13 @@ export function QRGenerator() {
                     disabled={transparentBg}
                     className="h-9 w-9 cursor-pointer border-0 bg-transparent p-0 disabled:opacity-40"
                   />
-                  <span className="text-xs uppercase tracking-wider text-[#111]/55">{transparentBg ? "Transparente" : bgColor}</span>
+                  <span className="text-xs uppercase tracking-wider text-[#111]/55">{transparentBg ? tm.qrTransparentBgLabel : bgColor}</span>
                 </div>
               </div>
             </div>
 
             <div>
-              <label className="mb-2 block text-[0.52rem] font-extrabold uppercase tracking-[0.2em] text-[#111]/40">
-                Tamaño — {size}×{size} px
-              </label>
+              <label className="mb-2 block text-[0.52rem] font-extrabold uppercase tracking-[0.2em] text-[#111]/40">{tm.qrLabelSize.replace(/\{size\}/g, String(size))}</label>
               <div className="flex flex-wrap gap-2">
                 {SIZES.map((s) => (
                   <button
@@ -346,7 +354,7 @@ export function QRGenerator() {
                 style={{ background: hasValue ? INK : "rgba(17,17,17,0.1)", color: hasValue ? BEIGE : "rgba(17,17,17,0.3)" }}
               >
                 <Download size={14} strokeWidth={2} />
-                Descargar PNG
+                {tm.qrDownloadPng}
               </button>
               <button
                 type="button"
@@ -355,7 +363,7 @@ export function QRGenerator() {
                 className="border-[1.5px] border-black/30 bg-transparent px-4 py-3 text-[0.68rem] font-extrabold uppercase tracking-[0.14em] disabled:opacity-40"
                 style={{ color: hasValue ? (copied ? PINK : INK) : "rgba(17,17,17,0.3)" }}
               >
-                {copied ? "✓ Copiado" : "Copiar payload"}
+                {copied ? tm.qrCopied : tm.qrCopyPayload}
               </button>
             </div>
           </div>
@@ -402,14 +410,14 @@ export function QRGenerator() {
                         fontSize: Math.max(9, Math.min(14, Math.round(size * 0.032))),
                       }}
                     >
-                      {QR_ATTRIBUTION_LINE}
+                      {atrLine}
                     </div>
                   )}
                 </motion.div>
               </AnimatePresence>
             </div>
             {!hasValue ? (
-              <p className="text-center text-sm text-[#111]/30">Ingresá contenido para generar el código.</p>
+              <p className="text-center text-sm text-[#111]/30">{tm.qrEmptyPrompt}</p>
             ) : (
               <p className="max-w-[280px] break-all text-center text-[0.62rem] text-[#111]/40">{qrValue.length > 60 ? `${qrValue.slice(0, 60)}…` : qrValue}</p>
             )}

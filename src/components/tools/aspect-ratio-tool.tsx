@@ -1,51 +1,15 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { motion } from "motion/react";
 import { Copy, Check } from "lucide-react";
 import { ToolLayout, TOOL_THEME } from "@/components/tools/tool-layout";
+import type { AspectFormatPreset } from "@/components/tools/aspect-ratio-presets";
+import { aspectFormats } from "@/components/tools/aspect-ratio-presets";
+import { dictionaries, type Locale } from "@/i18n/messages";
+import { useLocale } from "@/i18n/locale-provider";
 
 const { BEIGE, INK, PINK } = TOOL_THEME;
-
-interface Format {
-  platform: string;
-  label: string;
-  w: number;
-  h: number;
-  note?: string;
-}
-
-const FORMATS: Format[] = [
-  { platform: "Instagram", label: "Feed cuadrado", w: 1080, h: 1080 },
-  { platform: "Instagram", label: "Feed horizontal", w: 1080, h: 566, note: "1.91:1" },
-  { platform: "Instagram", label: "Feed retrato", w: 1080, h: 1350, note: "4:5 — recomendado" },
-  { platform: "Instagram", label: "Stories & Reels", w: 1080, h: 1920, note: "9:16" },
-  { platform: "Instagram", label: "Story zona segura", w: 1080, h: 1920, note: "área útil: 1080×1420" },
-  { platform: "TikTok", label: "Video vertical", w: 1080, h: 1920, note: "9:16" },
-  { platform: "TikTok", label: "Feed cuadrado", w: 1080, h: 1080 },
-  { platform: "YouTube", label: "Thumbnail HD", w: 1280, h: 720, note: "16:9 mínimo" },
-  { platform: "YouTube", label: "Thumbnail Full", w: 1920, h: 1080 },
-  { platform: "YouTube", label: "Shorts", w: 1080, h: 1920, note: "9:16" },
-  { platform: "YouTube", label: "Banner canal", w: 2560, h: 1440, note: "safe: 1546×423" },
-  { platform: "X / Twitter", label: "Post imagen", w: 1200, h: 675, note: "16:9" },
-  { platform: "X / Twitter", label: "Header", w: 1500, h: 500, note: "3:1" },
-  { platform: "X / Twitter", label: "Avatar", w: 400, h: 400 },
-  { platform: "LinkedIn", label: "Post imagen", w: 1200, h: 628, note: "1.91:1" },
-  { platform: "LinkedIn", label: "Stories", w: 1080, h: 1920, note: "9:16" },
-  { platform: "LinkedIn", label: "Banner perfil", w: 1584, h: 396, note: "4:1" },
-  { platform: "LinkedIn", label: "Logo empresa", w: 300, h: 300 },
-  { platform: "Facebook", label: "Post imagen", w: 1200, h: 630 },
-  { platform: "Facebook", label: "Stories", w: 1080, h: 1920, note: "9:16" },
-  { platform: "Facebook", label: "Cover", w: 820, h: 312 },
-  { platform: "Pinterest", label: "Pin estándar", w: 1000, h: 1500, note: "2:3 — recomendado" },
-  { platform: "Pinterest", label: "Pin cuadrado", w: 1000, h: 1000 },
-  { platform: "Web", label: "Banner leaderboard", w: 728, h: 90 },
-  { platform: "Web", label: "Banner medium rect", w: 300, h: 250 },
-  { platform: "Web", label: "Hero 16:9", w: 1920, h: 1080 },
-  { platform: "Web", label: "Open Graph", w: 1200, h: 630, note: "meta social preview" },
-];
-
-const PLATFORMS = [...new Set(FORMATS.map((f) => f.platform))];
 
 const PLATFORM_COLORS: Record<string, string> = {
   Instagram: "#E1306C",
@@ -58,17 +22,26 @@ const PLATFORM_COLORS: Record<string, string> = {
   Web: "#111",
 };
 
-function FormatCard({ fmt }: { fmt: Format }) {
+function toolMap(locale: Locale): Record<string, string> {
+  return dictionaries[locale].tools as unknown as Record<string, string>;
+}
+
+function FormatsHeading({ tm, activePlatform, count }: { tm: Record<string, string>; activePlatform: string; count: number }) {
+  const raw = tm.aspectFormatsHeading ?? "";
+  return <span>{raw.replace("{platform}", activePlatform).replace("{count}", String(count))}</span>;
+}
+
+function FormatCard({ fmt, tm }: { fmt: AspectFormatPreset; tm: Record<string, string> }) {
   const [copied, setCopied] = useState(false);
   const ratio = fmt.w / fmt.h;
-  const label = `${fmt.w}×${fmt.h}`;
+  const dimLabel = `${fmt.w}×${fmt.h}`;
 
   const copy = useCallback(() => {
-    void navigator.clipboard.writeText(label).then(() => {
+    void navigator.clipboard.writeText(dimLabel).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 1400);
     });
-  }, [label]);
+  }, [dimLabel]);
 
   const previewW = 80;
   const previewH = Math.round(previewW / ratio);
@@ -97,18 +70,24 @@ function FormatCard({ fmt }: { fmt: Format }) {
         </div>
       </div>
       <div>
-        <div className="font-accent text-[clamp(0.85rem,1.6vw,1.15rem)] uppercase leading-tight text-[#111]">{fmt.label}</div>
+        <div className="font-accent text-[clamp(0.85rem,1.6vw,1.15rem)] leading-tight text-[#111]">{fmt.label}</div>
         {fmt.note ? <div className="mt-1 text-[0.5rem] tracking-[0.08em] text-[#FF6FAF]">{fmt.note}</div> : null}
       </div>
-      <button type="button" onClick={copy} className="flex cursor-pointer items-center gap-1 border-0 bg-transparent p-0 text-left">
-        <span className="text-[0.75rem] font-bold tracking-[0.08em] text-[#111]/55">{label}</span>
+      <button type="button" onClick={copy} className="flex cursor-pointer items-center gap-1 border-0 bg-transparent p-0 text-left" aria-label={tm.copySwatchAria?.replace("{hex}", dimLabel) ?? dimLabel}>
+        <span className="text-[0.75rem] font-bold tracking-[0.08em] text-[#111]/55">{dimLabel}</span>
         {copied ? <Check size={12} strokeWidth={2.5} color={PINK} /> : <Copy size={11} strokeWidth={2} className="text-[#111]/30" />}
       </button>
     </motion.div>
   );
 }
 
-function Calculator({ selected }: { selected: Format | null }) {
+function Calculator({
+  selected,
+  tm,
+}: {
+  selected: AspectFormatPreset | null;
+  tm: Record<string, string>;
+}) {
   const [widthIn, setWidthIn] = useState("");
   const [heightIn, setHeightIn] = useState("");
   const [mode, setMode] = useState<"w" | "h">("w");
@@ -125,15 +104,18 @@ function Calculator({ selected }: { selected: Format | null }) {
     return Number.isNaN(n) ? "" : Math.round(n * ratio).toString();
   };
 
-  const result = mode === "w" ? { label: "ALTO", value: calcHeight(widthIn) } : { label: "ANCHO", value: calcWidth(heightIn) };
+  const result = mode === "w" ? { label: tm.calcLabelHeight ?? "HEIGHT", value: calcHeight(widthIn) } : { label: tm.calcLabelWidth ?? "WIDTH", value: calcWidth(heightIn) };
+
+  const computedSuffix = tm.calcComputedSuffix ?? "";
 
   return (
     <div className="flex flex-col gap-5 border border-black/10 p-6 sm:p-8">
       <div>
-        <div className="font-accent text-[clamp(1rem,1.8vw,1.35rem)] uppercase tracking-wide text-[#111]">Calculadora</div>
+        <div className="font-accent text-[clamp(1rem,1.8vw,1.35rem)] tracking-wide text-[#111]">{tm.aspectCalcHeading}</div>
         <div className="mt-1 text-[0.6rem] text-[#111]/40">
-          Ratio activo: <strong>{ratioStr}</strong>
-          {selected ? ` — ${selected.platform} · ${selected.label}` : " (personalizado)"}
+          {tm.aspectRatioActive}{" "}
+          <strong>{ratioStr}</strong>
+          {selected ? ` — ${selected.platform} · ${selected.label}` : ` ${tm.calcCustomHint ?? ""}`}
         </div>
       </div>
       <div className="flex gap-2">
@@ -149,31 +131,35 @@ function Calculator({ selected }: { selected: Format | null }) {
               borderColor: mode === m ? INK : "rgba(17,17,17,0.2)",
             }}
           >
-            {m === "w" ? "Ingreso ancho" : "Ingreso alto"}
+            {m === "w" ? tm.aspectModeWide : tm.aspectModeTall}
           </button>
         ))}
       </div>
       <div className="flex flex-wrap items-end gap-4">
         <div className="flex flex-col gap-1">
-          <label className="text-[0.44rem] font-extrabold uppercase tracking-[0.18em] text-[#111]/35">{mode === "w" ? "Ancho (px)" : "Alto (px)"}</label>
+          <label className="text-[0.44rem] font-extrabold uppercase tracking-[0.18em] text-[#111]/35">
+            {mode === "w" ? tm.aspectLabelWidePx : tm.aspectLabelTallPx}
+          </label>
           <input
             type="number"
             min={1}
             value={mode === "w" ? widthIn : heightIn}
             onChange={(e) => (mode === "w" ? setWidthIn(e.target.value) : setHeightIn(e.target.value))}
-            placeholder="ej. 1200"
+            placeholder={tm.calcPlaceholderEg}
             className="w-32 border-0 border-b-2 border-[#FF6FAF] bg-transparent py-1 font-accent text-2xl text-[#111] outline-none sm:text-3xl"
           />
         </div>
         <span className="pb-2 text-2xl text-[#111]/20">×</span>
         <div className="flex flex-col gap-1 opacity-60">
-          <label className="text-[0.44rem] font-extrabold uppercase tracking-[0.18em] text-[#111]/35">{result.label} (calculado)</label>
+          <label className="text-[0.44rem] font-extrabold uppercase tracking-[0.18em] text-[#111]/35">
+            {result.label} {computedSuffix}
+          </label>
           <div className="min-w-[120px] border-b-2 border-black/10 py-1 font-accent text-2xl text-[#FF6FAF] sm:text-3xl">{result.value || "—"}</div>
         </div>
       </div>
       {result.value ? (
         <p className="text-sm text-[#111]/50">
-          Resultado:{" "}
+          {tm.calcResultHeading}{" "}
           <strong className="text-[#111]">
             {mode === "w" ? `${widthIn} × ${result.value}` : `${result.value} × ${heightIn}`} px
           </strong>
@@ -184,28 +170,43 @@ function Calculator({ selected }: { selected: Format | null }) {
 }
 
 export function AspectRatioTool() {
-  const [activePlatform, setActivePlatform] = useState("Instagram");
-  const [selectedFmt, setSelectedFmt] = useState<Format | null>(null);
-  const filtered = FORMATS.filter((f) => f.platform === activePlatform);
+  const { locale } = useLocale();
+  const tm = useMemo(() => toolMap(locale), [locale]);
+
+  const formats = useMemo(() => aspectFormats(locale), [locale]);
+  const PLATFORMS = useMemo(() => [...new Set(formats.map((f) => f.platform))], [formats]);
+
+  const [activePlatform, setActivePlatform] = useState(() => PLATFORMS[0] ?? "Instagram");
+  const [selectedFmt, setSelectedFmt] = useState<AspectFormatPreset | null>(null);
+
+  const filtered = useMemo(() => formats.filter((f) => f.platform === activePlatform), [formats, activePlatform]);
+
+  useEffect(() => {
+    if (!PLATFORMS.includes(activePlatform)) {
+      const first = PLATFORMS[0];
+      if (first) setActivePlatform(first);
+      setSelectedFmt(null);
+    }
+  }, [PLATFORMS, activePlatform]);
 
   return (
-    <ToolLayout toolName="Relación de aspecto">
+    <ToolLayout toolName={dictionaries[locale].tools.aspect.name}>
       <div className="flex flex-col gap-8 px-4 py-10 sm:gap-10 sm:px-10 sm:py-14">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-          <h1 className="font-accent text-[clamp(1.75rem,5vw,3.5rem)] uppercase leading-[0.9] text-[#111]">
-            Relaciones
+          <h1 className="font-accent text-[clamp(1.75rem,5vw,3.5rem)] leading-[0.9] text-[#111]">
+            {tm.aspectTitle1}
             <br />
             <span className="text-[#FF6FAF]" style={{ fontStyle: "italic" }}>
-              de aspecto.
+              {tm.aspectTitleAccent}
             </span>
           </h1>
-          <p className="mt-2 max-w-xl text-sm leading-relaxed text-[#111]/50">Tamaños para redes. Clic en una card para fijar el ratio en la calculadora.</p>
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-[#111]/50">{tm.aspectIntroMicro}</p>
         </motion.div>
 
-        <Calculator selected={selectedFmt} />
+        <Calculator selected={selectedFmt} tm={tm} />
 
         <div>
-          <p className="mb-2 text-[0.44rem] font-extrabold uppercase tracking-[0.22em] text-[#111]/35">Plataforma</p>
+          <p className="mb-2 text-[0.44rem] font-extrabold uppercase tracking-[0.22em] text-[#111]/35">{tm.aspectPlatformLabel}</p>
           <div className="flex flex-wrap gap-2">
             {PLATFORMS.map((p) => {
               const active = activePlatform === p;
@@ -234,7 +235,7 @@ export function AspectRatioTool() {
 
         <div>
           <p className="mb-3 text-[0.44rem] font-extrabold uppercase tracking-[0.22em] text-[#111]/35">
-            Formatos — {activePlatform} ({filtered.length})
+            <FormatsHeading tm={tm} activePlatform={activePlatform} count={filtered.length} />
           </p>
           <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,160px),1fr))] gap-3 sm:gap-4">
             {filtered.map((fmt) => (
@@ -247,7 +248,7 @@ export function AspectRatioTool() {
                   outlineOffset: 2,
                 }}
               >
-                <FormatCard fmt={fmt} />
+                <FormatCard fmt={fmt} tm={tm} />
               </motion.div>
             ))}
           </div>
@@ -255,7 +256,7 @@ export function AspectRatioTool() {
 
         <div className="flex gap-2 border border-black/10 px-4 py-3 text-sm text-[#111]/40">
           <span className="text-[#FF6FAF]">✦</span>
-          <p className="m-0 leading-relaxed">Clic en las dimensiones de una card las copia. Clic en la card activa el ratio en la calculadora.</p>
+          <p className="m-0 leading-relaxed">{tm.aspectFooterTip}</p>
         </div>
       </div>
     </ToolLayout>

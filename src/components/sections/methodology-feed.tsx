@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { homeContent } from "@/content/site/home";
-
-const NOISE_BG = "url('https://grainy-gradients.vercel.app/noise.svg')";
+import { Noise } from "@/components/Noise";
+import { useDictionary, useLocale } from "@/i18n/locale-provider";
 const SCRAMBLE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
 const ASSETS = {
@@ -39,88 +38,97 @@ type FeedCardSpec = {
   stickers: StickerSpec[];
 };
 
-const blocks = homeContent.methodology.blocks;
+const WATERMARK_CLASS =
+  "right-[3%] bottom-[-2%] left-auto top-auto translate-x-0 translate-y-0 text-right font-display text-[clamp(6.5rem,28vw,12rem)]";
 
-const CARD_SPECS: FeedCardSpec[] = [
-  {
-    indexLabel: "01",
-    title: "DIAGNÓSTICO Y\nACOMPAÑAMIENTO\nINICIAL",
-    body: blocks[0]?.description ?? "",
-    cardBg: "#F3EEE8",
-    cutBg: "#E5DDD3",
-    bodyShellClass: "ml-0 mr-3 md:mr-4",
-    watermarkClass:
-      "left-[-12%] top-[8%] translate-x-0 translate-y-0 text-left font-display text-[clamp(7rem,32vw,13rem)]",
-    stickers: [
+function buildCardSpecs(methodology: {
+  card1Title: string;
+  card2Title: string;
+  card3Title: string;
+  block1: string;
+  block2: string;
+  block3: string;
+}): FeedCardSpec[] {
+  const { card1Title, card2Title, card3Title, block1, block2, block3 } = methodology;
+
+  return [
+    {
+      indexLabel: "01",
+      title: card1Title,
+      body: block1,
+      cardBg: "#F3EEE8",
+      cutBg: "#E5DDD3",
+      bodyShellClass: "ml-0 mr-3 md:mr-4",
+      watermarkClass: WATERMARK_CLASS,
+      stickers: [
       {
         src: ASSETS.s11,
         w: 1026,
         h: 588,
-        className: "top-[1%] left-[-5%] w-[92%] max-w-[35rem] rotate-[10deg] opacity-50",
+        className: "top-[1%] left-[-5%] w-[92%] max-w-[35rem] rotate-[10deg] opacity-5",
       },
       {
         src: ASSETS.s1,
         w: 732,
         h: 722,
-        className: "bottom-[20%] right-[-8%] w-[88%] max-w-[18rem] -rotate-[10deg] opacity-50",
+        className: "bottom-[20%] right-[-8%] w-[88%] max-w-[18rem] -rotate-[10deg] opacity-10",
       },
       {
         src: ASSETS.s12,
         w: 710,
         h: 774,
-        className: "bottom-[0%] left-[6%] w-[78%] max-w-[14rem] rotate-[5deg] opacity-50",
+        className: "bottom-[0%] left-[6%] w-[78%] max-w-[14rem] rotate-[5deg] opacity-5",
       },
     ],
   },
   {
     indexLabel: "02",
-    title: "DEFINICIÓN\nDE NECESIDADES\nREALES",
-    body: blocks[1]?.description ?? "",
+    title: card2Title,
+    body: block2,
     cardBg: "#EFE7DD",
     cutBg: "#E3DBD1",
-    bodyShellClass: "ml-4 mr-0 md:ml-5",
-    watermarkClass:
-      "right-[-18%] bottom-[12%] left-auto top-auto translate-x-0 translate-y-0 text-right font-display text-[clamp(6.25rem,28vw,11.5rem)]",
+    bodyShellClass: "mr-0 ",
+    watermarkClass: WATERMARK_CLASS,
     stickers: [
       {
         src: ASSETS.s12,
         w: 710,
         h: 774,
-        className: "top-[1%] right-[-5%] w-[72%] max-w-[35rem] rotate-[10deg] opacity-70",
+        className: "top-[1%] right-[-5%] w-[72%] max-w-[35rem] rotate-[10deg] opacity-5",
       },
       {
         src: ASSETS.s10,
         w: 707,
         h: 854,
-        className: "bottom-[-18%] left-[-20%] w-[92%] max-w-[16rem] -rotate-[7deg] opacity-90",
+        className: "bottom-[-18%] left-[-10%] w-[170%] max-w-[20rem] -rotate-[7deg] opacity-5",
       },
     ],
   },
   {
     indexLabel: "03",
-    title: "ROADMAP\nA MEDIDA",
-    body: blocks[2]?.description ?? "",
+    title: card3Title,
+    body: block3,
     cardBg: "#F5EFE6",
     cutBg: "#E8E1D7",
     bodyShellClass: "ml-1 mr-5 md:ml-2 md:mr-6",
-    watermarkClass:
-      "left-1/2 top-[48%] -translate-x-[38%] -translate-y-1/2 text-center font-display text-[clamp(7.5rem,34vw,14rem)]",
+    watermarkClass: WATERMARK_CLASS,
     stickers: [
       {
         src: ASSETS.s13,
         w: 894,
         h: 401,
-        className: "top-[10%] right-[-8%] w-[95%] max-w-[26rem] -rotate-[5deg] opacity-85",
+        className: "top-[10%] right-[-8%] w-[95%] max-w-[26rem] -rotate-[5deg] opacity-5",
       },
       {
         src: ASSETS.s11,
         w: 1026,
         h: 588,
-        className: "bottom-[-4%] left-[-2%] w-[92%] max-w-[30rem] rotate-[9deg] opacity-55",
+        className: "bottom-[-4%] left-[-2%] w-[92%] max-w-[30rem] rotate-[9deg] opacity-5",
       },
     ],
   },
-];
+  ];
+}
 
 function StickerDecor({ spec }: { spec: StickerSpec }) {
   return (
@@ -199,7 +207,7 @@ function ScrambleScrollTitle({
     [text, smallerSubstring],
   );
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
 
     const spans = spansRef.current.filter((node): node is HTMLSpanElement => Boolean(node));
@@ -294,109 +302,168 @@ function ScrambleScrollTitle({
 
 export function MethodologyFeed() {
   const [activeCard, setActiveCard] = useState<string | null>(null);
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const cardsRef = useRef<HTMLDivElement | null>(null);
+  const { locale } = useLocale();
+  const d = useDictionary();
+  const m = d.methodology;
+  const CARD_SPECS = useMemo(() => buildCardSpecs(m), [m]);
+
+  useLayoutEffect(() => {
+    gsap.registerPlugin(ScrollTrigger);
+    if (!sectionRef.current || !cardsRef.current) return;
+
+    const mm = gsap.matchMedia();
+
+    mm.add("(min-width: 1024px)", () => {
+      const cards = Array.from(
+        cardsRef.current!.querySelectorAll<HTMLElement>(".method-card"),
+      );
+      if (cards.length === 0) return;
+
+      gsap.set(cards, { xPercent: 130, opacity: 0 });
+
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: "top top",
+          end: "+=130%",
+          pin: true,
+          pinSpacing: true,
+          scrub: 0.35,
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
+        },
+      });
+
+      cards.forEach((card, i) => {
+        tl.to(
+          card,
+          {
+            xPercent: 0,
+            opacity: 1,
+            duration: 1,
+            ease: "power3.out",
+          },
+          i * 0.55,
+        );
+      });
+
+      tl.to({}, { duration: 0.35 });
+
+      return () => {
+        tl.kill();
+      };
+    });
+
+    return () => mm.revert();
+  }, [locale]);
 
   return (
     <section
       id="metodologia"
-      className="border-t-2 border-black bg-[#ff6faf] px-4 py-16 sm:px-6 md:py-20 lg:px-10 lg:py-24"
+      ref={sectionRef}
+      className="border-t-2 border-black bg-[#ff6faf] px-4 py-16 sm:px-6 md:py-20 lg:px-10 lg:py-24 overflow-hidden"
     >
       <div className="mx-auto max-w-[1600px]">
         <header className="mb-10 max-w-3xl md:mb-14 lg:mb-16">
-          <p className="font-mono text-[10px] font-bold uppercase tracking-[0.32em] text-black/65 md:text-[11px]">feed / proceso</p>
+          <p className="font-mono text-[10px] font-bold uppercase tracking-[0.32em] text-black/65 md:text-[11px]">{m.eyebrow}</p>
           <h2 className="mt-3 font-display text-[clamp(2.5rem,9vw,4.75rem)] font-black uppercase leading-[0.9] tracking-[-0.03em] text-black">
-            TRABAJAR CON NOSOTRAS
+            {m.title}
           </h2>
-          <p className="font-accent mt-3 text-[clamp(1.65rem,4.5vw,2.75rem)] leading-[0.98] text-black">es así de simple.</p>
+          <p className="font-accent mt-3 text-[clamp(1.65rem,4.5vw,2.75rem)] leading-[0.98] text-black">
+            {m.subtitle}
+          </p>
         </header>
 
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 lg:gap-10 xl:gap-16">
+        <div
+          ref={cardsRef}
+          className="grid grid-cols-1 items-stretch gap-8 lg:grid-cols-3 lg:gap-10"
+        >
           {CARD_SPECS.map((card) => {
             const isFocused = activeCard === card.indexLabel;
             const isMuted = activeCard !== null && !isFocused;
 
             return (
-              <article
-                key={card.indexLabel}
-                onMouseEnter={() => setActiveCard(card.indexLabel)}
-                onMouseLeave={() => setActiveCard(null)}
-                className={`group/meth-post relative rounded-[18px] transition-all duration-500 ease-out motion-reduce:transition-none ${
-                  isFocused
+              <div key={card.indexLabel} className="method-card will-change-transform h-full">
+                <article
+                  onMouseEnter={() => setActiveCard(card.indexLabel)}
+                  onMouseLeave={() => setActiveCard(null)}
+                  className={`group/meth-post relative h-full rounded-[18px] transition-all duration-500 ease-out motion-reduce:transition-none ${isFocused
                     ? "z-30 lg:scale-[1.1]"
                     : isMuted
                       ? "z-0 lg:scale-[0.92] lg:opacity-65"
                       : "z-10 lg:scale-100 lg:opacity-100"
-                }`}
-              >
-              <div
-                className={`relative flex aspect-4/5 w-full flex-col overflow-hidden rounded-[18px] border-2 border-black/80 transition-all duration-500 ease-out motion-reduce:transition-none ${
-                  isFocused
-                    ? "shadow-[0_24px_48px_rgba(17,17,17,0.28)]"
-                    : "shadow-[0_10px_24px_rgba(17,17,17,0.14)]"
-                }`}
-                style={{ backgroundColor: card.cardBg }}
-              >
-                <span
-                  className={`pointer-events-none absolute z-0 font-black leading-none text-black/[0.07] transition-all duration-500 ease-out ${card.watermarkClass} ${
-                    isFocused ? "scale-[1.08] text-black/10" : isMuted ? "scale-95 text-black/4" : "scale-100"
-                  }`}
-                  aria-hidden
+                    }`}
                 >
-                  {card.indexLabel}
-                </span>
-
-                <div
-                  className="pointer-events-none absolute inset-0 z-1 bg-repeat opacity-[0.14] mix-blend-multiply"
-                  style={{ backgroundImage: NOISE_BG }}
-                  aria-hidden
-                />
-
-                <div
-                  className={`pointer-events-none absolute inset-0 z-10 transition-all duration-500 ease-out ${
-                    isFocused ? "scale-[1.06]" : isMuted ? "scale-95 opacity-70" : "scale-100 opacity-100"
-                  }`}
-                  aria-hidden
-                >
-                  {card.stickers.map((st, j) => (
-                    <StickerDecor key={`${card.indexLabel}-${j}`} spec={st} />
-                  ))}
-                </div>
-
-                <span
-                  className={`absolute right-3 top-3 z-20 font-mono text-[10px] font-bold tabular-nums uppercase tracking-[0.18em] transition-all duration-500 ${
-                    isFocused ? "text-black/70" : "text-black/45"
-                  }`}
-                >
-                  {card.indexLabel}
-                </span>
-
-                <div
-                  className={`relative z-20 flex min-h-0 flex-1 flex-col px-5 pb-6 pt-7 transition-all duration-500 md:px-6 md:pb-7 md:pt-8 ${
-                    isFocused ? "translate-y-[-3px]" : isMuted ? "translate-y-[3px]" : "translate-y-0"
-                  }`}
-                  style={{ backgroundColor: "transparent" }}
-                >
-                  <header className="flex-[0_0_50%] flex flex-col justify-start pr-1">
-                    <ScrambleScrollTitle
-                      text={card.title}
-                      smallerSubstring={card.indexLabel === "01" ? "ACOMPAÑAMIENTO" : undefined}
-                      className={`hyphens-none whitespace-pre-line break-normal text-left font-display text-[clamp(2.35rem,12vw,4rem)] font-black uppercase leading-[1.02] tracking-[-0.01em] transition-all duration-500 sm:text-[clamp(2.65rem,9vw,4.4rem)] lg:text-[clamp(3rem,4.7vw,4.9rem)] xl:text-[clamp(3.3rem,4.2vw,5.2rem)] ${
-                        isFocused ? "text-black drop-shadow-[0_6px_10px_rgba(17,17,17,0.14)]" : "text-black"
+                  <div
+                    className={`relative flex h-full w-full flex-col overflow-hidden rounded-[18px] border-2 border-black/80 transition-all duration-500 ease-out motion-reduce:transition-none ${isFocused
+                      ? "shadow-[0_24px_48px_rgba(17,17,17,0.28)]"
+                      : "shadow-[0_10px_24px_rgba(17,17,17,0.14)]"
                       }`}
-                    />
-                  </header>
-
-                  <div className={`relative z-20 mt-1.5 flex min-h-0 flex-1 flex-col justify-start ${card.bodyShellClass}`}>
-                    <p
-                      className={`max-w-76 text-left text-[1rem] font-medium leading-[1.45] transition-all duration-500 md:text-[1.125rem] lg:text-[1.18rem] ${
-                        isFocused ? "text-black/95" : isMuted ? "text-black/70" : "text-black/88"
-                      }`}
+                    style={{ backgroundColor: card.cardBg }}
+                  >
+                    <span
+                      className={`pointer-events-none absolute z-0 font-black leading-none text-black/[0.07] transition-all duration-500 ease-out ${card.watermarkClass} ${isFocused ? "scale-[1.08] text-black/10" : isMuted ? "scale-95 text-black/4" : "scale-100"
+                        }`}
+                      aria-hidden
                     >
-                      {card.body}
-                    </p>
+                      {card.indexLabel}
+                    </span>
+
+                    <div
+                      className="pointer-events-none absolute inset-0 z-1 opacity-50 mix-blend-multiply"
+                      aria-hidden
+                    >
+                      <Noise
+                        patternSize={220}
+                        patternRefreshInterval={3}
+                        patternAlpha={28}
+                      />
+                    </div>
+
+                    <div
+                      className={`pointer-events-none absolute inset-0 z-10 transition-all duration-500 ease-out ${isFocused ? "scale-[1.06]" : isMuted ? "scale-95 opacity-70" : "scale-100 opacity-100"
+                        }`}
+                      aria-hidden
+                    >
+                      {card.stickers.map((st, j) => (
+                        <StickerDecor key={`${card.indexLabel}-${j}`} spec={st} />
+                      ))}
+                    </div>
+
+                    <span
+                      className={`absolute right-3 top-3 z-20 font-mono text-[10px] font-bold tabular-nums uppercase tracking-[0.18em] transition-all duration-500 ${isFocused ? "text-black/70" : "text-black/45"
+                        }`}
+                    >
+                      {card.indexLabel}
+                    </span>
+
+                    <div
+                      className={`relative z-20 flex min-h-0 flex-1 flex-col px-5 pb-6 pt-7 transition-all duration-500 md:px-6 md:pb-7 md:pt-8 ${isFocused ? "translate-y-[-3px]" : isMuted ? "translate-y-[3px]" : "translate-y-0"
+                        }`}
+                      style={{ backgroundColor: "transparent" }}
+                    >
+                      <header className="flex-none flex flex-col justify-start pr-1">
+                        <ScrambleScrollTitle
+                          text={card.title}
+                          className={`hyphens-none whitespace-pre-line break-normal text-left font-display text-[clamp(2rem,10vw,3.4rem)] font-black uppercase leading-[1.02] tracking-[-0.01em] transition-all duration-500 sm:text-[clamp(2.25rem,7vw,3.6rem)] lg:text-[clamp(2.4rem,3.8vw,3.9rem)] xl:text-[clamp(2.6rem,3.4vw,4.2rem)] ${isFocused ? "text-black drop-shadow-[0_6px_10px_rgba(17,17,17,0.14)]" : "text-black"
+                            }`}
+                        />
+                      </header>
+
+                      <div className={`relative z-20 mt-4 flex min-h-0 flex-1 flex-col justify-start md:mt-5 ${card.bodyShellClass}`}>
+                        <p
+                          className={`whitespace-pre-line text-left text-[0.92rem] font-medium leading-[1.5] transition-all duration-500 md:text-[1rem] lg:text-[1.02rem] ${isFocused ? "text-black/95" : isMuted ? "text-black/70" : "text-black/88"
+                            }`}
+                        >
+                          {card.body}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                </article>
               </div>
-            </article>
             );
           })}
         </div>

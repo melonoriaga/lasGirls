@@ -1,34 +1,56 @@
 "use client";
 
 import Link from "next/link";
+import { useLocale, useDictionary } from "@/i18n/locale-provider";
 import { usePathname } from "next/navigation";
 
-const prettyLabel = (pathname: string) => {
+const slugFromSegments = (
+  breadcrumbs: Record<string, string>,
+  pathname: string,
+) => {
   const segments = pathname.split("/").filter(Boolean);
   if (segments.length === 0) return "";
   const last = segments[segments.length - 1];
-  if (last === "privacy-policy") return "Privacy Policy";
+  if (Object.prototype.hasOwnProperty.call(breadcrumbs, last)) {
+    return breadcrumbs[last]!;
+  }
   return last
     .split("-")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
 };
 
-export function PublicBreadcrumb() {
+/**
+ * Inline breadcrumb for the main header (same row as logo + MENU).
+ * Do not render a second sticky row in the page body.
+ */
+export function PublicBreadcrumbInline() {
   const pathname = usePathname();
+  const { t } = useLocale();
+  const d = useDictionary();
+
+  const prettyLabel =
+    pathname && pathname !== "/" ? slugFromSegments(d.breadcrumbs as Record<string, string>, pathname) : "";
+
   if (!pathname || pathname === "/") return null;
-  // Herramientas: cada vista trae su propia barra (Inicio/Volver + migas). Evita dos headers pegados.
-  if (pathname.startsWith("/herramientas")) return null;
 
   return (
-    <div className="border-b border-black/20 bg-[#f4ede6]/95 px-4 py-3 backdrop-blur md:px-8">
-      <div className="mx-auto flex w-full max-w-[1280px] items-center gap-2 text-[11px] uppercase tracking-[0.12em] text-black/70">
-        <Link href="/" className="font-semibold text-black hover:underline">
-          Home
-        </Link>
-        <span>/</span>
-        <span className="font-medium text-black/80">{prettyLabel(pathname)}</span>
-      </div>
-    </div>
+    <nav
+      aria-label={t("breadcrumbAria")}
+      className="flex min-w-0 max-w-full items-center justify-center gap-2 text-[9px] uppercase leading-none tracking-[0.11em] text-inherit sm:text-[10px]"
+    >
+      <Link
+        href="/"
+        className="shrink-0 font-semibold text-inherit underline-offset-[3px] hover:underline hover:opacity-90"
+      >
+        {t("breadcrumbHome")}
+      </Link>
+      <span className="shrink-0 opacity-[0.82]" aria-hidden="true">
+        /
+      </span>
+      <span className="min-w-0 truncate font-medium text-inherit opacity-[0.92]">
+        {prettyLabel}
+      </span>
+    </nav>
   );
 }

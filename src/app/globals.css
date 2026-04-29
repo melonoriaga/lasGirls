@@ -50,6 +50,7 @@
 html,
 body {
   min-height: 100%;
+  margin: 0;
 }
 
 body {
@@ -69,6 +70,8 @@ a {
 
 .font-accent {
   font-family: var(--font-accent), cursive;
+  /* Legibility + override parent `.uppercase` wrappers site-wide */
+  text-transform: none !important;
 }
 
 .section-shell {
@@ -232,38 +235,82 @@ a {
 }
 
 .hero-cta {
-  border: 2px solid #111;
-  padding: 0.8rem 1.7rem;
+  border-radius: 1rem;
+  border-width: 2px;
+  border-style: solid;
+  padding: 0.85rem 1.75rem;
   font-size: 0.74rem;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
-  font-weight: 700;
+  letter-spacing: 0.16em;
+  font-weight: 800;
 }
 
 .hero-cta--dark {
-  background: #111;
-  color: #f4ede6;
+  background: #ff3ea5;
+  border-color: #ff3ea5;
+  color: #111;
+  box-shadow: 0 10px 28px -6px rgb(255 62 165 / 0.45);
 }
 
 .hero-cta--dark:hover {
-  background: #ff5faf;
-  border-color: #ff5faf;
+  filter: brightness(1.06);
+}
+
+.hero-cta--light {
+  background: transparent;
+  border-color: #111;
   color: #111;
 }
 
 .hero-cta--light:hover {
   background: #111;
-  color: #fff;
-}
-
-@keyframes hero-sticker-float {
-  0%, 100% { transform: translateY(0) rotate(-4deg); }
-  50% { transform: translateY(-16px) rotate(5deg); }
+  color: #f4ede6;
+  border-color: #111;
 }
 
 .hero-floating-sticker__inner {
-  animation: hero-sticker-float 5.5s ease-in-out infinite;
   will-change: transform;
+  transform-origin: 50% 50%;
+}
+
+.hero-cta-morph {
+  position: relative;
+  transform-origin: 50% 50%;
+  will-change: transform;
+  z-index: 50;
+}
+
+.hero-cta-morph__label {
+  display: inline-block;
+}
+
+.hero-curtain {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 39;
+  pointer-events: none;
+  clip-path: circle(0% at 50% 80%);
+  will-change: clip-path, opacity;
+  visibility: visible !important;
+}
+
+.pin-spacer:has(> #hero) {
+  background: #000;
+}
+
+@keyframes contact-sticker-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+.contact-sticker-float-inner--animate {
+  animation: contact-sticker-float 3.2s ease-in-out infinite;
 }
 
 .lg-contact-tab {
@@ -330,7 +377,11 @@ a {
 }
 
 .footer-pill {
-  padding: 0.6rem 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1rem;
+  padding: 0.65rem 1.05rem;
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.14em;
@@ -338,14 +389,22 @@ a {
 }
 
 .footer-cta {
+  border-radius: 1rem;
   width: 100%;
-  background: #c96484;
-  color: #fff;
-  padding: 0.75rem 1rem;
+  box-shadow: 0 10px 28px -6px rgb(255 62 165 / 0.35);
+  background: #ff3ea5;
+  color: #111;
+  border: 2px solid #ff3ea5;
+  padding: 0.75rem 1.1rem;
   text-align: center;
   font-family: var(--font-display), sans-serif;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.14em;
+  font-weight: 800;
   text-transform: uppercase;
+}
+
+.footer-cta:hover {
+  filter: brightness(1.06);
 }
 
 .film-grain-layer {
@@ -711,6 +770,7 @@ a {
   font-size: 1rem;
   color: #ff2f9d;
   margin: 0.1rem 0 0.4rem;
+  text-transform: none !important;
 }
 
 .impact-card__copy {
@@ -941,6 +1001,7 @@ a {
   font-family: var(--font-accent), cursive;
   font-size: clamp(0.78rem, 1.4vw, 1rem);
   color: #ff5faf;
+  text-transform: none !important;
   transform: rotate(-0.6deg);
   transform-origin: left center;
 }

@@ -10,6 +10,7 @@ import {
   RiArrowLeftSLine,
   RiArrowRightSLine,
   RiBarChartBoxLine,
+  RiCoupon3Line,
   RiDashboardLine,
   RiGroupLine,
   RiHistoryLine,
@@ -26,6 +27,7 @@ import { firebaseAuth } from "@/lib/firebase/client";
 const links: { href: string; label: string; Icon: RemixiconComponentType }[] = [
   { href: "/admin", label: "Dashboard", Icon: RiDashboardLine },
   { href: "/admin/leads", label: "Leads", Icon: RiStackLine },
+  { href: "/admin/vip-codes", label: "Códigos VIP", Icon: RiCoupon3Line },
   { href: "/admin/clients", label: "Clientes", Icon: RiTeamLine },
   { href: "/admin/expenses", label: "Gastos compartidos", Icon: RiWallet3Line },
   { href: "/admin/blog", label: "Blog CMS", Icon: RiArticleLine },

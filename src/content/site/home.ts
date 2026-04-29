@@ -1,53 +1,42 @@
 export const homeContent = {
-  hero: {
-    kicker: "Agencia creativa y estratégica",
-    title: "No necesitás llegar con todo resuelto.",
-    subtitle:
-      "Traé tu idea como esté hoy. En Las Girls+ te ayudamos a ordenarla, definir qué conviene hacer primero y ejecutar con criterio, diseño y tecnología.",
-    ctaPrimary: { label: "Contanos tu proyecto", href: "/contact" },
-    ctaSecondary: { label: "Ver servicios", href: "#servicios" },
-    supporting:
-      "La primera consulta no se cobra. Es un espacio para entender tu contexto y orientarte con claridad.",
-  },
-  anxietyBlock: {
-    title: "No tenés que tener todo definido para empezar.",
-    paragraphs: [
-      "Muchas personas llegan pensando que necesitan una app cuando todavía conviene validar con una landing. O creen que necesitan un sitio enorme, y en realidad lo urgente es ordenar marca, mensaje y embudo de contacto.",
-      "Nuestro trabajo no es venderte un paquete rígido. Es ayudarte a entender qué te conviene ahora, qué puede esperar y cómo construir una hoja de ruta realista.",
-      "Si tu proyecto todavía está verde, también es una buena etapa para hablar. Acompañamos desde cero.",
-    ],
-  },
-  about: {
-    title: "Jean y Mel lideran. Un equipo interdisciplinario ejecuta.",
-    text: "Las Girls+ es una agencia liderada por Jean y Mel, con una red de especialistas que se suma según las necesidades de cada proyecto: desarrollo, diseño, branding, social media, contenido, audiovisual y estrategia. Somos cercanas en el trato y rigurosas en cómo pensamos y hacemos.",
-  },
   methodology: {
-    title: "Cómo trabajamos sin fórmulas rígidas",
     blocks: [
       {
-        title: "Diagnóstico y acompañamiento inicial",
-        description:
-          "Partimos de una conversación estratégica para entender el negocio, la etapa y el objetivo real.",
+        description: `Arrancamos con una conversación real.
+Queremos entender tu idea, qué querés hacer, a dónde querés llegar y en qué punto estás hoy.
+
+No hace falta que lo tengas todo claro.
+Tambien queremos escuchar tus inquietudes, tus preocupaciones, tus dudas.
+Porque no existen preguntas tontas.
+
+Este ida y vuelta es clave para poder armar una propuesta bien pensada, alineada a vos, a tus tiempos y a tu presupuesto.
+
+Desde el día uno no estás solo:
+nos metemos con vos en el proceso y te acompañamos de punta a punta.`,
       },
       {
-        title: "Definición de necesidades reales",
-        description:
-          "Separamos lo urgente de lo importante y detectamos qué acciones van a mover el proyecto.",
+        description: `Una vez que entendimos todo, bajamos a tierra.
+Separamos lo urgente de lo importante,
+ordenamos ideas y armamos un camino lógico para avanzar.
+
+Desarmamos el proyecto en partes:
+qué va primero, qué puede esperar y qué realmente mueve el resultado.
+
+La idea es que podamos trabajar juntas de forma clara, sin caos, sin sobrecarga y adaptadas a tus tiempos.
+
+Si llegaste a las girls, no es casualidad.
+Ahora hay que hacerlo bien.`,
       },
       {
-        title: "Roadmap a medida",
-        description:
-          "Diseñamos un plan flexible por bloques de trabajo, no por un guion lineal obligatorio.",
-      },
-      {
-        title: "Ejecución por frentes",
-        description:
-          "Branding, web, contenido, producto o pauta pueden ocurrir en paralelo cuando aporta valor.",
-      },
-      {
-        title: "Iteración y crecimiento",
-        description:
-          "Medimos, ajustamos y mejoramos. Lo importante es avanzar con foco, no cumplir pasos vacíos.",
+        description: `Con todo definido, armamos un plan a medida.
+
+Trabajamos por etapas, con foco en avanzar, validar y ajustar sobre la marcha.
+Nada de procesos rígidos que no se adaptan.
+
+Diseño, desarrollo, contenido, sistemas:
+todo conectado para que lo que estamos construyendo funcione de verdad.
+
+Te acompañamos en cada decisión, en cada entrega y en cada paso hasta que eso que imaginaste se convierte en algo real.`,
       },
     ],
   },
@@ -63,17 +52,14 @@ export const homeContent = {
   ],
   why: [
     "Acompañamiento real desde cero",
-    "Mirada estratégica y creativa en cada decisión",
-    "Equipo interdisciplinario que se arma según tu proyecto",
-    "Ejecución real: no solo ideas, sino implementación",
-    "Comunicación clara, humana y honesta",
-    "Capacidad de escalar con procesos y tecnología",
+
+
   ],
 };
 
 export const serviceCards = [
   {
-    title: "Branding & identidad",
+    title: "Branding e identidad",
     microcopy: "Marcas claras, memorables y coherentes.",
     description:
       "Construimos o refinamos tu identidad para que tu marca sea reconocible, consistente y funcional en todos los canales.",
@@ -101,7 +87,7 @@ export const serviceCards = [
     microcopy: "Presencia sostenida con narrativa de marca.",
     description:
       "Definimos estrategia de contenido, calendarización, piezas y lineamientos para comunicar con claridad y consistencia.",
-    solves: "Redes improvisadas, mensajes sin foco y baja conexión con audiencia.",
+    // solves: "Redes improvisadas, mensajes sin foco y baja conexión con audiencia.",
     examples: "Estrategia mensual, guiones, contenidos de lanzamiento.",
   },
   {

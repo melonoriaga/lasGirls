@@ -1,23 +1,23 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import Image from "next/image";
-import Link from "next/link";
-import CircularText from "@/components/CircularText";
 import DecryptedText from "@/components/DecryptedText";
-import { StickerWindows } from "@/components/sections/sticker-windows";
+import TextType from "@/components/TextType";
+import ProfileCard from "@/components/ProfileCard";
+import { useDictionary } from "@/i18n/locale-provider";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const TEAM_STICKERS = [
-  { id: "t1", src: "/brand/stickers/STICKER7.png", x: 15, y: 68, w: 400, rotate: 7, delay: 0.18 },
-];
-
-/** Home “strategic team” strip with Jean & Mel ally cards. */
-export function HomeTeamSection() {
+/** Home strategic team section — editorial / brutalist layout with the
+ *  Jean & Mel ProfileCards plus an extended copy block describing the
+ *  network model. */
+export function HomeTeamSection({ sectionId = "equipo" }: { sectionId?: string }) {
   const sectionRef = useRef<HTMLElement | null>(null);
+  const tm = useDictionary().team;
+  const specialistTags = tm.tags;
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -55,6 +55,25 @@ export function HomeTeamSection() {
           },
         },
       );
+
+      // Pink underline / divider reveals as you scroll into block 02
+      gsap.utils
+        .toArray<HTMLElement>(section.querySelectorAll(".brutal-rule"))
+        .forEach((rule) => {
+          gsap.fromTo(
+            rule,
+            { scaleX: 0, transformOrigin: "left center" },
+            {
+              scaleX: 1,
+              duration: 1.1,
+              ease: "expo.out",
+              scrollTrigger: {
+                trigger: rule,
+                start: "top 85%",
+              },
+            },
+          );
+        });
     }, section);
 
     return () => ctx.revert();
@@ -62,98 +81,212 @@ export function HomeTeamSection() {
 
   return (
     <section
-      id="equipo"
+      id={sectionId}
       ref={sectionRef}
-      className="brutal-section vh-section section-shell relative border-t-2 border-black bg-[#111] text-[#fff8f0]"
+      className="brutal-section section-shell relative overflow-hidden border-t-2 border-black bg-[#0b0b0b] py-24 text-[#fff8f0] md:py-32"
     >
-      <StickerWindows items={TEAM_STICKERS} />
-      <div className="mx-auto flex min-h-screen max-w-7xl flex-col justify-center">
-        <p className="brutal-reveal inline-flex bg-[#ff5faf] px-3 py-1 text-[10px] uppercase tracking-[0.16em] text-black">
-          equipo estratégico
-        </p>
-        <h2 className="brutal-reveal mt-4 font-display text-6xl uppercase leading-[0.86] text-[#f4ede6] lg:text-8xl">
-          <DecryptedText
-            text="no hacemos todo solas."
-            speed={26}
-            maxIterations={12}
-            sequential
-            animateOn="view"
-            className="inline-block"
-            encryptedClassName="inline-block text-white/55"
-          />
-        </h2>
-        <p className="brutal-reveal mt-4 max-w-xl text-sm text-white/70">
-          Trabajamos con red real de especialistas. Vos hablás con nosotras: nos encargamos del resto.
-        </p>
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-24 px-6 md:gap-32 md:px-10">
+        {/* ─────────── BLOCK 01 — HEADER + CARDS ─────────── */}
+        <div className="flex flex-col gap-12">
+          <header className="flex flex-col gap-6">
+            <div className="brutal-reveal flex items-center gap-4">
+              <span className="inline-flex bg-[#ff3ea5] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-black">
+                {tm.eyebrow01}
+              </span>
+              <span className="hidden h-px flex-1 bg-white/15 md:block" />
+            </div>
 
-        <div className="allies-grid brutal-reveal mt-8">
-          <Link href="/team/jean" className="ally-card group block" aria-label="Ver perfil de Jean">
-            <div className="ally-ring-wrap" aria-hidden>
-              <CircularText
-                text="JEAN ✦ JEAN ✦ JEAN ✦ JEAN ✦ JEAN ✦ JEAN ✦ "
-                spinDuration={16}
-                onHover="speedUp"
-                className="ally-ring"
+            <h2 className="brutal-reveal w-full font-display text-[clamp(2rem,5.4vw,4.5rem)] font-black uppercase leading-[1.02] tracking-normal text-[#f4ede6]">
+              <DecryptedText
+                text={tm.h2}
+                speed={26}
+                maxIterations={14}
+                sequential
+                animateOn="view"
+                className="inline"
+                encryptedClassName="inline text-white/45"
               />
-            </div>
-            <div className="ally-image-wrap">
-              <Image src="/brand/girls/jean.png" alt="Jean" fill unoptimized className="ally-image object-contain object-bottom" />
-            </div>
-            <div className="ally-tag">✦ ESTRATEGIA & ROADMAP</div>
-            <div className="ally-overlay">
-              <h3 className="ally-name">
-                <DecryptedText
-                  text="JEAN"
-                  speed={24}
-                  maxIterations={12}
-                  sequential
-                  animateOn="view"
-                  className="inline-block"
-                  encryptedClassName="inline-block text-[#f4ede6]/55"
-                />
-              </h3>
-              <p className="ally-script">estructura que ordena.</p>
-              <div className="ally-skills">
-                <span>Discovery</span>
-                <span>Roadmaps</span>
-                <span>Producto</span>
-              </div>
-            </div>
-          </Link>
+              <span className="text-[#ff3ea5]">.</span>
+            </h2>
 
-          <Link href="/team/mel" className="ally-card group block" aria-label="Ver perfil de Mel">
-            <div className="ally-ring-wrap" aria-hidden>
-              <CircularText
-                text="MEL ✦ MEL ✦ MEL ✦ MEL ✦ MEL ✦ MEL ✦ "
-                spinDuration={14}
-                onHover="speedUp"
-                className="ally-ring"
+            <div className="brutal-reveal mt-2 max-w-2xl border-l-2 border-[#ff3ea5] pl-5">
+              <TextType
+                as="p"
+                text={tm.leadIn}
+                typingSpeed={28}
+                initialDelay={300}
+                pauseDuration={1200}
+                loop={false}
+                showCursor
+                cursorCharacter="▌"
+                cursorClassName="text-[#ff3ea5]"
+                startOnVisible
+                className="font-display text-base uppercase leading-[1.45] tracking-[0.04em] text-white/85 md:text-lg"
               />
+              <p className="mt-3 font-display text-base uppercase leading-[1.45] tracking-[0.04em] text-white md:text-lg">
+                {tm.vosHablas}
+                <span className="text-[#ff3ea5]">
+                  {tm.armamosEquipo}
+                </span>
+              </p>
             </div>
-            <div className="ally-image-wrap">
-              <Image src="/brand/girls/mel.png" alt="Mel" fill unoptimized className="ally-image object-contain object-bottom" />
+          </header>
+
+          <div className="brutal-reveal mt-4 grid grid-cols-1 items-start justify-items-center gap-10 md:grid-cols-2 md:gap-14 lg:gap-20">
+            <ProfileCard
+              name="JEAN"
+              title="Brand Designer & Visual Identity Lead"
+              handle="jean"
+              status={tm.profileAvailable}
+              contactText={tm.profileContact}
+              avatarUrl="/brand/girls/jean.png"
+              miniAvatarUrl="/brand/girls/jean.png"
+              iconUrl="/brand/logos/las-girls-vertical-rosa.png"
+              behindGlowColor="rgba(255, 62, 165, 0.25)"
+              avatarBottom="-200px"
+              contactHref="/team/jean"
+            />
+            <ProfileCard
+              name="MEL"
+              title="Product Designer & Developer"
+              handle="mel"
+              status={tm.profileAvailable}
+              contactText={tm.profileContact}
+              avatarUrl="/brand/girls/mel.png"
+              miniAvatarUrl="/brand/girls/mel.png"
+              iconUrl="/brand/logos/las-girls-vertical-rosa.png"
+              behindGlowColor="rgba(211, 66, 145, 0.25)"
+              avatarBottom="-200px"
+              contactHref="/team/mel"
+            />
+          </div>
+        </div>
+
+        {/* ─────────── BLOCK 02 — EL SISTEMA ─────────── */}
+        <div className="flex flex-col gap-10">
+          <div className="brutal-reveal flex items-center gap-4">
+            <span className="inline-flex border-2 border-white/80 bg-transparent px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-white">
+              {tm.eyebrow02}
+            </span>
+            <span className="brutal-rule h-[2px] flex-1 bg-[#ff3ea5]" />
+          </div>
+
+          <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
+            {/* LEFT col — editorial body */}
+            <div className="brutal-reveal flex flex-col gap-7 lg:col-span-7">
+              <p className="font-display text-[clamp(1.5rem,2.4vw,2rem)] font-black uppercase leading-[1.05] tracking-[-0.005em] text-[#f4ede6]">
+                {tm.sistemaP1Line1a}
+                <br />
+                <span className="text-[#ff3ea5]">
+                  {tm.sistemaP1Line1bHighlight}
+                </span>
+              </p>
+
+              <p className="max-w-[55ch] text-base leading-[1.65] text-white/75 md:text-[1.05rem]">
+                {tm.sistemaP2}
+              </p>
+
+              {/* <p className="max-w-[55ch] text-base leading-[1.65] text-white/75 md:text-[1.05rem]">
+                Nosotras lideramos, ordenamos y ejecutamos. El resto del equipo
+                aparece cuando tiene que aparecer.
+              </p> */}
             </div>
-            <div className="ally-tag">✦ BRANDING & DIRECCIÓN CREATIVA</div>
-            <div className="ally-overlay">
-              <h3 className="ally-name">
-                <DecryptedText
-                  text="MEL"
-                  speed={24}
-                  maxIterations={12}
-                  sequential
-                  animateOn="view"
-                  className="inline-block"
-                  encryptedClassName="inline-block text-[#f4ede6]/55"
-                />
-              </h3>
-              <p className="ally-script">identidad que se recuerda.</p>
-              <div className="ally-skills">
-                <span>Branding</span>
-                <span>Visual Systems</span>
-                <span>Narrativa</span>
+
+            {/* RIGHT col — specialist roster */}
+            <aside className="brutal-reveal lg:col-span-5">
+              <div className="relative border-2 border-white/15 bg-white/3 p-7 md:p-8">
+                <span className="absolute -top-3 left-6 bg-[#0b0b0b] px-2 font-mono text-[10px] uppercase tracking-[0.2em] text-white/60">
+                  {tm.specialistRosterEyebrow}
+                </span>
+
+                <p className="font-display text-base uppercase leading-[1.4] tracking-[0.04em] text-white/85 md:text-[1.05rem]">
+                  {tm.equipoCrece}
+                </p>
+
+                <ul className="mt-6 flex flex-wrap gap-2">
+                  {specialistTags.map((tag: string, i: number) => {
+                    const accent = i % 2 === 0;
+                    return (
+                      <li
+                        key={tag}
+                        className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.085em] transition-colors ${accent
+                          ? "border-[#ff3ea5]/90 bg-black/35 text-[#fecfe3] hover:border-[#ff3ea5] hover:bg-[#ff3ea5]/15"
+                          : "border-white/22 bg-black/35 text-white/52 hover:border-white/38 hover:bg-white/6"
+                          }`}
+                      >
+                        <span
+                          aria-hidden
+                          className={`text-[7px] leading-none ${accent ? "text-[#ff3ea5]" : "text-white/45"
+                            }`}
+                        >
+                          ◆
+                        </span>
+                        {tag}
+                      </li>
+                    );
+                  })}
+                </ul>
+
+                <div className="mt-7 flex items-center justify-between border-t border-white/10 pt-4 text-[10px] uppercase tracking-[0.18em] text-white/50">
+                  <span>{tm.modeloNetwork}</span>
+                  <span className="font-mono">{tm.onDemand}</span>
+                </div>
               </div>
+            </aside>
+          </div>
+        </div>
+
+        {/* ─────────── BLOCK 03 — CIERRE / QUOTE ─────────── */}
+        <div className="flex flex-col gap-8">
+          <div className="brutal-reveal flex items-center gap-4">
+            <span className="brutal-rule h-[2px] flex-1 bg-white/30" />
+            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/60">
+              {tm.eyebrow03}
+            </span>
+          </div>
+
+          <blockquote className="brutal-reveal relative">
+            <span
+              aria-hidden
+              className="absolute -left-2 -top-10 font-display text-[6rem] font-black leading-none text-[#ff3ea5]/20 md:-left-4 md:-top-14 md:text-[10rem]"
+            >
+              “
+            </span>
+            <p className="relative font-display text-[clamp(2rem,5vw,4rem)] font-black uppercase leading-[0.95] tracking-[-0.01em] text-[#f4ede6]">
+              {tm.quotePrefix}
+              <DecryptedText
+                text={tm.quoteVerb}
+                speed={32}
+                maxIterations={14}
+                sequential
+                animateOn="view"
+                className="inline-block text-[#ff3ea5]"
+                encryptedClassName="inline-block text-[#ff3ea5]/40"
+              />
+              <span className="whitespace-pre-line">{tm.quoteRest}</span>
+            </p>
+          </blockquote>
+
+          <div className="brutal-reveal flex flex-col items-start gap-5 border-t border-white/10 pt-7 sm:flex-row sm:items-end sm:justify-between">
+            <Link
+              href="/team"
+              className="hero-cta hero-cta--dark inline-flex w-full justify-center text-center no-underline sm:w-auto"
+            >
+              {tm.teamCta}
+            </Link>
+
+            <div className="max-w-md text-left sm:text-right">
+              <p className="font-mono text-[10px] uppercase leading-relaxed tracking-[0.18em] text-white/45">
+                {tm.aboutPrompt}
+              </p>
+              <Link
+                href="/about"
+                className="mt-2 inline-flex text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-white/70 underline decoration-white/20 underline-offset-4 transition hover:text-[#f4ede6] hover:decoration-[#f4ede6]/60"
+              >
+                {tm.aboutCta}
+              </Link>
             </div>
-          </Link>
+          </div>
         </div>
       </div>
     </section>
