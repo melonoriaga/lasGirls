@@ -1,5 +1,8 @@
 const PIPELINE_STATUS_LABELS: Record<string, string> = {
   new: "Nuevo",
+  reviewed: "Revisado",
+  awaiting_response: "Esperando respuesta",
+  lost: "Perdido",
   contacted: "Contactado",
   brief_pending: "Falta brief",
   budget_pending: "Pendiente de presupuesto",

@@ -123,6 +123,7 @@ export async function PATCH(request: Request, context: Context) {
     if (!canAccessRecord(leadSnapshot.data() ?? {}, actor.uid)) {
       return NextResponse.json({ ok: false, error: "Sin permisos para este lead." }, { status: 403 });
     }
+    const previousStatus = String(leadSnapshot.data()?.status ?? "");
 
     const updates: Record<string, unknown> = {
       updatedAt: new Date().toISOString(),
@@ -155,6 +156,27 @@ export async function PATCH(request: Request, context: Context) {
     if (typeof body.status === "string") updates.status = leadStatusSchema.parse(body.status);
 
     await adminDb.collection("leads").doc(id).set(updates, { merge: true });
+    const nextStatus = String(updates.status ?? previousStatus);
+    if (nextStatus !== previousStatus) {
+      await logAdminActivity({
+        request,
+        action: "lead_status_updated",
+        targetType: "lead",
+        targetId: id,
+        metadata: { previousStatus, nextStatus },
+        fallbackActor: { uid: actor.uid, email: actor.email ?? "" },
+      });
+      if (nextStatus === "reviewed") {
+        await logAdminActivity({
+          request,
+          action: "lead_reviewed",
+          targetType: "lead",
+          targetId: id,
+          metadata: { previousStatus },
+          fallbackActor: { uid: actor.uid, email: actor.email ?? "" },
+        });
+      }
+    }
     await logAdminActivity({
       request,
       action: "lead_updated",

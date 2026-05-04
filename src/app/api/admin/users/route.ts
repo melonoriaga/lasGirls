@@ -14,6 +14,7 @@ export async function GET() {
     fullName: u.fullName ?? "",
     email: u.email ?? "",
     username: u.username ?? "",
+    photoURL: u.photoURL ?? "",
   }));
 
   return NextResponse.json({ ok: true, users });

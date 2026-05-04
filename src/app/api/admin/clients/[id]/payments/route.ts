@@ -16,6 +16,38 @@ async function assertClientAccess(id: string, uid: string) {
   return { ok: true as const };
 }
 
+async function syncInvoicePaymentStatus(clientId: string, invoiceId: string) {
+  const invoiceRef = adminDb.collection("clients").doc(clientId).collection("invoices").doc(invoiceId);
+  const invoiceSnap = await invoiceRef.get();
+  if (!invoiceSnap.exists) return;
+
+  const invoiceData = invoiceSnap.data() as { amount?: number; currency?: string };
+  const invoiceAmount = Number(invoiceData.amount ?? 0);
+  const paymentsSnap = await adminDb
+    .collection("clients")
+    .doc(clientId)
+    .collection("payments")
+    .where("relatedInvoiceId", "==", invoiceId)
+    .get();
+  const paidAmount = paymentsSnap.docs.reduce((sum, doc) => sum + Number(doc.data().totalAmount ?? 0), 0);
+
+  let status: string = "pending_payment";
+  if (paidAmount <= 0) status = "pending_payment";
+  else if (invoiceAmount > 0 && paidAmount < invoiceAmount) status = "partially_paid";
+  else status = "paid";
+
+  await invoiceRef.set(
+    {
+      paidAmount,
+      isPaid: status === "paid",
+      status,
+      paidAt: status === "paid" ? new Date().toISOString() : null,
+      updatedAt: new Date().toISOString(),
+    },
+    { merge: true },
+  );
+}
+
 export async function GET(_request: Request, context: Context) {
   const actor = await getSessionActor();
   if (!actor?.uid) {
@@ -98,6 +130,10 @@ export async function POST(request: Request, context: Context) {
       message: String(parsed.totalAmount),
       metadata: { paymentId: ref.id, currency: parsed.currency },
     });
+
+    if (parsed.relatedInvoiceId) {
+      await syncInvoicePaymentStatus(id, parsed.relatedInvoiceId);
+    }
 
     return NextResponse.json({ ok: true, paymentId: ref.id });
   } catch (error) {

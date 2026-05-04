@@ -19,6 +19,7 @@ import {
   RiStackLine,
   RiCloseLine,
   RiTeamLine,
+  RiTaskLine,
   RiWallet3Line,
 } from "@remixicon/react";
 import { AdminDesktopAlerts } from "@/components/admin/admin-desktop-alerts";
@@ -29,6 +30,7 @@ const links: { href: string; label: string; Icon: RemixiconComponentType }[] = [
   { href: "/admin/leads", label: "Leads", Icon: RiStackLine },
   { href: "/admin/vip-codes", label: "Códigos VIP", Icon: RiCoupon3Line },
   { href: "/admin/clients", label: "Clientes", Icon: RiTeamLine },
+  { href: "/admin/tasks", label: "Tareas", Icon: RiTaskLine },
   { href: "/admin/expenses", label: "Gastos compartidos", Icon: RiWallet3Line },
   { href: "/admin/blog", label: "Blog CMS", Icon: RiArticleLine },
   { href: "/admin/media", label: "Media", Icon: RiImageLine },

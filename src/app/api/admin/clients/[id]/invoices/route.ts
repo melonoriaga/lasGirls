@@ -132,7 +132,11 @@ export async function POST(request: Request, context: Context) {
     const invoiceEmailSentAt = parsed.invoiceEmailSentAt || (parsed.invoiceEmailSent ? now : null);
     const paidAt = parsed.paidAt || (parsed.isPaid ? now : null);
     const normalizedStatus =
-      parsed.status === "paid" || parsed.isPaid ? "paid" : parsed.invoiceEmailSent || parsed.status === "sent" ? "sent" : parsed.status;
+      parsed.status === "paid" || parsed.isPaid
+        ? "paid"
+        : parsed.invoiceEmailSent || parsed.status === "sent"
+          ? "pending_payment"
+          : parsed.status;
     const ref = await adminDb
       .collection("clients")
       .doc(id)
@@ -149,6 +153,7 @@ export async function POST(request: Request, context: Context) {
         invoiceEmailSentAt,
         isPaid: Boolean(parsed.isPaid || normalizedStatus === "paid"),
         status: normalizedStatus,
+        paidAmount: Boolean(parsed.isPaid || normalizedStatus === "paid") ? parsed.amount : 0,
         createdAt: now,
         updatedAt: now,
         createdByUserId: actor.uid,

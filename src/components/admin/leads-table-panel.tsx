@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import {
   RiAddLine,
   RiCloseLine,
@@ -41,6 +40,9 @@ const getStatusClassName = (status?: string) => {
   const value = String(status ?? "new");
   const map: Record<string, string> = {
     new: "border-sky-200 bg-sky-50 text-sky-700",
+    reviewed: "border-cyan-200 bg-cyan-50 text-cyan-700",
+    awaiting_response: "border-amber-200 bg-amber-50 text-amber-700",
+    lost: "border-red-200 bg-red-50 text-red-800",
     contacted: "border-amber-200 bg-amber-50 text-amber-700",
     brief_pending: "border-violet-200 bg-violet-50 text-violet-700",
     budget_pending: "border-violet-200 bg-violet-50 text-violet-700",
@@ -87,6 +89,19 @@ export function LeadsTablePanel({ leads, actorUid }: Props) {
   const [scopeFilter, setScopeFilter] = useState<"all" | "mine">("all");
   const [pageSize, setPageSize] = useState(10);
   const [page, setPage] = useState(1);
+  const [convertTarget, setConvertTarget] = useState<LeadRow | null>(null);
+  const [convertLoading, setConvertLoading] = useState(false);
+  const [convertForm, setConvertForm] = useState({
+    clientName: "",
+    company: "",
+    contacts: "",
+    emails: "",
+    phones: "",
+    service: "",
+    accountManagerUserId: "",
+    tags: "",
+    initialNotes: "",
+  });
 
   const statuses = useMemo(
     () => Array.from(new Set(leads.map((lead) => String(lead.status ?? "new")))).sort(),
@@ -163,6 +178,78 @@ export function LeadsTablePanel({ leads, actorUid }: Props) {
       toast.error("Error de red al eliminar.");
     } finally {
       setDeleteLoading(false);
+    }
+  };
+
+  const openConvertModal = (lead: LeadRow) => {
+    setConvertTarget(lead);
+    setConvertForm({
+      clientName: String(lead.fullName ?? ""),
+      company: String(lead.company ?? ""),
+      contacts: "",
+      emails: String(lead.email ?? ""),
+      phones: "",
+      service: serviceLabel(lead) === "—" ? "" : serviceLabel(lead),
+      accountManagerUserId: String(lead.assignedToUserId ?? ""),
+      tags: "",
+      initialNotes: "",
+    });
+  };
+
+  const runConvertLead = async () => {
+    if (!convertTarget) return;
+    if (!convertForm.clientName.trim() || !convertForm.emails.trim()) {
+      toast.error("Completá al menos nombre y email principal.");
+      return;
+    }
+    setConvertLoading(true);
+    try {
+      const res = await fetch(`/api/admin/leads/${convertTarget.id}/convert`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          force: true,
+          client: {
+            clientName: convertForm.clientName.trim(),
+            company: convertForm.company.trim(),
+            contacts: convertForm.contacts
+              .split("\n")
+              .map((line) => line.trim())
+              .filter(Boolean),
+            emails: convertForm.emails
+              .split(",")
+              .map((item) => item.trim())
+              .filter(Boolean),
+            phones: convertForm.phones
+              .split(",")
+              .map((item) => item.trim())
+              .filter(Boolean),
+            service: convertForm.service
+              .split(",")
+              .map((item) => item.trim())
+              .filter(Boolean),
+            accountManagerUserId: convertForm.accountManagerUserId.trim(),
+            tags: convertForm.tags
+              .split(",")
+              .map((item) => item.trim())
+              .filter(Boolean),
+            initialNotes: convertForm.initialNotes.trim(),
+          },
+        }),
+      });
+      const json = (await res.json()) as { ok?: boolean; error?: string; clientId?: string };
+      if (!res.ok || !json.ok) {
+        toast.error(json.error ?? "No se pudo convertir el lead.");
+        return;
+      }
+      toast.success("Lead convertido a cliente.");
+      setConvertTarget(null);
+      router.refresh();
+    } catch {
+      toast.error("Error de red al convertir.");
+    } finally {
+      setConvertLoading(false);
     }
   };
 
@@ -307,6 +394,9 @@ export function LeadsTablePanel({ leads, actorUid }: Props) {
                       <RowActionsMenu
                         items={[
                           { label: "Ver", href: `/admin/leads/${lead.id}` },
+                          ...(String(lead.status ?? "") !== "converted"
+                            ? [{ label: "Convertir a cliente", onClick: () => openConvertModal(lead) }]
+                            : []),
                           ...(String(lead.status ?? "") === "converted" && lead.convertedToClientId
                             ? [{ label: "Ver cliente", href: `/admin/clients/${lead.convertedToClientId}` }]
                             : []),
@@ -428,6 +518,44 @@ export function LeadsTablePanel({ leads, actorUid }: Props) {
                 toast.error(message);
               }}
             />
+          </div>
+        </div>
+      ) : null}
+
+      {convertTarget ? (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4">
+          <div className="w-full max-w-3xl rounded-2xl bg-zinc-100 p-4">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-zinc-700">Convertir lead a cliente</h2>
+              <button
+                type="button"
+                onClick={() => setConvertTarget(null)}
+                className="rounded-lg border border-zinc-300 bg-white px-2.5 py-1 text-xs font-medium text-zinc-700"
+              >
+                Cerrar
+              </button>
+            </div>
+            <div className="grid gap-2 md:grid-cols-2">
+              <input className="rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm" placeholder="Nombre cliente / empresa" value={convertForm.clientName} onChange={(e) => setConvertForm((p) => ({ ...p, clientName: e.target.value }))} />
+              <input className="rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm" placeholder="Empresa" value={convertForm.company} onChange={(e) => setConvertForm((p) => ({ ...p, company: e.target.value }))} />
+              <textarea className="min-h-[72px] rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm md:col-span-2" placeholder="Personas de contacto (una por linea)" value={convertForm.contacts} onChange={(e) => setConvertForm((p) => ({ ...p, contacts: e.target.value }))} />
+              <input className="rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm" placeholder="Emails (separados por coma)" value={convertForm.emails} onChange={(e) => setConvertForm((p) => ({ ...p, emails: e.target.value }))} />
+              <input className="rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm" placeholder="Telefonos (separados por coma)" value={convertForm.phones} onChange={(e) => setConvertForm((p) => ({ ...p, phones: e.target.value }))} />
+              <input className="rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm" placeholder="Servicio (coma)" value={convertForm.service} onChange={(e) => setConvertForm((p) => ({ ...p, service: e.target.value }))} />
+              <input className="rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm" placeholder="Responsable de cuenta (userId)" value={convertForm.accountManagerUserId} onChange={(e) => setConvertForm((p) => ({ ...p, accountManagerUserId: e.target.value }))} />
+              <input className="rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm md:col-span-2" placeholder="Tags (coma)" value={convertForm.tags} onChange={(e) => setConvertForm((p) => ({ ...p, tags: e.target.value }))} />
+              <textarea className="min-h-[72px] rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm md:col-span-2" placeholder="Notas internas iniciales" value={convertForm.initialNotes} onChange={(e) => setConvertForm((p) => ({ ...p, initialNotes: e.target.value }))} />
+            </div>
+            <div className="mt-3 flex justify-end">
+              <button
+                type="button"
+                disabled={convertLoading}
+                onClick={() => void runConvertLead()}
+                className="rounded-xl bg-rose-300 px-4 py-2 text-xs font-semibold text-zinc-900 disabled:opacity-60"
+              >
+                {convertLoading ? "Convirtiendo..." : "Convertir a cliente"}
+              </button>
+            </div>
           </div>
         </div>
       ) : null}

@@ -3,6 +3,9 @@ import { z } from "zod";
 /** Estados comerciales del lead (incluye legado para lectura/escritura). */
 export const leadPipelineStatusSchema = z.enum([
   "new",
+  "reviewed",
+  "awaiting_response",
+  "lost",
   "contacted",
   "brief_pending",
   "budget_pending",
@@ -29,10 +32,9 @@ export const budgetStatusSchema = z.enum([
 
 export const leadBudgetRecordStatusSchema = z.enum([
   "sent",
-  "awaiting_approval",
+  "awaiting_response",
   "approved",
   "rejected",
-  "needs_changes",
 ]);
 
 export const currencySchema = z.enum(["ARS", "USD"]);
@@ -59,7 +61,16 @@ export const billingTypeSchema = z.enum([
   "hybrid",
 ]);
 
-export const invoiceStatusSchema = z.enum(["not_sent", "sent", "paid", "overdue", "draft", "cancelled"]);
+export const invoiceStatusSchema = z.enum([
+  "not_sent",
+  "sent",
+  "pending_payment",
+  "partially_paid",
+  "paid",
+  "overdue",
+  "draft",
+  "cancelled",
+]);
 
 export const clientLinkCategorySchema = z.enum([
   "drive",
@@ -74,7 +85,15 @@ export const clientLinkCategorySchema = z.enum([
 
 export const clientNoteTypeSchema = z.enum(["general", "meeting", "billing", "onboarding", "warning"]);
 
-export const clientInvoiceStatusSchema = z.enum(["draft", "sent", "paid", "overdue", "cancelled"]);
+export const clientInvoiceStatusSchema = z.enum([
+  "draft",
+  "sent",
+  "pending_payment",
+  "partially_paid",
+  "paid",
+  "overdue",
+  "cancelled",
+]);
 
 export const paymentTypeSchema = z.enum([
   "full_to_one_person",
@@ -202,6 +221,38 @@ export const clientPatchSchema = z.object({
   billingFrequency: billingFrequencySchema.optional(),
   health: clientHealthSchema.optional(),
   tags: z.array(z.string()).optional(),
+  emails: z
+    .array(
+      z.object({
+        email: z.string().email(),
+        reference: z.string().optional(),
+        type: z.string().optional(),
+        isPrimary: z.boolean().optional(),
+      }),
+    )
+    .optional(),
+  phones: z
+    .array(
+      z.object({
+        number: z.string().min(3),
+        reference: z.string().optional(),
+        type: z.string().optional(),
+        isPrimary: z.boolean().optional(),
+      }),
+    )
+    .optional(),
+  contacts: z
+    .array(
+      z.object({
+        name: z.string().min(1),
+        role: z.string().optional(),
+        email: z.string().optional().or(z.literal("")),
+        phone: z.string().optional().or(z.literal("")),
+        notes: z.string().optional(),
+      }),
+    )
+    .optional(),
+  internalNotes: z.string().optional().or(z.literal("")),
   startDate: z.string().optional().or(z.literal("")),
   endDate: z.string().optional().or(z.literal("")),
 });

@@ -16,11 +16,14 @@ export async function POST(request: Request, context: Context) {
   try {
     const { id } = await context.params;
     let force = false;
+    let clientOverrides: Record<string, unknown> = {};
     try {
-      const body = (await request.json()) as { force?: boolean };
+      const body = (await request.json()) as { force?: boolean; client?: Record<string, unknown> };
       force = Boolean(body?.force);
+      clientOverrides = (body?.client ?? {}) as Record<string, unknown>;
     } catch {
       force = false;
+      clientOverrides = {};
     }
 
     const leadRef = adminDb.collection("leads").doc(id);
@@ -54,16 +57,57 @@ export async function POST(request: Request, context: Context) {
     }
 
     const now = new Date().toISOString();
-    const fullName = String(lead.fullName ?? "").trim() || "Cliente";
-    const email = String(lead.email ?? "").trim();
+    const fullName =
+      String(clientOverrides.clientName ?? "").trim() || String(lead.fullName ?? "").trim() || "Cliente";
+    const emailCandidates = Array.isArray(clientOverrides.emails)
+      ? (clientOverrides.emails as unknown[]).filter((item) => typeof item === "string")
+      : [];
+    const email = String(emailCandidates[0] ?? lead.email ?? "").trim();
     if (!email) {
       return NextResponse.json({ ok: false, error: "El lead no tiene email." }, { status: 400 });
     }
 
-    const serviceInterest = Array.isArray(lead.serviceInterest)
-      ? (lead.serviceInterest as string[])
+    const serviceInterest = Array.isArray(clientOverrides.service)
+      ? (clientOverrides.service as unknown[]).filter((item) => typeof item === "string")
+      : Array.isArray(lead.serviceInterest)
+        ? (lead.serviceInterest as string[])
+        : [];
+    const tags = Array.isArray(clientOverrides.tags)
+      ? (clientOverrides.tags as unknown[]).filter((item) => typeof item === "string")
+      : Array.isArray(lead.tags)
+        ? (lead.tags as string[])
+        : [];
+    const parsedPhones = Array.isArray(clientOverrides.phones)
+      ? (clientOverrides.phones as unknown[])
+          .filter((item) => typeof item === "string")
+          .map((value, index) => ({
+            number: String(value).trim(),
+            reference: index === 0 ? "Principal" : "",
+            type: "whatsapp",
+            isPrimary: index === 0,
+          }))
+          .filter((row) => row.number)
       : [];
-    const tags = Array.isArray(lead.tags) ? (lead.tags as string[]) : [];
+    const parsedEmails = emailCandidates
+      .map((value, index) => ({
+        email: String(value).trim(),
+        reference: index === 0 ? "Principal" : "",
+        type: "general",
+        isPrimary: index === 0,
+      }))
+      .filter((row) => row.email);
+    const parsedContacts = Array.isArray(clientOverrides.contacts)
+      ? (clientOverrides.contacts as unknown[])
+          .filter((item) => typeof item === "string")
+          .map((name, index) => ({
+            name: String(name).trim(),
+            role: index === 0 ? "Contacto principal" : "",
+            email: index === 0 ? email : "",
+            phone: index === 0 ? String(parsedPhones[0]?.number ?? lead.phone ?? "") : "",
+            notes: "",
+          }))
+          .filter((row) => row.name)
+      : [];
 
     const visibilityScope = readVisibilityScope(lead);
     const ownerUserId =
@@ -77,9 +121,9 @@ export async function POST(request: Request, context: Context) {
       fullName,
       displayName: fullName,
       email,
-      phone: String(lead.phone ?? ""),
-      company: String(lead.company ?? ""),
-      brandName: String(lead.company ?? ""),
+      phone: String(parsedPhones[0]?.number ?? lead.phone ?? ""),
+      company: String(clientOverrides.company ?? lead.company ?? ""),
+      brandName: String(clientOverrides.company ?? lead.company ?? ""),
       status: "pending_onboarding",
       serviceType: serviceInterest,
       servicesContracted: serviceInterest,
@@ -99,11 +143,15 @@ export async function POST(request: Request, context: Context) {
       contractSigned: false,
       invoicingRequired: true,
       assignedTeam: lead.assignedToUserId ? [String(lead.assignedToUserId)] : [],
-      accountManagerUserId: String(lead.assignedToUserId ?? ""),
+      accountManagerUserId: String(clientOverrides.accountManagerUserId ?? lead.assignedToUserId ?? ""),
       clientType: "recurring",
       billingFrequency: "monthly",
       health: "healthy",
       tags,
+      contacts: parsedContacts,
+      emails: parsedEmails,
+      phones: parsedPhones,
+      internalNotes: String(clientOverrides.initialNotes ?? lead.internalNotes ?? "").trim(),
       documents: [],
       usefulLinksCount: 0,
       notesCount: 0,

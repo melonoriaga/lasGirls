@@ -9,6 +9,9 @@ const leadStatusClass = (status?: string) => {
   const value = String(status ?? "new");
   const map: Record<string, string> = {
     new: "border-sky-200 bg-sky-50 text-sky-700",
+    reviewed: "border-cyan-200 bg-cyan-50 text-cyan-700",
+    awaiting_response: "border-amber-200 bg-amber-50 text-amber-700",
+    lost: "border-red-200 bg-red-50 text-red-800",
     contacted: "border-amber-200 bg-amber-50 text-amber-700",
     brief_pending: "border-violet-200 bg-violet-50 text-violet-700",
     budget_pending: "border-violet-200 bg-violet-50 text-violet-700",
@@ -40,6 +43,13 @@ type LogRow = {
   createdAt?: string;
 };
 
+type DashboardUser = {
+  id: string;
+  fullName?: string;
+  email?: string;
+  photoURL?: string;
+};
+
 export default async function AdminDashboardPage() {
   const session = await getServerSession();
   let showScheduleReminder = false;
@@ -52,11 +62,10 @@ export default async function AdminDashboardPage() {
     }
   }
 
-  const [leadsTotal, clientsTotal, postsTotal, newLeadsCount, convertedLeadsCount, recentLeadsSnap] =
+  const [leadsTotal, clientsTotal, pendingReviewLeadsCount, myTasksSnap, recentLeadsSnap, usersSnap] =
     await Promise.all([
       countCollection("leads"),
       countCollection("clients"),
-      countCollection("blogPosts"),
       adminDb
         .collection("leads")
         .where("status", "==", "new")
@@ -64,14 +73,15 @@ export default async function AdminDashboardPage() {
         .get()
         .then((s) => s.data().count)
         .catch(() => 0),
-      adminDb
-        .collection("leads")
-        .where("status", "==", "converted")
-        .count()
-        .get()
-        .then((s) => s.data().count)
-        .catch(() => 0),
+      session?.uid
+        ? adminDb
+            .collection("tasks")
+            .where("assignedTo", "==", session.uid)
+            .limit(20)
+            .get()
+        : Promise.resolve(null),
       adminDb.collection("leads").orderBy("createdAt", "desc").limit(6).get(),
+      adminDb.collection("users").limit(400).get(),
     ]);
 
   let recentLogs: LogRow[] = [];
@@ -93,20 +103,54 @@ export default async function AdminDashboardPage() {
     };
   });
 
+  const myTasks = (myTasksSnap?.docs ?? [])
+    .map((doc) => ({ id: doc.id, ...(doc.data() as Record<string, unknown>) }))
+    .sort((a, b) => {
+      const aDue = String(a.dueDate ?? "");
+      const bDue = String(b.dueDate ?? "");
+      if (aDue !== bDue) return aDue.localeCompare(bDue);
+      return String(a.createdAt ?? "").localeCompare(String(b.createdAt ?? ""));
+    })
+    .slice(0, 6);
+  const users = usersSnap.docs.map((doc) => ({ id: doc.id, ...(doc.data() as Record<string, unknown>) })) as DashboardUser[];
+  const usersById = new Map(users.map((u) => [u.id, u]));
+  const userMeta = (uid: string) => {
+    const user = usersById.get(uid);
+    const label = user?.fullName || user?.email || (uid ? uid.slice(0, 8) : "Sin asignar");
+    const initials = label
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase() ?? "")
+      .join("");
+    return { label, initials, photoURL: user?.photoURL ?? "" };
+  };
+  const taskStatusClass = (status: string) =>
+    status === "done"
+      ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+      : status === "blocked"
+        ? "border-red-200 bg-red-50 text-red-800"
+        : status === "in_progress"
+          ? "border-blue-200 bg-blue-50 text-blue-800"
+          : status === "cancelled"
+            ? "border-zinc-300 bg-zinc-100 text-zinc-700"
+            : "border-violet-200 bg-violet-50 text-violet-800";
+
   const cards = [
     { label: "Total leads", value: leadsTotal, href: "/admin/leads" as const },
-    { label: "Leads nuevos", value: newLeadsCount, href: "/admin/leads" as const, hint: "Estado «new»" },
-    { label: "Convertidos", value: convertedLeadsCount, href: "/admin/leads" as const, hint: "Estado «converted»" },
+    {
+      label: "Leads nuevos",
+      value: pendingReviewLeadsCount,
+      href: "/admin/leads" as const,
+      hint: "Pendientes de revisar",
+    },
     { label: "Clientes", value: clientsTotal, href: "/admin/clients" as const },
-    { label: "Posts blog", value: postsTotal, href: "/admin/blog" as const },
   ];
 
   return (
     <section className="mx-auto max-w-6xl">
       <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl">Dashboard</h1>
-      <p className="mt-2 max-w-2xl text-sm text-zinc-600">
-        Resumen del pipeline, contenidos y última actividad del equipo en el admin.
-      </p>
+      <p className="mt-2 max-w-2xl text-sm text-zinc-600">Resumen operativo de leads, clientes, tareas y actividad.</p>
 
       {showScheduleReminder ? (
         <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-950 shadow-sm">
@@ -124,7 +168,7 @@ export default async function AdminDashboardPage() {
         </div>
       ) : null}
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {cards.map((card) => (
           <Link
             key={card.label}
@@ -139,7 +183,7 @@ export default async function AdminDashboardPage() {
         ))}
       </div>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-2">
+      <div className="mt-8 grid gap-6 lg:grid-cols-3">
         <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
           <div className="flex flex-wrap items-end justify-between gap-2">
             <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-zinc-700">Últimos leads</h2>
@@ -196,6 +240,60 @@ export default async function AdminDashboardPage() {
                   {log.path ? <p className="mt-0.5 text-xs text-zinc-400">{log.path}</p> : null}
                 </li>
               ))
+            )}
+          </ul>
+        </div>
+
+        <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+          <div className="flex items-end justify-between gap-2">
+            <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-zinc-700">Mis tareas</h2>
+            <Link href="/admin/tasks" className="text-xs font-medium text-[#db2777] hover:underline">
+              Ver sección tareas
+            </Link>
+          </div>
+          <p className="mt-1 text-xs text-zinc-500">Tareas asignadas a tu usuario, ordenadas por vencimiento.</p>
+          <ul className="mt-4 divide-y divide-zinc-100">
+            {myTasks.length === 0 ? (
+              <li className="py-4 text-sm text-zinc-500">Todavia no tenes tareas asignadas.</li>
+            ) : (
+              myTasks.map((task) => {
+                const dueDate = String(task.dueDate ?? "");
+                const overdue = dueDate ? dueDate < new Date().toISOString() : false;
+                const creator = userMeta(String(task.createdBy ?? ""));
+                const assignee = userMeta(String(task.assignedTo ?? ""));
+                return (
+                  <li key={task.id} className="py-3">
+                    <p className="text-sm font-semibold text-zinc-900">{String(task.title ?? "Tarea sin titulo")}</p>
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
+                      <span className="text-zinc-500">{String(task.clientName ?? "Sin cliente")}</span>
+                      <span className={`inline-flex rounded-full border px-2 py-0.5 font-medium ${taskStatusClass(String(task.status ?? "pending"))}`}>
+                        {String(task.status ?? "pending")}
+                      </span>
+                    </div>
+                    <p className={`mt-1 text-xs ${overdue ? "font-semibold text-red-700" : "text-zinc-500"}`}>
+                      Vence: {dueDate ? dueDate.slice(0, 10) : "Sin fecha"}
+                    </p>
+                    <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-zinc-600">
+                      <span className="inline-flex items-center gap-1">
+                        {assignee.photoURL ? (
+                          <img src={assignee.photoURL} alt={assignee.label} className="h-5 w-5 rounded-full border border-zinc-200 object-cover" />
+                        ) : (
+                          <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-zinc-300 bg-zinc-100 text-[10px] font-semibold text-zinc-700">{assignee.initials || "?"}</span>
+                        )}
+                        Resp: {assignee.label}
+                      </span>
+                      <span className="inline-flex items-center gap-1">
+                        {creator.photoURL ? (
+                          <img src={creator.photoURL} alt={creator.label} className="h-5 w-5 rounded-full border border-zinc-200 object-cover" />
+                        ) : (
+                          <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-zinc-300 bg-zinc-100 text-[10px] font-semibold text-zinc-700">{creator.initials || "?"}</span>
+                        )}
+                        Creada por {creator.label}
+                      </span>
+                    </div>
+                  </li>
+                );
+              })
             )}
           </ul>
         </div>

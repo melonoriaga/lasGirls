@@ -19,6 +19,10 @@ export const ADMIN_ACTION_CONFIG: Record<string, { label: string; badgeClass: st
     label: "Estado del lead cambiado",
     badgeClass: "border-amber-200 bg-amber-50 text-amber-900",
   },
+  lead_reviewed: {
+    label: "Lead revisado",
+    badgeClass: "border-cyan-200 bg-cyan-50 text-cyan-900",
+  },
   lead_updated: {
     label: "Lead actualizado",
     badgeClass: "border-blue-200 bg-blue-50 text-blue-900",
@@ -67,6 +71,10 @@ export const ADMIN_ACTION_CONFIG: Record<string, { label: string; badgeClass: st
     label: "Enlace útil agregado",
     badgeClass: "border-cyan-200 bg-cyan-50 text-cyan-900",
   },
+  account_added: {
+    label: "Cuenta agregada",
+    badgeClass: "border-violet-200 bg-violet-50 text-violet-900",
+  },
   invoice_created: {
     label: "Factura cargada",
     badgeClass: "border-teal-200 bg-teal-50 text-teal-900",
@@ -78,6 +86,26 @@ export const ADMIN_ACTION_CONFIG: Record<string, { label: string; badgeClass: st
   payment_recorded: {
     label: "Pago registrado",
     badgeClass: "border-green-200 bg-green-50 text-green-900",
+  },
+  task_created: {
+    label: "Tarea creada",
+    badgeClass: "border-indigo-200 bg-indigo-50 text-indigo-900",
+  },
+  task_updated: {
+    label: "Tarea actualizada",
+    badgeClass: "border-blue-200 bg-blue-50 text-blue-900",
+  },
+  task_completed: {
+    label: "Tarea completada",
+    badgeClass: "border-emerald-200 bg-emerald-50 text-emerald-900",
+  },
+  task_deleted: {
+    label: "Tarea eliminada",
+    badgeClass: "border-red-200 bg-red-50 text-red-900",
+  },
+  task_comment_added: {
+    label: "Comentario en tarea",
+    badgeClass: "border-fuchsia-200 bg-fuchsia-50 text-fuchsia-900",
   },
   blog_post_updated: {
     label: "Post del blog editado",

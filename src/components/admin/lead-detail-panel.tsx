@@ -24,19 +24,11 @@ type AdminUser = { id: string; fullName: string; email: string };
 
 const PIPELINE_STATUSES = [
   "new",
-  "contacted",
-  "brief_pending",
-  "budget_pending",
-  "budget_sent",
-  "awaiting_approval",
-  "changes_requested",
-  "docs_pending",
-  "approved",
-  "rejected",
-  "converted",
+  "reviewed",
   "in_followup",
-  "qualified",
-  "archived",
+  "awaiting_response",
+  "converted",
+  "lost",
 ] as const;
 
 const BUDGET_STATUSES = [
@@ -45,7 +37,6 @@ const BUDGET_STATUSES = [
   "awaiting_response",
   "approved",
   "rejected",
-  "needs_changes",
 ] as const;
 
 type Props = { leadId: string };
@@ -62,15 +53,12 @@ export function LeadDetailPanel({ leadId }: Props) {
     phone: "",
     company: "",
     inquiryType: "consulta_general",
-    projectStage: "solo_idea",
     source: "sitio-web",
     preferredContactMethod: "email",
-    budgetRange: "",
     message: "",
     tags: "",
     serviceInterest: "",
     internalNotes: "",
-    missingDocuments: "",
   });
   const [status, setStatus] = useState("new");
   const [budgetStatus, setBudgetStatus] = useState("not_sent");
@@ -117,19 +105,14 @@ export function LeadDetailPanel({ leadId }: Props) {
       phone: String(payload.lead.phone ?? ""),
       company: String(payload.lead.company ?? ""),
       inquiryType: String(payload.lead.inquiryType ?? "consulta_general"),
-      projectStage: String(payload.lead.projectStage ?? "solo_idea"),
       source: String(payload.lead.source ?? "sitio-web"),
       preferredContactMethod: String(payload.lead.preferredContactMethod ?? "email"),
-      budgetRange: String(payload.lead.budgetRange ?? ""),
       message: String(payload.lead.message ?? ""),
       tags: Array.isArray(payload.lead.tags) ? (payload.lead.tags as string[]).join(", ") : "",
       serviceInterest: Array.isArray(payload.lead.serviceInterest)
         ? (payload.lead.serviceInterest as string[]).join(", ")
         : "",
       internalNotes: String(payload.lead.internalNotes ?? ""),
-      missingDocuments: Array.isArray(payload.lead.missingDocuments)
-        ? (payload.lead.missingDocuments as string[]).join(", ")
-        : "",
     });
   }, [leadId]);
 
@@ -159,10 +142,6 @@ export function LeadDetailPanel({ leadId }: Props) {
           .map((item) => item.trim())
           .filter(Boolean),
         serviceInterest: formValues.serviceInterest
-          .split(",")
-          .map((item) => item.trim())
-          .filter(Boolean),
-        missingDocuments: formValues.missingDocuments
           .split(",")
           .map((item) => item.trim())
           .filter(Boolean),
@@ -302,10 +281,6 @@ export function LeadDetailPanel({ leadId }: Props) {
               <input className={inputClass} value={formValues.inquiryType} onChange={(e) => setFormValues((p) => ({ ...p, inquiryType: e.target.value }))} />
             </label>
             <label className="grid gap-1 text-xs font-medium text-zinc-600">
-              Etapa / proyecto
-              <input className={inputClass} value={formValues.projectStage} onChange={(e) => setFormValues((p) => ({ ...p, projectStage: e.target.value }))} />
-            </label>
-            <label className="grid gap-1 text-xs font-medium text-zinc-600">
               Fuente
               <input className={inputClass} value={formValues.source} onChange={(e) => setFormValues((p) => ({ ...p, source: e.target.value }))} />
             </label>
@@ -316,10 +291,6 @@ export function LeadDetailPanel({ leadId }: Props) {
                 value={formValues.preferredContactMethod}
                 onChange={(e) => setFormValues((p) => ({ ...p, preferredContactMethod: e.target.value }))}
               />
-            </label>
-            <label className="grid gap-1 text-xs font-medium text-zinc-600">
-              Presupuesto estimado (texto)
-              <input className={inputClass} value={formValues.budgetRange} onChange={(e) => setFormValues((p) => ({ ...p, budgetRange: e.target.value }))} />
             </label>
             <label className="grid gap-1 text-xs font-medium text-zinc-600">
               Responsable (equipo)
@@ -341,11 +312,7 @@ export function LeadDetailPanel({ leadId }: Props) {
               <input className={inputClass} value={formValues.serviceInterest} onChange={(e) => setFormValues((p) => ({ ...p, serviceInterest: e.target.value }))} />
             </label>
             <label className="grid gap-1 text-xs font-medium text-zinc-600 md:col-span-2">
-              Documentos faltantes (coma)
-              <input className={inputClass} value={formValues.missingDocuments} onChange={(e) => setFormValues((p) => ({ ...p, missingDocuments: e.target.value }))} />
-            </label>
-            <label className="grid gap-1 text-xs font-medium text-zinc-600 md:col-span-2">
-              Notas internas (libreta)
+              Notas internas
               <textarea className={`${inputClass} min-h-[80px]`} value={formValues.internalNotes} onChange={(e) => setFormValues((p) => ({ ...p, internalNotes: e.target.value }))} />
             </label>
             <label className="grid gap-1 text-xs font-medium text-zinc-600 md:col-span-2">
@@ -428,10 +395,9 @@ export function LeadDetailPanel({ leadId }: Props) {
           </select>
           <select className={inputClass} value={bStatus} onChange={(e) => setBStatus(e.target.value)}>
             <option value="sent">sent</option>
-            <option value="awaiting_approval">awaiting_approval</option>
+            <option value="awaiting_response">awaiting_response</option>
             <option value="approved">approved</option>
             <option value="rejected">rejected</option>
-            <option value="needs_changes">needs_changes</option>
           </select>
           <input className={inputClass} placeholder="Notas" value={bNotes} onChange={(e) => setBNotes(e.target.value)} />
         </div>

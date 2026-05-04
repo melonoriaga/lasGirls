@@ -117,7 +117,7 @@ export async function PATCH(request: Request, context: Context) {
       parsed.status === "paid" || parsed.isPaid
         ? "paid"
         : parsed.invoiceEmailSent || parsed.status === "sent"
-          ? "sent"
+          ? "pending_payment"
           : parsed.status;
 
     await adminDb
@@ -138,6 +138,7 @@ export async function PATCH(request: Request, context: Context) {
           invoiceEmailSentAt,
           isPaid: Boolean(parsed.isPaid || normalizedStatus === "paid"),
           status: normalizedStatus,
+          paidAmount: Boolean(parsed.isPaid || normalizedStatus === "paid") ? parsed.amount : 0,
           updatedAt: now,
           updatedByUserId: actor.uid,
         },

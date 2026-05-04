@@ -11,7 +11,7 @@ type Context = { params: Promise<{ id: string }> };
 
 const BATCH = 400;
 
-const CLIENT_SUBCOLLECTIONS = ["notes", "links", "invoices", "payments", "activity"] as const;
+const CLIENT_SUBCOLLECTIONS = ["notes", "links", "invoices", "payments", "activity", "tasks"] as const;
 
 async function deleteCollectionInBatches(collectionRef: CollectionReference) {
   while (true) {
@@ -104,6 +104,10 @@ export async function PATCH(request: Request, context: Context) {
     if (parsed.billingFrequency !== undefined) updates.billingFrequency = parsed.billingFrequency;
     if (parsed.health !== undefined) updates.health = parsed.health;
     if (parsed.tags !== undefined) updates.tags = parsed.tags;
+    if (parsed.emails !== undefined) updates.emails = parsed.emails;
+    if (parsed.phones !== undefined) updates.phones = parsed.phones;
+    if (parsed.contacts !== undefined) updates.contacts = parsed.contacts;
+    if (parsed.internalNotes !== undefined) updates.internalNotes = parsed.internalNotes;
     if (parsed.startDate !== undefined) updates.startDate = parsed.startDate;
     if (parsed.endDate !== undefined) updates.endDate = parsed.endDate;
 
