@@ -19,7 +19,7 @@ const schema = z.object({
   budgetCurrency: z.enum(["ARS", "USD", "EUR"]).optional().default("USD"),
   budgetPaymentType: z.enum(["one_time", "retainer"]).optional().default("one_time"),
   projectStage: z.string().optional().default("solo_idea"),
-  message: z.string().min(2),
+  message: z.string().optional().default(""),
   source: z.string().optional().default("admin-manual"),
   preferredContactMethod: z.string().optional().default("email"),
   assignedTo: z.string().optional().default(""),

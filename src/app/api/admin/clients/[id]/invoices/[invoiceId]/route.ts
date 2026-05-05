@@ -3,99 +3,24 @@ import { canAccessRecord } from "@/lib/admin/record-visibility";
 import { getSessionActor } from "@/lib/api/admin-session";
 import { adminDb } from "@/lib/firebase/admin";
 import { incrementClientCounter, logClientActivity } from "@/lib/clients/activity";
-import { clientInvoiceCreateSchema } from "@/lib/validations/pipeline";
+import { clientInvoicePatchSchema } from "@/lib/validations/pipeline";
 
 type Context = { params: Promise<{ id: string; invoiceId: string }> };
 
-async function assertClientAccess(id: string, uid: string) {
-  const snap = await adminDb.collection("clients").doc(id).get();
+async function assertClientAccess(cid: string, uid: string) {
+  const snap = await adminDb.collection("clients").doc(cid).get();
   if (!snap.exists) return { ok: false as const, status: 404, error: "Cliente inexistente." };
   if (!canAccessRecord(snap.data() ?? {}, uid)) {
     return { ok: false as const, status: 403, error: "Sin permisos para este cliente." };
   }
-  return { ok: true as const, client: snap.data() as Record<string, unknown> };
+  return { ok: true as const };
 }
 
-async function upsertAutoPaymentFromInvoice(params: {
-  clientId: string;
-  invoiceId: string;
-  actorUid: string;
-  client: Record<string, unknown>;
-  periodLabel: string;
-  amount: number;
-  currency: string;
-  isPaid: boolean;
-  paidAt: string | null;
-  receivedByUserId: string;
-}) {
-  const {
-    clientId,
-    invoiceId,
-    actorUid,
-    client,
-    periodLabel,
-    amount,
-    currency,
-    isPaid,
-    paidAt,
-    receivedByUserId,
-  } = params;
-  const paymentsRef = adminDb.collection("clients").doc(clientId).collection("payments");
-  const existingSnap = await paymentsRef.where("relatedInvoiceId", "==", invoiceId).limit(1).get();
-  const existing = existingSnap.docs[0];
-  const visibilityScope = String(client.visibilityScope ?? "team");
-  const fallbackReceiver = String(client.ownerUserId ?? actorUid);
-  const receiver = (receivedByUserId || (visibilityScope === "private" ? fallbackReceiver : "")).trim();
-
-  if (isPaid && visibilityScope !== "private" && !receiver) {
-    throw new Error("Indicá quién recibió el pago para clientes del equipo.");
-  }
-
-  if (!isPaid) {
-    if (existing) {
-      const data = existing.data() as { autoFromInvoice?: boolean };
-      if (data.autoFromInvoice) {
-        await existing.ref.delete();
-        await incrementClientCounter(clientId, "paymentsCount", -1);
-      }
-    }
-    return;
-  }
-
-  const payload = {
-    periodLabel,
-    totalAmount: amount,
-    currency,
-    receivedAt: paidAt || new Date().toISOString(),
-    paymentType: "full_to_one_person",
-    receivedByUserId: receiver || null,
-    splits: receiver ? [{ userId: receiver, amount }] : [],
-    relatedInvoiceId: invoiceId,
-    notes: "Auto generado desde factura pagada.",
-    autoFromInvoice: true,
-    updatedAt: new Date().toISOString(),
-    updatedByUserId: actorUid,
-  };
-
-  if (existing) {
-    await existing.ref.set(payload, { merge: true });
-    return;
-  }
-
-  await paymentsRef.add({
-    ...payload,
-    createdAt: new Date().toISOString(),
-    createdByUserId: actorUid,
-  });
-  await incrementClientCounter(clientId, "paymentsCount", 1);
-  await logClientActivity({
-    clientId,
-    action: "payment_recorded",
-    createdByUserId: actorUid,
-    message: String(amount),
-    metadata: { relatedInvoiceId: invoiceId, autoFromInvoice: true, currency },
-  });
+function round2(n: number): number {
+  return Math.round(n * 100) / 100;
 }
+
+const EPS = 0.01;
 
 export async function PATCH(request: Request, context: Context) {
   const actor = await getSessionActor();
@@ -107,73 +32,122 @@ export async function PATCH(request: Request, context: Context) {
     const access = await assertClientAccess(id, actor.uid);
     if (!access.ok) return NextResponse.json({ ok: false, error: access.error }, { status: access.status });
 
+    const invoiceRef = adminDb.collection("clients").doc(id).collection("invoices").doc(invoiceId);
+    const invoiceSnap = await invoiceRef.get();
+    if (!invoiceSnap.exists) {
+      return NextResponse.json({ ok: false, error: "Factura inexistente." }, { status: 404 });
+    }
+
+    const existing = invoiceSnap.data() as Record<string, unknown>;
     const body = await request.json();
-    const parsed = clientInvoiceCreateSchema.parse(body);
+    const parsed = clientInvoicePatchSchema.parse(body);
     const now = new Date().toISOString();
-    const collectionEmailSentAt = parsed.collectionEmailSentAt || (parsed.collectionEmailSent ? now : null);
-    const invoiceEmailSentAt = parsed.invoiceEmailSentAt || (parsed.invoiceEmailSent ? now : null);
-    const paidAt = parsed.paidAt || (parsed.isPaid ? now : null);
-    const normalizedStatus =
-      parsed.status === "paid" || parsed.isPaid
-        ? "paid"
-        : parsed.invoiceEmailSent || parsed.status === "sent"
-          ? "pending_payment"
-          : parsed.status;
 
-    await adminDb
-      .collection("clients")
-      .doc(id)
-      .collection("invoices")
-      .doc(invoiceId)
-      .set(
-        {
-          ...parsed,
-          sentAt: parsed.sentAt || invoiceEmailSentAt,
-          dueDate: parsed.dueDate || null,
-          paidAt,
-          invoiceLink: parsed.invoiceLink || null,
-          collectionEmailSent: Boolean(parsed.collectionEmailSent),
-          collectionEmailSentAt,
-          invoiceEmailSent: Boolean(parsed.invoiceEmailSent),
-          invoiceEmailSentAt,
-          isPaid: Boolean(parsed.isPaid || normalizedStatus === "paid"),
-          status: normalizedStatus,
-          paidAmount: Boolean(parsed.isPaid || normalizedStatus === "paid") ? parsed.amount : 0,
-          updatedAt: now,
-          updatedByUserId: actor.uid,
-        },
-        { merge: true },
-      );
+    const periodLabel =
+      parsed.periodLabel !== undefined ? parsed.periodLabel.trim() : String(existing.periodLabel ?? "").trim();
+    if (!periodLabel) {
+      return NextResponse.json({ ok: false, error: "El título es obligatorio." }, { status: 400 });
+    }
 
-    await upsertAutoPaymentFromInvoice({
-      clientId: id,
-      invoiceId,
-      actorUid: actor.uid,
-      client: access.client,
-      periodLabel: parsed.periodLabel,
-      amount: parsed.amount,
-      currency: parsed.currency,
-      isPaid: Boolean(parsed.isPaid || normalizedStatus === "paid"),
-      paidAt,
-      receivedByUserId: String(parsed.receivedByUserId ?? ""),
-    });
+    let invoiceLink: string | null =
+      existing.invoiceLink != null ? String(existing.invoiceLink) : null;
+    if (parsed.invoiceLink !== undefined) {
+      const t = parsed.invoiceLink.trim();
+      invoiceLink = t === "" ? null : t;
+    }
 
-    await adminDb.collection("clients").doc(id).set(
+    const collectionEmailSent =
+      parsed.collectionEmailSent !== undefined
+        ? Boolean(parsed.collectionEmailSent)
+        : Boolean(existing.collectionEmailSent);
+
+    let collectionEmailSentAt: string | null =
+      existing.collectionEmailSentAt != null ? String(existing.collectionEmailSentAt) : null;
+    if (parsed.collectionEmailSentAt !== undefined && parsed.collectionEmailSentAt.trim()) {
+      collectionEmailSentAt = parsed.collectionEmailSentAt.trim();
+    } else if (parsed.collectionEmailSent !== undefined) {
+      if (collectionEmailSent) {
+        collectionEmailSentAt = collectionEmailSentAt ?? now;
+      } else {
+        collectionEmailSentAt = null;
+      }
+    }
+
+    let amount: number | null;
+    if (parsed.amount !== undefined) {
+      amount = parsed.amount ?? null;
+    } else {
+      const raw = existing.amount;
+      amount = raw != null && raw !== "" && Number.isFinite(Number(raw)) ? round2(Number(raw)) : null;
+    }
+
+    let currency: string | null =
+      existing.currency != null && String(existing.currency).trim()
+        ? String(existing.currency)
+        : null;
+    if (parsed.currency !== undefined) {
+      currency = parsed.currency?.trim() ? String(parsed.currency) : null;
+    }
+    if (amount != null && amount > 0 && !currency) {
+      currency = "USD";
+    }
+    if (amount == null) {
+      currency = null;
+    }
+
+    const paidAmount = round2(Number(existing.paidAmount ?? 0));
+
+    let remainingAmount: number | null =
+      amount != null ? Math.max(0, round2(amount - paidAmount)) : null;
+
+    let status = String(existing.status ?? "pending_payment");
+    let isPaid = Boolean(existing.isPaid);
+
+    if (amount != null && paidAmount >= amount - EPS) {
+      status = "paid";
+      remainingAmount = 0;
+      isPaid = true;
+    } else if (amount != null && paidAmount > EPS && paidAmount < amount - EPS) {
+      status = "partially_paid";
+      isPaid = false;
+    } else if (paidAmount <= EPS) {
+      status = "pending_payment";
+      isPaid = false;
+    }
+
+    await invoiceRef.set(
       {
+        periodLabel,
+        invoiceLink,
+        collectionEmailSent,
+        collectionEmailSentAt,
+        amount,
+        currency,
+        remainingAmount,
+        status,
+        isPaid,
         updatedAt: now,
-        lastInvoiceSentAt: parsed.sentAt || invoiceEmailSentAt || now,
-        lastInvoiceLink: parsed.invoiceLink || null,
-        invoiceStatus: normalizedStatus === "paid" ? "paid" : normalizedStatus === "sent" ? "sent" : "draft",
+        updatedByUserId: actor.uid,
       },
       { merge: true },
     );
+
+    const clientUpdates: Record<string, unknown> = {
+      updatedAt: now,
+      lastInvoiceLink: invoiceLink,
+    };
+    if (collectionEmailSent) clientUpdates.lastInvoiceSentAt = collectionEmailSentAt ?? now;
+    clientUpdates.invoiceStatus =
+      status === "paid" ? "paid" : status === "partially_paid" || status === "pending_payment" ? "sent" : "draft";
+
+    await adminDb.collection("clients").doc(id).set(clientUpdates, { merge: true });
 
     await logClientActivity({
       clientId: id,
       action: "invoice_updated",
       createdByUserId: actor.uid,
-      message: parsed.periodLabel,
-      metadata: { invoiceId, amount: parsed.amount, status: normalizedStatus },
+      message: periodLabel,
+      metadata: { invoiceId, amount, status },
     });
 
     return NextResponse.json({ ok: true });
@@ -199,8 +173,6 @@ export async function DELETE(_request: Request, context: Context) {
       .where("relatedInvoiceId", "==", invoiceId)
       .get();
     for (const doc of paymentsSnap.docs) {
-      const data = doc.data() as { autoFromInvoice?: boolean };
-      if (!data.autoFromInvoice) continue;
       await doc.ref.delete();
       await incrementClientCounter(id, "paymentsCount", -1);
     }

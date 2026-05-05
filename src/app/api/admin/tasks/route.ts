@@ -4,6 +4,8 @@ import { getSessionActor } from "@/lib/api/admin-session";
 import { logClientActivity } from "@/lib/clients/activity";
 import { adminDb } from "@/lib/firebase/admin";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const actor = await getSessionActor();
   if (!actor?.uid) return NextResponse.json({ ok: false, error: "No autorizado." }, { status: 401 });
@@ -44,18 +46,31 @@ export async function POST(request: Request) {
       : /^\d{4}-\d{2}/.test(dueDate)
         ? dueDate.slice(0, 7)
         : now.slice(0, 7);
+  const descriptionPlain = String(body.descriptionText ?? body.description ?? "").trim();
+  const descriptionHtml =
+    typeof body.descriptionHtml === "string" ? body.descriptionHtml.trim() : "";
+  const rawJson = body.descriptionJson;
+  const descriptionJson =
+    rawJson && typeof rawJson === "object" && !Array.isArray(rawJson)
+      ? (rawJson as Record<string, unknown>)
+      : null;
+
   const payload = {
     taskId: taskRef.id,
     title,
-    description: String(body.description ?? "").trim(),
+    description: descriptionPlain,
+    descriptionText: descriptionPlain,
+    ...(descriptionHtml ? { descriptionHtml } : {}),
+    ...(descriptionJson ? { descriptionJson } : {}),
     clientId,
     clientName: String(clientData.fullName ?? clientData.displayName ?? "Cliente"),
-    assignedTo: String(body.assignedTo ?? actor.uid),
+    assignedTo: String(body.assignedTo ?? "").trim() || actor.uid,
     createdBy: actor.uid,
     dueDate,
     assignedMonth,
     priority: String(body.priority ?? "medium"),
     status: String(body.status ?? "pending"),
+    resolutionOrder: Date.now(),
     tags: Array.isArray(body.tags) ? body.tags.filter((item) => typeof item === "string") : [],
     createdAt: now,
     updatedAt: now,

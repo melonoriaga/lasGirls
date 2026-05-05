@@ -30,11 +30,17 @@ export const budgetStatusSchema = z.enum([
   "needs_changes",
 ]);
 
+/** Estado de cada fila del historial de presupuestos (valores estables en Firestore). */
 export const leadBudgetRecordStatusSchema = z.enum([
+  "not_sent",
+  "ready_to_send",
+  "team_review",
   "sent",
   "awaiting_response",
-  "approved",
+  "client_review",
   "rejected",
+  /** legado */
+  "approved",
 ]);
 
 export const currencySchema = z.enum(["ARS", "USD"]);
@@ -150,13 +156,24 @@ export const clientPaymentCreateSchema = z
     }
   });
 
+const budgetLinkSchema = z
+  .string()
+  .min(1)
+  .transform((s) => {
+    const t = s.trim();
+    if (!t) return t;
+    return /^https?:\/\//i.test(t) ? t : `https://${t}`;
+  })
+  .pipe(z.string().url());
+
 export const leadBudgetCreateSchema = z.object({
-  title: z.string().min(1),
-  link: z.string().url(),
+  link: budgetLinkSchema,
+  status: leadBudgetRecordStatusSchema.default("sent"),
+  /** Opcional; si no se envía, el servidor usa un título por defecto. */
+  title: z.string().optional().or(z.literal("")),
   amount: z.coerce.number().nonnegative().optional(),
   currency: currencySchema.default("USD"),
-  sentAt: z.string().min(4),
-  status: leadBudgetRecordStatusSchema.default("sent"),
+  sentAt: z.string().min(4).optional(),
   notes: z.string().optional().or(z.literal("")),
 });
 
@@ -171,24 +188,53 @@ export const clientLinkPatchSchema = clientLinkCreateSchema.partial().extend({
   active: z.boolean().optional(),
 });
 
-export const clientInvoiceCreateSchema = z.object({
+const optionalInvoiceAmount = z.preprocess((v) => {
+  if (v === "" || v === null || v === undefined) return undefined;
+  const n = typeof v === "string" ? Number(String(v).replace(",", ".")) : Number(v);
+  if (!Number.isFinite(n) || n <= 0) return undefined;
+  return n;
+}, z.number().positive().finite().optional());
+
+const clientInvoiceUpsertBaseSchema = z.object({
   periodLabel: z.string().min(1),
-  invoiceNumber: z.string().optional().or(z.literal("")),
-  amount: z.coerce.number().nonnegative(),
-  currency: currencySchema,
-  status: clientInvoiceStatusSchema.default("draft"),
-  sentAt: z.string().optional().or(z.literal("")),
-  dueDate: z.string().optional().or(z.literal("")),
-  paidAt: z.string().optional().or(z.literal("")),
   invoiceLink: z.union([z.string().url(), z.literal("")]).optional(),
-  notes: z.string().optional().or(z.literal("")),
   collectionEmailSent: z.boolean().optional().default(false),
   collectionEmailSentAt: z.string().optional().or(z.literal("")),
-  invoiceEmailSent: z.boolean().optional().default(false),
-  invoiceEmailSentAt: z.string().optional().or(z.literal("")),
-  isPaid: z.boolean().optional().default(false),
-  receivedByUserId: z.string().optional().or(z.literal("")),
+  amount: optionalInvoiceAmount,
+  currency: currencySchema.optional(),
 });
+
+/** Alta de factura (título obligatorio; moneda obligatoria si hay monto). */
+export const clientInvoiceUpsertSchema = clientInvoiceUpsertBaseSchema.superRefine((data, ctx) => {
+  if (data.amount !== undefined && data.amount > 0 && !data.currency) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Elegí una moneda si cargás monto.",
+      path: ["currency"],
+    });
+  }
+});
+
+/** PATCH parcial; la moneda puede omitirse si el servidor ya tiene una o usa USD por defecto. */
+export const clientInvoicePatchSchema = clientInvoiceUpsertBaseSchema.partial();
+
+export const invoiceRecordPaymentSchema = z
+  .object({
+    kind: z.enum(["full", "partial"]),
+    paidAt: z.string().min(4),
+    amount: optionalInvoiceAmount,
+    currency: currencySchema.optional(),
+    note: z.string().optional().or(z.literal("")),
+  })
+  .superRefine((data, ctx) => {
+    if (data.kind === "partial" && data.amount === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Indicá el monto del pago parcial.",
+        path: ["amount"],
+      });
+    }
+  });
 
 export const clientNoteCreateSchema = z.object({
   content: z.string().min(1),

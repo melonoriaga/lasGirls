@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:webpack": "next dev --webpack",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -11,15 +12,24 @@
     "firebase:deploy:backend": "npx -y firebase-tools@latest deploy --only firestore:rules,firestore:indexes,storage",
     "firebase:deploy:hosting": "npx -y firebase-tools@latest deploy --only apphosting",
     "firebase:deploy:all": "npm run firebase:deploy:backend && npm run firebase:deploy:hosting",
-    "firebase:release": "npm run firebase:build:site && npm run firebase:deploy:all"
+    "firebase:release": "npm run firebase:build:site && npm run firebase:deploy:all",
+    "firebase:migrate:task-visibility": "node scripts/migrate-task-visibility.mjs",
+    "firebase:migrate:task-visibility:apply": "node scripts/migrate-task-visibility.mjs --apply"
   },
   "dependencies": {
     "@base-ui/react": "^1.3.0",
+    "@hello-pangea/dnd": "^18.0.1",
     "@hookform/resolvers": "^5.2.2",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.6.0",
     "@react-three/rapier": "^2.2.0",
     "@remixicon/react": "^4.9.0",
+    "@tiptap/extension-link": "^3.22.5",
+    "@tiptap/extension-placeholder": "^3.22.5",
+    "@tiptap/extension-task-item": "^3.22.5",
+    "@tiptap/extension-task-list": "^3.22.5",
+    "@tiptap/react": "^3.22.5",
+    "@tiptap/starter-kit": "^3.22.5",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",

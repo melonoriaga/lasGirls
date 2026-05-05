@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 import { canAccessRecord } from "@/lib/admin/record-visibility";
 import { getSessionActor } from "@/lib/api/admin-session";
 import { adminDb } from "@/lib/firebase/admin";
-import { decryptAccountPassword, encryptAccountPassword } from "@/lib/security/account-secrets";
+import { storedPasswordToPlain } from "@/lib/security/account-secrets";
+
+export const runtime = "nodejs";
 
 type Context = { params: Promise<{ id: string; accountId: string }> };
 
@@ -28,8 +30,7 @@ export async function PATCH(request: Request, context: Context) {
   if (typeof body.platform === "string") updates.platform = body.platform.trim();
   if (typeof body.username === "string") updates.username = body.username.trim();
   if (typeof body.password === "string") {
-    const plain = body.password.trim();
-    updates.password = plain ? encryptAccountPassword(plain) : "";
+    updates.password = body.password.trim();
   }
   if (typeof body.url === "string") updates.url = body.url.trim();
   if (typeof body.notes === "string") updates.notes = body.notes.trim();
@@ -51,7 +52,7 @@ export async function GET(_request: Request, context: Context) {
   const data = snap.data() as Record<string, unknown>;
   return NextResponse.json({
     ok: true,
-    password: decryptAccountPassword(String(data.password ?? "")),
+    password: storedPasswordToPlain(String(data.password ?? "")),
   });
 }
 

@@ -49,23 +49,38 @@ export async function POST(request: Request, context: Context) {
         ? dueDate.slice(0, 7)
         : now.slice(0, 7);
   const taskRef = clientRef.collection("tasks").doc();
+  const descriptionPlain = String(body.descriptionText ?? body.description ?? "").trim();
+  const descriptionHtml =
+    typeof body.descriptionHtml === "string" ? body.descriptionHtml.trim() : "";
+  const rawJson = body.descriptionJson;
+  const descriptionJson =
+    rawJson && typeof rawJson === "object" && !Array.isArray(rawJson)
+      ? (rawJson as Record<string, unknown>)
+      : null;
+
   const payload = {
     taskId: taskRef.id,
     title,
-    description: String(body.description ?? "").trim(),
+    description: descriptionPlain,
+    descriptionText: descriptionPlain,
+    ...(descriptionHtml ? { descriptionHtml } : {}),
+    ...(descriptionJson ? { descriptionJson } : {}),
     clientId: id,
     clientName,
-    assignedTo: String(body.assignedTo ?? actor.uid),
+    assignedTo: String(body.assignedTo ?? "").trim() || actor.uid,
     createdBy: actor.uid,
     dueDate,
     assignedMonth,
     priority: String(body.priority ?? "medium"),
     status: String(body.status ?? "pending"),
-    tags: Array.isArray(body.tags) ? body.tags.filter((item) => typeof item === "string") : [],
+    resolutionOrder: Date.now(),
+    tags: [] as string[],
     createdAt: now,
     updatedAt: now,
     completedAt: String(body.status ?? "pending") === "done" ? now : "",
     completedBy: String(body.status ?? "pending") === "done" ? actor.uid : "",
+    visibilityScope: String(clientSnap.data()?.visibilityScope ?? "team"),
+    ownerUserId: String(clientSnap.data()?.ownerUserId ?? ""),
   };
 
   await Promise.all([taskRef.set(payload), adminDb.collection("tasks").doc(taskRef.id).set(payload)]);

@@ -23,11 +23,19 @@ export async function PATCH(request: Request, context: Context) {
   const updates: Record<string, unknown> = { updatedAt: new Date().toISOString() };
   if (typeof body.title === "string") updates.title = body.title.trim();
   if (typeof body.description === "string") updates.description = body.description.trim();
+  if (body.descriptionJson && typeof body.descriptionJson === "object") updates.descriptionJson = body.descriptionJson;
+  if (typeof body.descriptionText === "string") updates.descriptionText = body.descriptionText.trim();
+  if (typeof body.descriptionHtml === "string") updates.descriptionHtml = body.descriptionHtml.trim();
   if (typeof body.assignedTo === "string") updates.assignedTo = body.assignedTo.trim();
   if (typeof body.dueDate === "string") updates.dueDate = body.dueDate.trim();
   if (typeof body.assignedMonth === "string") updates.assignedMonth = body.assignedMonth.trim();
   if (typeof body.priority === "string") updates.priority = body.priority.trim();
   if (typeof body.status === "string") updates.status = body.status.trim();
+  if (typeof body.resolutionOrder === "number" && Number.isFinite(body.resolutionOrder)) {
+    updates.resolutionOrder = body.resolutionOrder;
+  }
+  if (typeof body.clientId === "string") updates.clientId = body.clientId.trim();
+  if (typeof body.clientName === "string") updates.clientName = body.clientName.trim();
   if (Array.isArray(body.tags)) updates.tags = body.tags.filter((item) => typeof item === "string");
 
   const task = taskSnap.data() as Record<string, unknown>;
@@ -49,10 +57,14 @@ export async function PATCH(request: Request, context: Context) {
     updates.completedAt = "";
     updates.completedBy = "";
   }
-  const clientId = String(task.clientId ?? "");
+  const previousClientId = String(task.clientId ?? "");
+  const clientId = String(updates.clientId ?? previousClientId);
   await Promise.all([
     taskRef.set(updates, { merge: true }),
     clientId ? adminDb.collection("clients").doc(clientId).collection("tasks").doc(taskId).set(updates, { merge: true }) : Promise.resolve(),
+    previousClientId && previousClientId !== clientId
+      ? adminDb.collection("clients").doc(previousClientId).collection("tasks").doc(taskId).delete()
+      : Promise.resolve(),
   ]);
 
   if (clientId) {

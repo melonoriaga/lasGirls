@@ -26,11 +26,20 @@ export async function PATCH(request: Request, context: Context) {
   const updates: Record<string, unknown> = { updatedAt: new Date().toISOString() };
   if (typeof body.title === "string") updates.title = body.title.trim();
   if (typeof body.description === "string") updates.description = body.description.trim();
+  const rawDescJson = body.descriptionJson;
+  if (rawDescJson && typeof rawDescJson === "object" && !Array.isArray(rawDescJson)) {
+    updates.descriptionJson = rawDescJson;
+  }
+  if (typeof body.descriptionText === "string") updates.descriptionText = body.descriptionText.trim();
+  if (typeof body.descriptionHtml === "string") updates.descriptionHtml = body.descriptionHtml.trim();
   if (typeof body.assignedTo === "string") updates.assignedTo = body.assignedTo.trim();
   if (typeof body.dueDate === "string") updates.dueDate = body.dueDate.trim();
   if (typeof body.assignedMonth === "string") updates.assignedMonth = body.assignedMonth.trim();
   if (typeof body.priority === "string") updates.priority = body.priority.trim();
   if (typeof body.status === "string") updates.status = body.status.trim();
+  if (typeof body.resolutionOrder === "number" && Number.isFinite(body.resolutionOrder)) {
+    updates.resolutionOrder = body.resolutionOrder;
+  }
   if (Array.isArray(body.tags)) updates.tags = body.tags.filter((item) => typeof item === "string");
   const changes = Object.entries(updates)
     .filter(([key]) => key !== "updatedAt" && key !== "completedAt" && key !== "completedBy")

@@ -54,6 +54,8 @@ export function AdminChrome({ children }: PropsWithChildren) {
   const [notifHint, setNotifHint] = useState<string | null>(null);
   const [desktopCollapsed, setDesktopCollapsed] = useState(false);
   const [usernameBannerDismissed, setUsernameBannerDismissed] = useState(false);
+  const [runningTimer, setRunningTimer] = useState<{ taskId: string; taskTitle: string; startedAt: string } | null>(null);
+  const [nowTick, setNowTick] = useState(0);
 
   useEffect(() => {
     try {
@@ -110,6 +112,41 @@ export function AdminChrome({ children }: PropsWithChildren) {
       // noop
     }
   }, [desktopCollapsed]);
+
+  useEffect(() => {
+    const loadRunningTimer = async () => {
+      const res = await fetch("/api/admin/tasks/running-timer", { credentials: "include", cache: "no-store" });
+      const json = (await res.json().catch(() => null)) as
+        | { ok?: boolean; running?: { taskId?: string; taskTitle?: string; startedAt?: string } | null }
+        | null;
+      if (!res.ok || !json?.ok || !json.running?.taskId) {
+        setRunningTimer(null);
+        return;
+      }
+      setRunningTimer({
+        taskId: String(json.running.taskId ?? ""),
+        taskTitle: String(json.running.taskTitle ?? "Tarea"),
+        startedAt: String(json.running.startedAt ?? ""),
+      });
+    };
+    void loadRunningTimer();
+    const poll = window.setInterval(() => void loadRunningTimer(), 20000);
+    return () => window.clearInterval(poll);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!runningTimer) return;
+    setNowTick(Date.now());
+    const timer = window.setInterval(() => setNowTick(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [runningTimer]);
+
+  const runningSeconds = runningTimer?.startedAt
+    ? Math.max(0, Math.floor((nowTick - new Date(runningTimer.startedAt).getTime()) / 1000))
+    : 0;
+  const runningLabel = `${String(Math.floor(runningSeconds / 3600)).padStart(2, "0")}:${String(
+    Math.floor((runningSeconds % 3600) / 60),
+  ).padStart(2, "0")}:${String(runningSeconds % 60).padStart(2, "0")}`;
 
   const showUsernameReminder =
     Boolean(user) &&
@@ -346,6 +383,15 @@ export function AdminChrome({ children }: PropsWithChildren) {
         </aside>
 
         <main className={`min-w-0 p-4 sm:p-5 lg:p-8 ${desktopCollapsed ? "lg:ml-[92px]" : "lg:ml-[280px]"}`}>
+          {runningTimer && pathname !== "/admin/tasks" && !pathname.startsWith("/admin/tasks/") ? (
+            <Link
+              href={`/admin/tasks/${encodeURIComponent(runningTimer.taskId)}`}
+              className="fixed right-4 top-3 z-40 inline-flex items-center gap-2 rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-900 shadow-sm"
+            >
+              <span className="inline-flex h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
+              Tarea en curso: {runningLabel}
+            </Link>
+          ) : null}
           {children}
         </main>
       </div>
