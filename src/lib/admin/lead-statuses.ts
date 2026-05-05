@@ -1,5 +1,8 @@
 const PIPELINE_STATUS_LABELS: Record<string, string> = {
   new: "Nuevo",
+  reviewed: "Revisado",
+  awaiting_response: "Esperando respuesta",
+  lost: "Perdido",
   contacted: "Contactado",
   brief_pending: "Falta brief",
   budget_pending: "Pendiente de presupuesto",
@@ -32,4 +35,21 @@ export function leadPipelineStatusLabel(value: string | undefined | null): strin
 export function leadBudgetStatusLabel(value: string | undefined | null): string {
   const key = String(value ?? "").trim();
   return BUDGET_STATUS_LABELS[key] ?? (key || "Sin estado");
+}
+
+/** Etiquetas para el estado de cada registro en el historial de presupuestos. */
+const BUDGET_RECORD_STATUS_LABELS: Record<string, string> = {
+  not_sent: "No enviado",
+  ready_to_send: "Listo para enviar",
+  team_review: "En revisión por team",
+  sent: "Enviado",
+  awaiting_response: "Esperando respuesta",
+  client_review: "Revisión por cliente",
+  rejected: "Rechazado",
+  approved: "Aprobado",
+};
+
+export function leadBudgetRecordStatusLabel(value: string | undefined | null): string {
+  const key = String(value ?? "").trim();
+  return BUDGET_RECORD_STATUS_LABELS[key] ?? (key || "Sin estado");
 }

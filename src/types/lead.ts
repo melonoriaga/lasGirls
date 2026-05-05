@@ -1,5 +1,8 @@
 export type LeadPipelineStatus =
   | "new"
+  | "reviewed"
+  | "awaiting_response"
+  | "lost"
   | "contacted"
   | "brief_pending"
   | "budget_pending"
@@ -27,10 +30,9 @@ export type BudgetStatus =
 
 export type LeadBudgetStatus =
   | "sent"
-  | "awaiting_approval"
+  | "awaiting_response"
   | "approved"
-  | "rejected"
-  | "needs_changes";
+  | "rejected";
 
 export type InquiryType =
   | "consulta_general"

@@ -30,7 +30,7 @@ export async function GET() {
   const userDoc = await adminDb.collection("users").doc(actor.uid).get();
   if (!userDoc.exists) return NextResponse.json({ ok: false, error: "Usuario no encontrado." }, { status: 404 });
 
-  return NextResponse.json({ ok: true, profile: userDoc.data() });
+  return NextResponse.json({ ok: true, uid: actor.uid, profile: userDoc.data() });
 }
 
 export async function PATCH(request: Request) {

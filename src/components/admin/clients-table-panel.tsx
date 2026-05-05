@@ -14,6 +14,7 @@ import { RowActionsMenu } from "@/components/admin/row-actions-menu";
 import { getClientDisplayName } from "@/types/client";
 
 type ClientRow = Record<string, unknown> & { id: string };
+type AdminUser = { id: string; fullName: string; email: string; photoURL?: string };
 
 type ListResponse = {
   ok: boolean;
@@ -34,12 +35,6 @@ type ListResponse = {
 const inputClass =
   "rounded-lg border border-zinc-300 bg-zinc-50 px-3 py-2.5 text-xs text-zinc-800 focus:border-rose-300 focus:ring-rose-300";
 
-function formatMoney(amount: unknown, currency: unknown) {
-  const n = Number(amount ?? 0);
-  const c = String(currency ?? "USD");
-  return `${c} ${n.toLocaleString("es-AR", { maximumFractionDigits: 0 })}`;
-}
-
 function serviceLabel(row: ClientRow) {
   const st = row.serviceType;
   if (Array.isArray(st) && st.length) return st.join(", ");
@@ -48,16 +43,24 @@ function serviceLabel(row: ClientRow) {
   return "—";
 }
 
-function billingLabel(row: ClientRow) {
-  return String(row.billingType ?? row.billingModel ?? "—");
+function getPrimaryEmail(row: ClientRow) {
+  const emails = Array.isArray(row.emails) ? row.emails : [];
+  const primary = emails.find((item) => item && typeof item === "object" && (item as { isPrimary?: boolean }).isPrimary);
+  const fallback = emails[0] as { email?: string } | undefined;
+  return String((primary as { email?: string } | undefined)?.email ?? fallback?.email ?? row.email ?? "—");
 }
 
-function monthlyRef(row: ClientRow) {
-  const mf = row.monthlyFee;
-  if (typeof mf === "number" && mf > 0) return formatMoney(mf, row.currency);
-  const pricing = row.pricing as { amount?: number; currency?: string } | undefined;
-  if (pricing?.amount != null) return formatMoney(pricing.amount, pricing.currency ?? row.currency);
-  return "—";
+function getPrimaryPhone(row: ClientRow) {
+  const phones = Array.isArray(row.phones) ? row.phones : [];
+  const primary = phones.find((item) => item && typeof item === "object" && (item as { isPrimary?: boolean }).isPrimary);
+  const fallback = phones[0] as { number?: string } | undefined;
+  return String((primary as { number?: string } | undefined)?.number ?? fallback?.number ?? row.phone ?? "—");
+}
+
+function getMainContact(row: ClientRow) {
+  const contacts = Array.isArray(row.contacts) ? row.contacts : [];
+  const first = contacts[0] as { name?: string } | undefined;
+  return String(first?.name ?? "—");
 }
 
 function isClientInactive(row: ClientRow) {
@@ -85,6 +88,16 @@ export function ClientsTablePanel({ actorUid: _actorUid }: { actorUid: string })
   const [confirm, setConfirm] = useState<{ action: ConfirmAction; row: ClientRow } | null>(null);
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [scopeFilter, setScopeFilter] = useState<"all" | "mine">("all");
+  const [users, setUsers] = useState<AdminUser[]>([]);
+
+  useEffect(() => {
+    const loadUsers = async () => {
+      const res = await fetch("/api/admin/users", { cache: "no-store" });
+      const json = (await res.json()) as { ok?: boolean; users?: AdminUser[] };
+      if (json.ok && json.users) setUsers(json.users);
+    };
+    void loadUsers();
+  }, []);
 
   const fetchList = async (opts: { searchQuery?: string; page?: number } = {}) => {
     setLoading(true);
@@ -216,6 +229,18 @@ export function ClientsTablePanel({ actorUid: _actorUid }: { actorUid: string })
   const paginationEdgeBtn = `${paginationBtn} px-3`;
   const perPageClass =
     "block w-full rounded-lg border border-zinc-300 bg-zinc-100 px-3 py-2.5 text-sm text-zinc-800 shadow-sm focus:border-rose-300 focus:ring-rose-300";
+  const getResponsible = (row: ClientRow) => {
+    const uid = String(row.accountManagerUserId ?? "");
+    const user = users.find((item) => item.id === uid);
+    const label = user?.fullName || user?.email || (uid ? uid.slice(0, 8) : "—");
+    const initials = label
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase() ?? "")
+      .join("");
+    return { user, label, initials };
+  };
 
   return (
     <div className="mt-4">
@@ -331,13 +356,11 @@ export function ClientsTablePanel({ actorUid: _actorUid }: { actorUid: string })
             <thead className="border-b border-zinc-200 bg-zinc-50">
               <tr>
                 <th className="p-3 font-medium text-zinc-600">Cliente</th>
-                <th className="p-3 font-medium text-zinc-600">Email</th>
-                <th className="p-3 font-medium text-zinc-600">Marca / empresa</th>
-                <th className="p-3 font-medium text-zinc-600">Estado</th>
+                <th className="p-3 font-medium text-zinc-600">Contacto principal</th>
+                <th className="p-3 font-medium text-zinc-600">Email principal</th>
+                <th className="p-3 font-medium text-zinc-600">Telefono principal</th>
                 <th className="p-3 font-medium text-zinc-600">Servicio</th>
-                <th className="p-3 font-medium text-zinc-600">Cobro</th>
-                <th className="p-3 font-medium text-zinc-600">Fee / ref.</th>
-                <th className="p-3 font-medium text-zinc-600">Factura</th>
+                <th className="p-3 font-medium text-zinc-600">Responsable de cuenta</th>
                 <th className="p-3 font-medium text-zinc-600">Alta</th>
                 <th className="p-3 font-medium text-zinc-600">Acciones</th>
               </tr>
@@ -369,27 +392,38 @@ export function ClientsTablePanel({ actorUid: _actorUid }: { actorUid: string })
                       ) : null}
                     </div>
                   </td>
-                  <td className="p-3 text-zinc-700">{String(row.email ?? "—")}</td>
-                  <td className="p-3 text-zinc-600">{String(row.brandName || row.company || "—")}</td>
-                  <td className="p-3 text-zinc-700">
-                    {inactive ? (
-                      <span className="inline-flex rounded-full border border-orange-200 bg-orange-50 px-2 py-0.5 text-xs font-medium text-orange-900">
-                        {String(row.status ?? "—")}
-                      </span>
-                    ) : (
-                      String(row.status ?? "—")
-                    )}
-                  </td>
+                  <td className="p-3 text-zinc-700">{getMainContact(row)}</td>
+                  <td className="p-3 text-zinc-700">{getPrimaryEmail(row)}</td>
+                  <td className="p-3 text-zinc-700">{getPrimaryPhone(row)}</td>
                   <td className="max-w-[180px] truncate p-3 text-zinc-600">{serviceLabel(row)}</td>
-                  <td className="p-3 text-zinc-600">{billingLabel(row)}</td>
-                  <td className="p-3 text-zinc-700">{monthlyRef(row)}</td>
-                  <td className="p-3 text-zinc-600">{String(row.invoiceStatus ?? "—")}</td>
+                  <td className="p-3 text-zinc-600">
+                    {(() => {
+                      const responsible = getResponsible(row);
+                      return (
+                        <div className="flex items-center gap-2">
+                          {responsible.user?.photoURL ? (
+                            <img
+                              src={responsible.user.photoURL}
+                              alt={responsible.label}
+                              className="h-6 w-6 rounded-full border border-zinc-200 object-cover"
+                            />
+                          ) : (
+                            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-zinc-300 bg-zinc-100 text-[10px] font-semibold text-zinc-700">
+                              {responsible.initials || "?"}
+                            </span>
+                          )}
+                          <span>{responsible.label}</span>
+                        </div>
+                      );
+                    })()}
+                  </td>
                   <td className="p-3 text-zinc-500">{String(row.createdAt ?? "").slice(0, 10)}</td>
                   <td className="p-3">
                     <div className="flex justify-end">
                       <RowActionsMenu
                         items={[
                           { label: "Ver", href: `/admin/clients/${row.id}` },
+                          { label: "Editar", href: `/admin/clients/${row.id}` },
                           inactive
                             ? { label: "Reactivar", onClick: () => setConfirm({ action: "reactivate", row }) }
                             : { label: "Desactivar", onClick: () => setConfirm({ action: "deactivate", row }) },

@@ -10,7 +10,15 @@ export type ClientOnboardingStatus = "pending" | "in_progress" | "completed";
 
 export type BillingType = "monthly" | "one_time" | "hourly" | "custom" | "monthly_retainer" | "hybrid";
 
-export type InvoiceStatus = "not_sent" | "sent" | "paid" | "overdue" | "draft" | "cancelled";
+export type InvoiceStatus =
+  | "not_sent"
+  | "sent"
+  | "pending_payment"
+  | "partially_paid"
+  | "paid"
+  | "overdue"
+  | "draft"
+  | "cancelled";
 
 /** Legado desde el modelo anterior */
 export type PaymentStatus = "pending" | "partial" | "paid" | "overdue" | "recurring";
@@ -28,6 +36,28 @@ export type ClientPricing = {
   notes?: string;
 };
 
+export type ClientEmailEntry = {
+  email: string;
+  reference?: string;
+  type?: string;
+  isPrimary?: boolean;
+};
+
+export type ClientPhoneEntry = {
+  number: string;
+  reference?: string;
+  type?: string;
+  isPrimary?: boolean;
+};
+
+export type ClientContact = {
+  name: string;
+  role?: string;
+  email?: string;
+  phone?: string;
+  notes?: string;
+};
+
 export type Client = {
   id: string;
   leadId?: string | null;
@@ -37,6 +67,9 @@ export type Client = {
   legalName?: string;
   email: string;
   phone?: string;
+  emails?: ClientEmailEntry[];
+  phones?: ClientPhoneEntry[];
+  contacts?: ClientContact[];
   company?: string;
   brandName?: string;
   country?: string;
@@ -65,6 +98,7 @@ export type Client = {
   billingFrequency?: BillingFrequency | string;
   health?: ClientHealth | string;
   tags?: string[];
+  internalNotes?: string;
   usefulLinksCount?: number;
   notesCount?: number;
   invoicesCount?: number;
@@ -109,12 +143,21 @@ export type ClientInvoice = {
   invoiceNumber?: string;
   amount: number;
   currency: "ARS" | "USD" | string;
-  status: "draft" | "sent" | "paid" | "overdue" | "cancelled" | string;
+  status:
+    | "draft"
+    | "sent"
+    | "pending_payment"
+    | "partially_paid"
+    | "paid"
+    | "overdue"
+    | "cancelled"
+    | string;
   sentAt?: string | null;
   dueDate?: string | null;
   paidAt?: string | null;
   invoiceLink?: string | null;
   notes?: string;
+  paidAmount?: number;
   collectionEmailSent?: boolean;
   collectionEmailSentAt?: string | null;
   invoiceEmailSent?: boolean;
@@ -170,7 +213,13 @@ export type ClientActivityAction =
   | "invoice_updated"
   | "payment_recorded"
   | "link_added"
-  | "note_added";
+  | "account_added"
+  | "note_added"
+  | "task_created"
+  | "task_updated"
+  | "task_completed"
+  | "task_deleted"
+  | "task_comment_added";
 
 export type ClientActivity = {
   id: string;

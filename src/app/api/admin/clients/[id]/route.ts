@@ -4,6 +4,7 @@ import { getSessionActor } from "@/lib/api/admin-session";
 import { canAccessRecord } from "@/lib/admin/record-visibility";
 import { logAdminActivity } from "@/lib/activity/log";
 import { adminDb } from "@/lib/firebase/admin";
+import { firestoreDocToJson } from "@/lib/firestore/json-safe";
 import { logClientActivity } from "@/lib/clients/activity";
 import { clientPatchSchema } from "@/lib/validations/pipeline";
 
@@ -11,7 +12,7 @@ type Context = { params: Promise<{ id: string }> };
 
 const BATCH = 400;
 
-const CLIENT_SUBCOLLECTIONS = ["notes", "links", "invoices", "payments", "activity"] as const;
+const CLIENT_SUBCOLLECTIONS = ["notes", "links", "invoices", "payments", "activity", "tasks"] as const;
 
 async function deleteCollectionInBatches(collectionRef: CollectionReference) {
   while (true) {
@@ -26,24 +27,33 @@ async function deleteCollectionInBatches(collectionRef: CollectionReference) {
 }
 
 export async function GET(_request: Request, context: Context) {
-  const actor = await getSessionActor();
-  if (!actor?.uid) {
-    return NextResponse.json({ ok: false, error: "No autorizado." }, { status: 401 });
-  }
+  try {
+    const actor = await getSessionActor();
+    if (!actor?.uid) {
+      return NextResponse.json({ ok: false, error: "No autorizado." }, { status: 401 });
+    }
 
-  const { id } = await context.params;
-  const snapshot = await adminDb.collection("clients").doc(id).get();
-  if (!snapshot.exists) {
-    return NextResponse.json({ ok: false, error: "Cliente inexistente." }, { status: 404 });
-  }
-  if (!canAccessRecord(snapshot.data() ?? {}, actor.uid)) {
-    return NextResponse.json({ ok: false, error: "Sin permisos para este cliente." }, { status: 403 });
-  }
+    const { id } = await context.params;
+    const snapshot = await adminDb.collection("clients").doc(id).get();
+    if (!snapshot.exists) {
+      return NextResponse.json({ ok: false, error: "Cliente inexistente." }, { status: 404 });
+    }
+    if (!canAccessRecord(snapshot.data() ?? {}, actor.uid)) {
+      return NextResponse.json({ ok: false, error: "Sin permisos para este cliente." }, { status: 403 });
+    }
 
-  return NextResponse.json({
-    ok: true,
-    client: { id: snapshot.id, ...snapshot.data() },
-  });
+    return NextResponse.json({
+      ok: true,
+      client: firestoreDocToJson(snapshot.id, snapshot.data()),
+    });
+  } catch (error) {
+    console.error("[GET /api/admin/clients/[id]]", error);
+    const message = error instanceof Error ? error.message : "Error interno.";
+    return NextResponse.json(
+      { ok: false, error: process.env.NODE_ENV === "development" ? message : "No se pudo cargar el cliente." },
+      { status: 500 },
+    );
+  }
 }
 
 export async function PATCH(request: Request, context: Context) {
@@ -104,6 +114,10 @@ export async function PATCH(request: Request, context: Context) {
     if (parsed.billingFrequency !== undefined) updates.billingFrequency = parsed.billingFrequency;
     if (parsed.health !== undefined) updates.health = parsed.health;
     if (parsed.tags !== undefined) updates.tags = parsed.tags;
+    if (parsed.emails !== undefined) updates.emails = parsed.emails;
+    if (parsed.phones !== undefined) updates.phones = parsed.phones;
+    if (parsed.contacts !== undefined) updates.contacts = parsed.contacts;
+    if (parsed.internalNotes !== undefined) updates.internalNotes = parsed.internalNotes;
     if (parsed.startDate !== undefined) updates.startDate = parsed.startDate;
     if (parsed.endDate !== undefined) updates.endDate = parsed.endDate;
 

@@ -18,12 +18,7 @@ export function CreateLeadForm({ onSuccess, onError, hideHeader = false, classNa
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [projectStage, setProjectStage] = useState("solo_idea");
-  const [budgetRange, setBudgetRange] = useState("");
-  const [budgetCurrency, setBudgetCurrency] = useState("USD");
-  const [budgetPaymentType, setBudgetPaymentType] = useState("one_time");
   const [serviceInterest, setServiceInterest] = useState("");
-  const [tags, setTags] = useState("");
   const [inquiryType, setInquiryType] = useState("consulta_general");
   const [visibilityScope, setVisibilityScope] = useState("team");
   const [message, setMessage] = useState("");
@@ -42,50 +37,37 @@ export function CreateLeadForm({ onSuccess, onError, hideHeader = false, classNa
           fullName,
           email,
           phone,
-          projectStage,
-          budgetRange,
-          budgetCurrency,
-          budgetPaymentType,
-          tags: tags
-            .split(",")
-            .map((item) => item.trim())
-            .filter(Boolean),
           serviceInterest: serviceInterest
             .split(",")
             .map((item) => item.trim())
             .filter(Boolean),
           inquiryType,
           visibilityScope,
-          message,
+          message: message.trim(),
           source: "admin-manual",
           preferredContactMethod: "email",
         }),
       });
       const json = (await response.json()) as { ok: boolean; error?: string };
       if (!json.ok) {
-        const message = json.error ?? "No pudimos crear el lead.";
-        setError(message);
-        onError?.(message);
+        const messageText = json.error ?? "No pudimos crear el lead.";
+        setError(messageText);
+        onError?.(messageText);
         return;
       }
       setFullName("");
       setEmail("");
       setPhone("");
-      setProjectStage("solo_idea");
-      setBudgetRange("");
-      setBudgetCurrency("USD");
-      setBudgetPaymentType("one_time");
       setServiceInterest("");
-      setTags("");
       setInquiryType("consulta_general");
       setVisibilityScope("team");
       setMessage("");
       onSuccess?.();
       router.refresh();
     } catch {
-      const message = "No pudimos crear el lead por un error de red o servidor.";
-      setError(message);
-      onError?.(message);
+      const messageText = "No pudimos crear el lead por un error de red o servidor.";
+      setError(messageText);
+      onError?.(messageText);
     } finally {
       setSaving(false);
     }
@@ -128,41 +110,9 @@ export function CreateLeadForm({ onSuccess, onError, hideHeader = false, classNa
             <option value="marketing_seo">Marketing / SEO</option>
           </select>
         </label>
-        <label className="grid gap-1">
-          <span className="text-xs font-medium text-zinc-600">Etapa del proyecto</span>
-          <select className={inputClassName} value={projectStage} onChange={(event) => setProjectStage(event.target.value)}>
-            <option value="solo_idea">Solo idea</option>
-            <option value="validando">Validando propuesta</option>
-            <option value="listo_para_empezar">Lista para empezar</option>
-            <option value="en_proceso">En proceso con otro equipo</option>
-          </select>
-        </label>
-        <label className="grid gap-1">
-          <span className="text-xs font-medium text-zinc-600">Presupuesto estimado</span>
-          <input className={inputClassName} value={budgetRange} onChange={(event) => setBudgetRange(event.target.value)} />
-        </label>
-        <label className="grid gap-1">
-          <span className="text-xs font-medium text-zinc-600">Divisa</span>
-          <select className={inputClassName} value={budgetCurrency} onChange={(event) => setBudgetCurrency(event.target.value)}>
-            <option value="USD">USD - Dolar</option>
-            <option value="ARS">ARS - Peso</option>
-            <option value="EUR">EUR - Euro</option>
-          </select>
-        </label>
-        <label className="grid gap-1">
-          <span className="text-xs font-medium text-zinc-600">Tipo de presupuesto</span>
-          <select className={inputClassName} value={budgetPaymentType} onChange={(event) => setBudgetPaymentType(event.target.value)}>
-            <option value="one_time">Unico</option>
-            <option value="retainer">Abono</option>
-          </select>
-        </label>
-        <label className="grid gap-1">
+        <label className="grid gap-1 md:col-span-2">
           <span className="text-xs font-medium text-zinc-600">Servicios (coma separada)</span>
           <input className={inputClassName} value={serviceInterest} onChange={(event) => setServiceInterest(event.target.value)} />
-        </label>
-        <label className="grid gap-1">
-          <span className="text-xs font-medium text-zinc-600">Tags (coma separada)</span>
-          <input className={inputClassName} value={tags} onChange={(event) => setTags(event.target.value)} />
         </label>
         <label className="grid gap-1">
           <span className="text-xs font-medium text-zinc-600">Visibilidad</span>
@@ -172,13 +122,12 @@ export function CreateLeadForm({ onSuccess, onError, hideHeader = false, classNa
           </select>
         </label>
         <label className="grid gap-1 md:col-span-3">
-          <span className="text-xs font-medium text-zinc-600">Mensaje</span>
+          <span className="text-xs font-medium text-zinc-600">Mensaje (opcional)</span>
           <textarea
             className={`${inputClassName} min-h-[96px]`}
             placeholder="Mensaje breve de contexto..."
             value={message}
             onChange={(event) => setMessage(event.target.value)}
-            required
           />
         </label>
         {error ? <p className="text-sm text-red-700 md:col-span-3">{error}</p> : null}

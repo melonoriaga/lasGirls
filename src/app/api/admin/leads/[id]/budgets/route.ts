@@ -9,9 +9,10 @@ type Context = { params: Promise<{ id: string }> };
 const budgetStatusFromRecord = (status: string) => {
   if (status === "approved") return "approved";
   if (status === "rejected") return "rejected";
+  if (status === "awaiting_response" || status === "client_review") return "awaiting_response";
+  if (status === "sent") return "sent";
   if (status === "needs_changes") return "needs_changes";
-  if (status === "awaiting_approval") return "awaiting_response";
-  return "sent";
+  return "not_sent";
 };
 
 export async function GET(_request: Request, context: Context) {
@@ -48,13 +49,15 @@ export async function POST(request: Request, context: Context) {
     const body = await request.json();
     const parsed = leadBudgetCreateSchema.parse(body);
     const now = new Date().toISOString();
+    const sentAt = parsed.sentAt ?? now;
+    const title = (parsed.title ?? "").trim() || "Presupuesto";
 
     await leadRef.collection("budgets").add({
-      title: parsed.title,
+      title,
       link: parsed.link,
       amount: parsed.amount ?? null,
       currency: parsed.currency,
-      sentAt: parsed.sentAt,
+      sentAt,
       status: parsed.status,
       notes: parsed.notes ?? "",
       createdByUserId: actor.uid,
@@ -66,7 +69,7 @@ export async function POST(request: Request, context: Context) {
     await leadRef.set(
       {
         latestBudgetLink: parsed.link,
-        latestBudgetSentAt: parsed.sentAt,
+        latestBudgetSentAt: sentAt,
         latestBudgetAmount: parsed.amount ?? null,
         currency: parsed.currency,
         budgetStatus: nextBudgetStatus,
@@ -80,7 +83,7 @@ export async function POST(request: Request, context: Context) {
       action: "lead_budget_added",
       targetType: "lead",
       targetId: id,
-      metadata: { title: parsed.title, status: parsed.status },
+      metadata: { title, status: parsed.status },
       fallbackActor: { uid: actor.uid, email: actor.email ?? "" },
     });
 
