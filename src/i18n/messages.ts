@@ -269,8 +269,17 @@ Te acompañamos en cada decisión, en cada entrega y en cada paso hasta que eso 
       hint: "↓ Tirá del la tarjeta y mira la magia.",
       edition: "Las Girls+ / Pass · Edición 2026",
     },
+    partnerTrust: {
+      kicker: "05 — Confían en nosotras",
+      titleBefore: "Ellos ya confiaron en ",
+      titleAccent: "Las Girls+",
+      subtitle:
+        "Marcas, proyectos, empresas y personas hermosas del bien que se animaron a poner su idea en movimiento con nosotras. Algunas llegaron con una marca, otras con un proyecto, otras con un caos digno de Excel explotado. Y acá estamos: mate, criterio, diseño, código y cumbia visual para hacerlo funcionar.",
+      cta: "Solo faltás vos, mi amor",
+      marqueeLabel: "Marcas y proyectos que trabajaron con Las Girls+",
+    },
     contactSection: {
-      kicker: "05 — Hablemos",
+      kicker: "06 — Hablemos",
       h2a: "Hablemos de tu idea",
       h2period: ".",
       accent: "Primera consulta sin costo.",
@@ -993,8 +1002,17 @@ Guidance at each milestone until what you envisioned exists in the real world.`,
       hint: "↓ Pull the badge—watch what happens.",
       edition: "Las Girls+ Pass · Edition 2026",
     },
+    partnerTrust: {
+      kicker: "05 — They trust us",
+      titleBefore: "They already trusted ",
+      titleAccent: "Las Girls+",
+      subtitle:
+        "Brands, projects, companies, and good people who decided to put their idea in motion with us. Some arrived with a brand, others with a project, others with spreadsheet chaos for the ages. Here we are—mate, taste, design, code, and visual cumbia to make it work.",
+      cta: "Now we’re just missing you →",
+      marqueeLabel: "Brands and projects that worked with Las Girls+",
+    },
     contactSection: {
-      kicker: "05 — Let’s chat",
+      kicker: "06 — Let’s chat",
       h2a: "Let’s talk about your idea",
       h2period: ".",
       accent: "First consult complementary.",

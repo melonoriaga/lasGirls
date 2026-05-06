@@ -1297,3 +1297,29 @@ a {
   padding: 0;
   background: transparent;
 }
+
+/* Public home — partner logos infinite marquee (reactbits.dev / Logo Loop style) */
+@keyframes partner-logo-marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.partner-logo-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: partner-logo-marquee 38s linear infinite;
+}
+
+.partner-logo-wrapper:hover .partner-logo-marquee-track {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .partner-logo-marquee-track {
+    animation: none;
+  }
+}

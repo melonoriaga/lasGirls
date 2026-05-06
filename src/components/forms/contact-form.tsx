@@ -253,8 +253,11 @@ export function ContactForm() {
             onSubmit={onWhatsAppSubmit}
           >
             <div>
-              <label className={labelClassName}>{f.labelName}</label>
+              <label className={labelClassName} htmlFor="contact-form-focus">
+                {f.labelName}
+              </label>
               <input
+                id="contact-form-focus"
                 className={inputClassName}
                 placeholder={f.phName}
                 value={waName}

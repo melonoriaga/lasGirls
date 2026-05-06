@@ -1,10 +1,27 @@
 rules_version = '2';
 
-// Craft rules based on data in your Firestore database
-// allow write: if firestore.get(
-//    /databases/(default)/documents/users/$(request.auth.uid)).data.isAdmin;
 service firebase.storage {
   match /b/{bucket}/o {
+
+    // Logos de partners — lectura pública, escritura solo para admins autenticados
+    match /partner/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Imágenes del blog / herramientas internas
+    match /media/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Logo de clientes (usado en el CRM)
+    match /clients/{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+
+    // El resto sigue bloqueado
     match /{allPaths=**} {
       allow read, write: if false;
     }
